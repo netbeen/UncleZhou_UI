@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu* file = this->menuBar()->addMenu("&File");
     file->addAction(openAction);
 
-    QMenu* about = this->menuBar()->addMenu("&About");
+    QMenu* htlp = this->menuBar()->addMenu("&Help");
 
     QToolBar* toolbar = this->addToolBar("TOOL");
     toolbar->addAction(openAction);
@@ -60,7 +60,9 @@ void MainWindow::loadSourceImage(){
     if (fileDialog->exec() == QDialog::Accepted)
     {
         this->sourceImage =new QImage(fileDialog->selectedFiles().first());     //此处会有内存泄漏，以后处理
-        this->sourceImageLabel->setPixmap(QPixmap::fromImage(*this->sourceImage));
+        //this->sourceImageLabel->setPixmap(QPixmap::fromImage(*this->sourceImage));
+        const QString filename = fileDialog->selectedFiles().first();
+        this->sourceImageLabel->setStyleSheet("background-image: url(" + filename +");background-position:center center;background-repeat: no-repeat");
     }
 }
 
