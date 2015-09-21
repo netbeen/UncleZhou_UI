@@ -31,14 +31,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QGridLayout* sourceImageLabelGridLayout = new QGridLayout(sourceImageLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
     this->sourceImageLabel->setLayout(sourceImageLabelGridLayout);
     this->sourceImageFrame = new QFrame(this->sourceImageLabel);
-    sourceImageLabelGridLayout->addWidget(this->sourceImageFrame);
+    sourceImageLabelGridLayout->addWidget(this->sourceImageFrame,0,0);
 
     QLabel* label2 = new QLabel(centerWidget);
     label2->setStyleSheet("background-color: #696969;");
     gridLayout->addWidget(label2,0,1);
     label2->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
     label2->addAction(new QAction("&View",this));
-
 
     QLabel* label3 = new QLabel(centerWidget);
     label3->setStyleSheet("background-color: #696969;");
