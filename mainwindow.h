@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QImage>
+#include <QLabel>
 
 class MainWindow : public QMainWindow
 {
@@ -12,6 +14,10 @@ public:
     ~MainWindow();
 
 private:
+    QImage* sourceImage;
+    QLabel* sourceImageLabel;
+
+    void loadSourceImage();
 };
 
 #endif // MAINWINDOW_H
