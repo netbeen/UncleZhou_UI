@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QImage>
 #include <QLabel>
+#include <QFrame>
 
 class MainWindow : public QMainWindow
 {
@@ -16,6 +17,7 @@ public:
 private:
     QImage* sourceImage;
     QLabel* sourceImageLabel;
+    QFrame* sourceImageFrame;
 
     void loadSourceImage();
 };
