@@ -10,6 +10,9 @@ class NewImageDialog : public QDialog
 public:
     NewImageDialog(QDialog* parent=0);
 
+private:
+    void initDialogLayout();
+
 signals:
 
 };

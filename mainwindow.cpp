@@ -9,6 +9,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QDebug>
+#include "newimagedialog.h"
 
 /**
  * @brief MainWindow::MainWindow
@@ -47,13 +48,18 @@ void MainWindow::initAction(){
     this->loadSourceImageAction = new QAction(QIcon(":/image/open.png"),"&Load",this);
     QObject::connect(this->loadSourceImageAction, &QAction::triggered, this, &MainWindow::loadSourceImage);
 
+    this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create new guidance",this);
+    QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
+
     //Action 插入段
     this->sourceImageLabel->addAction(new QAction("&View",this));
     this->sourceImageLabel->addAction(this->loadSourceImageAction);     //左上角的load
+
     this->sourceGuidanceLabel->addAction(new QAction("&View",this));
     this->sourceGuidanceLabel->addAction(new QAction("&Edit",this));
+
     this->targetGuidanceLabel->addAction(new QAction("&View",this));
-    this->targetGuidanceLabel->addAction(new QAction("&Create",this));
+    this->targetGuidanceLabel->addAction(this->newImageAction);
     this->targetGuidanceLabel->addAction(new QAction("&Edit",this));
 }
 
@@ -136,4 +142,14 @@ void MainWindow::initWindowLayout(){
     label4->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
     label4->addAction(new QAction("&View",this));
 
+}
+
+
+
+/**
+ * @brief MainWindow::newImage
+ */
+void MainWindow::newImage(){
+    NewImageDialog* newImageDialog = new NewImageDialog();
+    newImageDialog->exec();
 }

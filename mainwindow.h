@@ -28,6 +28,7 @@ private:
     QImage* targetGuidance;
 
     QAction* loadSourceImageAction;
+    QAction* newImageAction;
 
     // 初始化函数
     void initWindowLayout();
@@ -35,6 +36,7 @@ private:
 
     // action入口函数
     void loadSourceImage();
+    void newImage();
 };
 
 #endif // MAINWINDOW_H
