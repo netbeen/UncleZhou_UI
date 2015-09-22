@@ -15,10 +15,12 @@ CONFIG += c++11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    newimagedialog.cpp
+    newimagedialog.cpp \
+    util.cpp
 
 HEADERS  += mainwindow.h \
-    newimagedialog.h
+    newimagedialog.h \
+    util.h
 
 FORMS    +=
 
