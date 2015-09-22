@@ -19,7 +19,13 @@ private:
     QComboBox* channelComboBox;
     QDialogButtonBox* dialogButtonBox;
 
+    // 初始化布局
     void initDialogLayout();
+
+    // slot函数
+    void presetComboBoxChangedSlot(const int index);
+    void accept();
+
 
 signals:
 

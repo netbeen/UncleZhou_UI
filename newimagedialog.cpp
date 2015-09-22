@@ -6,11 +6,14 @@
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QImage>
 
 
 /**
  * @brief NewImageDialog::NewImageDialog
- * @param parent
+ * @brief 新建图像对话框的构造函数
+ * @param parent 作为qt对象树父指针
+ * @return 没有返回值
  */
 NewImageDialog::NewImageDialog(QDialog* parent) : QDialog(parent)
 {
@@ -22,6 +25,9 @@ NewImageDialog::NewImageDialog(QDialog* parent) : QDialog(parent)
 
 /**
  * @brief NewImageDialog::initDialogLayout
+ * @brief 对于新建图像对话框的布局、控件的定义与设定。
+ * @param 没有参数
+ * @return 没有返回值
  */
 void NewImageDialog::initDialogLayout(){
     this->setWindowTitle("Create new guidance");
@@ -30,20 +36,23 @@ void NewImageDialog::initDialogLayout(){
     this->setLayout(gridLayout);
 
     this->presetComboBox = new QComboBox(this);
-    presetComboBox->addItem("32*32");
     presetComboBox->addItem("64*64");
     presetComboBox->addItem("128*128");
+    presetComboBox->addItem("256*256");
+    QObject::connect(this->presetComboBox, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged), this, &NewImageDialog::presetComboBoxChangedSlot );
 
     this->widthEdit = new QLineEdit(this);
-    widthEdit->setText("32");
+    widthEdit->setText("64");
 
     this->heightEdit = new QLineEdit(this);
-    heightEdit->setText("32");
+    heightEdit->setText("64");
 
     this->channelComboBox = new QComboBox(this);
     channelComboBox->addItem("RGB");
 
     this->dialogButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    QObject::connect(this->dialogButtonBox, &QDialogButtonBox::accepted, this, &NewImageDialog::accept);
+    QObject::connect(this->dialogButtonBox, &QDialogButtonBox::rejected, this, &NewImageDialog::reject);
 
     gridLayout->addWidget(new QLabel("Preset",this),0,0);
     gridLayout->addWidget(new QLabel("Width",this),1,0);
@@ -55,4 +64,32 @@ void NewImageDialog::initDialogLayout(){
     gridLayout->addWidget(this->channelComboBox,3,1);
     gridLayout->addWidget(this->dialogButtonBox,4,0,1,2);
 
+}
+
+
+
+void NewImageDialog::presetComboBoxChangedSlot(const int index){
+    switch(index){
+        case 0:
+            this->widthEdit->setText("64");
+            this->heightEdit->setText("64");
+            break;
+        case 1:
+            this->widthEdit->setText("128");
+            this->heightEdit->setText("128");
+            break;
+        case 2:
+            this->widthEdit->setText("256");
+            this->heightEdit->setText("256");
+            break;
+        default:
+            break;
+    }
+}
+
+void NewImageDialog::accept(){
+    QImage* newTargetGuidance = new QImage(this->widthEdit->text().toInt(), this->heightEdit->text().toInt(),QImage::Format_RGB888);
+    newTargetGuidance->fill(QColor(255,255,255));
+    newTargetGuidance->save("./sourceGuidance.png");
+    QDialog::accept();
 }

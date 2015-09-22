@@ -151,5 +151,7 @@ void MainWindow::initWindowLayout(){
  */
 void MainWindow::newImage(){
     NewImageDialog* newImageDialog = new NewImageDialog();
-    newImageDialog->exec();
+    if(newImageDialog->exec() == QDialog::Accepted){
+        this->targetGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidance.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+    }
 }
