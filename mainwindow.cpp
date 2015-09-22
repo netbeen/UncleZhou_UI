@@ -27,17 +27,21 @@ MainWindow::MainWindow(QWidget *parent) :
     gridLayout->addWidget(sourceImageLabel,0,0);
     this->sourceImageLabel->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
     this->sourceImageLabel->addAction(new QAction("&View",this));
-
-    QGridLayout* sourceImageLabelGridLayout = new QGridLayout(sourceImageLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
+    QGridLayout* sourceImageLabelGridLayout = new QGridLayout(this->sourceImageLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
     this->sourceImageLabel->setLayout(sourceImageLabelGridLayout);
     this->sourceImageFrame = new QFrame(this->sourceImageLabel);
     sourceImageLabelGridLayout->addWidget(this->sourceImageFrame,0,0);
 
-    QLabel* label2 = new QLabel(centerWidget);
-    label2->setStyleSheet("background-color: #696969;");
-    gridLayout->addWidget(label2,0,1);
-    label2->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    label2->addAction(new QAction("&View",this));
+    this->sourceGuidanceLabel = new QLabel(centerWidget);   //右上角label声明：放置source guidance
+    this->sourceGuidanceLabel->setStyleSheet("background-color: #696969;");
+    gridLayout->addWidget(this->sourceGuidanceLabel,0,1);
+    this->sourceGuidanceLabel->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
+    this->sourceGuidanceLabel->addAction(new QAction("&View",this));
+    this->sourceGuidanceLabel->addAction(new QAction("&Edit",this));
+    QGridLayout* sourceGuidanceLabelGridLayout = new QGridLayout(this->sourceGuidanceLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
+    this->sourceGuidanceLabel->setLayout(sourceGuidanceLabelGridLayout);
+    this->sourceGuidanceFrame = new QFrame(this->sourceGuidanceLabel);
+    sourceGuidanceLabelGridLayout->addWidget(this->sourceGuidanceFrame,0,0);
 
     QLabel* label3 = new QLabel(centerWidget);
     label3->setStyleSheet("background-color: #696969;");
@@ -72,12 +76,16 @@ void MainWindow::loadSourceImage(){
     fileDialog->setFileMode(QFileDialog::ExistingFiles);
     fileDialog->setViewMode(QFileDialog::Detail);
 
-    if (fileDialog->exec() == QDialog::Accepted)
+    if (fileDialog->exec() == QDialog::Accepted)    //成功选择一个png图片
     {
         this->sourceImage =new QImage(fileDialog->selectedFiles().first());     //此处会有内存泄漏，以后处理
-        //this->sourceImageLabel->setPixmap(QPixmap::fromImage(*this->sourceImage));
         const QString filename = fileDialog->selectedFiles().first();
-        this->sourceImageFrame->setStyleSheet("background-image: url(" + filename +");background-position:center center;background-repeat: no-repeat");
+        this->sourceImageFrame->setStyleSheet("background-image: url(" + filename + ");background-position:center center;background-repeat: no-repeat");
+
+        this->sourceGuidance = new QImage(this->sourceImage->width(), this->sourceImage->height(), QImage::Format_RGB888);  //新建一个同等大小的空图像
+        this->sourceGuidance->fill(QColor(255,255,255));        //填充白色
+        this->sourceGuidance->save("./sourceGuidance.png");
+        this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidance.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
 }
 

@@ -15,9 +15,14 @@ public:
     ~MainWindow();
 
 private:
-    QImage* sourceImage;
     QLabel* sourceImageLabel;
+    QLabel* sourceGuidanceLabel;
+
     QFrame* sourceImageFrame;
+    QFrame* sourceGuidanceFrame;
+
+    QImage* sourceImage;
+    QImage* sourceGuidance;
 
     void loadSourceImage();
 };
