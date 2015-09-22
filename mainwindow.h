@@ -17,13 +17,23 @@ public:
 private:
     QLabel* sourceImageLabel;
     QLabel* sourceGuidanceLabel;
+    QLabel* targetGuidanceLabel;
 
     QFrame* sourceImageFrame;
     QFrame* sourceGuidanceFrame;
+    QFrame* targetGuidanceFrame;
 
     QImage* sourceImage;
     QImage* sourceGuidance;
+    QImage* targetGuidance;
 
+    QAction* loadSourceImageAction;
+
+    // 初始化函数
+    void initWindowLayout();
+    void initAction();
+
+    // action入口函数
     void loadSourceImage();
 };
 
