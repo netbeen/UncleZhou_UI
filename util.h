@@ -8,7 +8,8 @@
 class Util
 {
 public:
-    Util();
+
+    static void init();
 
     static std::vector<QString> guidanceChannel;
 
