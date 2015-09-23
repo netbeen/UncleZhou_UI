@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QDebug>
 #include "newimagedialog.h"
+#include "util.h"
 
 /**
  * @brief MainWindow::MainWindow
@@ -83,8 +84,10 @@ void MainWindow::loadSourceImage(){
 
         this->sourceGuidance = new QImage(this->sourceImage->width(), this->sourceImage->height(), QImage::Format_RGB888);  //新建一个同等大小的空图像
         this->sourceGuidance->fill(QColor(255,255,255));        //填充白色
-        this->sourceGuidance->save("./sourceGuidance.png");
-        this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidance.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+        for(QString elem : Util::guidanceChannel){
+            this->sourceGuidance->save("./sourceGuidance"+elem+".png");
+        }
+        this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
 }
 
@@ -148,10 +151,13 @@ void MainWindow::initWindowLayout(){
 
 /**
  * @brief MainWindow::newImage
+ * @brief mainwindow中点击新建导引图片的action
+ * @param 没有参数
+ * @return 没有返回值
  */
 void MainWindow::newImage(){
     NewImageDialog* newImageDialog = new NewImageDialog();
     if(newImageDialog->exec() == QDialog::Accepted){
-        this->targetGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidance.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+        this->targetGuidanceFrame->setStyleSheet("background-image: url(./targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
 }

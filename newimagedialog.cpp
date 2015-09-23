@@ -8,6 +8,8 @@
 #include <QWidget>
 #include <QImage>
 
+#include "util.h"
+
 
 /**
  * @brief NewImageDialog::NewImageDialog
@@ -67,7 +69,12 @@ void NewImageDialog::initDialogLayout(){
 }
 
 
-
+/**
+ * @brief NewImageDialog::presetComboBoxChangedSlot
+ * @brief 当preset组合框被改动的时候，修正两个编辑内控件部的参数
+ * @param index是组合框的选中项的索引号
+ * @return 没有返回值
+ */
 void NewImageDialog::presetComboBoxChangedSlot(const int index){
     switch(index){
         case 0:
@@ -87,9 +94,18 @@ void NewImageDialog::presetComboBoxChangedSlot(const int index){
     }
 }
 
+
+/**
+ * @brief NewImageDialog::accept
+ * @brief 点击确认后的slot函数，新建1幅引导图片，然后保存成n份（n=引导图片的类型数量）
+ * @param 没有参数
+ * @return 没有返回值
+ */
 void NewImageDialog::accept(){
     QImage* newTargetGuidance = new QImage(this->widthEdit->text().toInt(), this->heightEdit->text().toInt(),QImage::Format_RGB888);
     newTargetGuidance->fill(QColor(255,255,255));
-    newTargetGuidance->save("./sourceGuidance.png");
+    for(QString elem : Util::guidanceChannel){
+        newTargetGuidance->save("./targetGuidance"+ elem +".png");
+    }
     QDialog::accept();
 }
