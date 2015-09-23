@@ -17,12 +17,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     newimagedialog.cpp \
     util.cpp \
-    imageeditwindow.cpp
+    imageeditwindow.cpp \
+    swatch.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
     util.h \
-    imageeditwindow.h
+    imageeditwindow.h \
+    swatch.h
 
 FORMS    +=
 
