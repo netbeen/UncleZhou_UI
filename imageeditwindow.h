@@ -3,6 +3,8 @@
 
 #include <QToolBar>
 #include <QMainWindow>
+#include <QAction>
+#include <vector>
 
 #include "util.h"
 
@@ -15,7 +17,32 @@ public:
 private:
     QToolBar* toolbar;
 
+    std::vector<QAction*> toolActionVector;
+
+
+    //初始化函数
     void initWindowLayout();
+    void initActions();
+
+    // slots函数
+    void moveToolSlot();
+    void pencilToolSlot();
+    void eraserToolSlot();
+    void selectionToolSlot();
+    void bucketToolSlot();
+    void zoomInToolSlot();
+    void zoomOutToolSlot();
+
+
+    //Actions
+    QAction* moveAction;    //移动工具
+    QAction* pencilAction;  //铅笔工具
+    QAction* eraserAction;  //橡皮工具
+    QAction* selectionAction;   //选择工具
+    QAction* bucketAction;  //颜料桶工具
+    QAction* zoomInAction;  //放大工具
+    QAction* zoomOutAction;     //缩小工具
+
 
 signals:
 
