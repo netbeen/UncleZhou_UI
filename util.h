@@ -2,8 +2,12 @@
 #define UTIL_H
 #include <QObject>
 #include <QString>
-
 #include <vector>
+
+namespace config{
+    enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
+    enum editLevel{readOnly, editable};
+}
 
 class Util
 {

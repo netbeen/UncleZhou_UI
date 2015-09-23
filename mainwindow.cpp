@@ -11,6 +11,8 @@
 #include <QDebug>
 #include "newimagedialog.h"
 #include "util.h"
+#include "imageeditwindow.h"
+
 
 /**
  * @brief MainWindow::MainWindow
@@ -24,7 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     this->initWindowLayout();
     this->initAction();
 
-
+    QIcon icon(":/image/open.png"); //设置程序图标
+    this->setWindowIcon(icon);
 
     QMenu* file = this->menuBar()->addMenu("&File");
     file->addAction(this->loadSourceImageAction);
@@ -49,6 +52,9 @@ void MainWindow::initAction(){
     this->loadSourceImageAction = new QAction(QIcon(":/image/open.png"),"&Load",this);
     QObject::connect(this->loadSourceImageAction, &QAction::triggered, this, &MainWindow::loadSourceImage);
 
+    this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
+    QObject::connect(this->editSourceGuidanceAction, &QAction::triggered, this, &MainWindow::editSourceGuidance);
+
     this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create new guidance",this);
     QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
 
@@ -57,7 +63,7 @@ void MainWindow::initAction(){
     this->sourceImageLabel->addAction(this->loadSourceImageAction);     //左上角的load
 
     this->sourceGuidanceLabel->addAction(new QAction("&View",this));
-    this->sourceGuidanceLabel->addAction(new QAction("&Edit",this));
+    this->sourceGuidanceLabel->addAction(this->editSourceGuidanceAction);
 
     this->targetGuidanceLabel->addAction(new QAction("&View",this));
     this->targetGuidanceLabel->addAction(this->newImageAction);
@@ -79,8 +85,8 @@ void MainWindow::loadSourceImage(){
     if (fileDialog->exec() == QDialog::Accepted)    //成功选择一个png图片
     {
         this->sourceImage =new QImage(fileDialog->selectedFiles().first());     //此处会有内存泄漏，以后处理
-        const QString filename = fileDialog->selectedFiles().first();
-        this->sourceImageFrame->setStyleSheet("background-image: url(" + filename + ");background-position:center center;background-repeat: no-repeat");
+        this->sourceImage->save("./sourceImage.png");
+        this->sourceImageFrame->setStyleSheet("background-image: url(./sourceImage.png);background-position:center center;background-repeat: no-repeat");
 
         this->sourceGuidance = new QImage(this->sourceImage->width(), this->sourceImage->height(), QImage::Format_RGB888);  //新建一个同等大小的空图像
         this->sourceGuidance->fill(QColor(255,255,255));        //填充白色
@@ -160,4 +166,16 @@ void MainWindow::newImage(){
     if(newImageDialog->exec() == QDialog::Accepted){
         this->targetGuidanceFrame->setStyleSheet("background-image: url(./targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
+}
+
+
+
+
+
+void MainWindow::editSourceGuidance(){
+    ImageEditWindow* imageEditWindow = new ImageEditWindow(config::sourceGuidance, config::editable, this);
+    /*if(imageEditDialog->exec() == QDialog::Accepted){
+        qDebug() << "OK";
+    }*/
+    imageEditWindow->show();
 }

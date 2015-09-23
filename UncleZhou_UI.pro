@@ -16,11 +16,13 @@ CONFIG += c++11
 SOURCES += main.cpp\
         mainwindow.cpp \
     newimagedialog.cpp \
-    util.cpp
+    util.cpp \
+    imageeditwindow.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
-    util.h
+    util.h \
+    imageeditwindow.h
 
 FORMS    +=
 
