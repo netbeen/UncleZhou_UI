@@ -10,6 +10,13 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
 
 }
 
+
+/**
+ * @brief Canvas::init
+ * @brief canvas初始化函数，用于初始化canvas的各项参数
+ * @param editPosition 是指定canvas显示的数据来源，可选项有：原图、原引导、目标引导、目标图
+ * @return 没有返回值
+ */
 void Canvas::init(config::editPosition editPosition){
     switch(editPosition){
         case config::sourceImage:
@@ -41,13 +48,13 @@ void Canvas::paintEvent(QPaintEvent* e){
     QPainter painter(this);     //声明绘制器
     //painter.setRenderHint(QPainter::SmoothPixmapTransform);       //这条不知道啥用，先注释了
 
-    QSize pixSize = this->surfacePixmap.size();
-    this->setMinimumSize(pixSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
+    QSize imageSize = this->surfacePixmap.size();
+    this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
-    QPoint topleft;     //指定左上角点作为起始位置，计算左上角可以使得图像居中
-    topleft.setX((this->width() - pixSize.width()) / 2);
-    topleft.setY((this->height() - pixSize.height()) / 2);
+    QPoint topLeftPoint(-10,-10);     //指定左上角点作为起始位置，计算左上角可以使得图像居中
+    topLeftPoint.setX((this->width() - imageSize.width()) / 2);
+    topLeftPoint.setY((this->height() - imageSize.height()) / 2);
 
-    painter.drawPixmap(topleft, this->surfacePixmap);
+    painter.drawPixmap(topLeftPoint, this->surfacePixmap);   //绘制，制定左上角，绘制pixmap
 
 }
