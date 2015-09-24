@@ -52,6 +52,9 @@ void MainWindow::initAction(){
     this->loadSourceImageAction = new QAction(QIcon(":/image/open.png"),"&Load",this);
     QObject::connect(this->loadSourceImageAction, &QAction::triggered, this, &MainWindow::loadSourceImage);
 
+    this->viewSourceImageAction = new QAction(QIcon(":/image/open.png"),"&View",this);
+    QObject::connect(this->viewSourceImageAction, &QAction::triggered, this, &MainWindow::viewSourceImage);
+
     this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
     QObject::connect(this->editSourceGuidanceAction, &QAction::triggered, this, &MainWindow::editSourceGuidance);
 
@@ -59,7 +62,7 @@ void MainWindow::initAction(){
     QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
 
     //Action 插入段
-    this->sourceImageLabel->addAction(new QAction("&View",this));
+    this->sourceImageLabel->addAction(this->viewSourceImageAction);     //左上角的view
     this->sourceImageLabel->addAction(this->loadSourceImageAction);     //左上角的load
 
     this->sourceGuidanceLabel->addAction(new QAction("&View",this));
@@ -174,5 +177,12 @@ void MainWindow::newImage(){
 
 void MainWindow::editSourceGuidance(){
     ImageEditWindow* imageEditWindow = new ImageEditWindow(config::sourceGuidance, config::editable, this);
+    imageEditWindow->show();
+}
+
+
+
+void MainWindow::viewSourceImage(){
+    ImageEditWindow* imageEditWindow = new ImageEditWindow(config::sourceImage, config::readOnly, this);
     imageEditWindow->show();
 }

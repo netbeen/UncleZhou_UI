@@ -13,14 +13,17 @@ public:
     QColor getColor() const;
     void setColor(QColor);
 
+protected:
+    //绘制函数，用于绘制自身
+    virtual void paintEvent(QPaintEvent* event) override;
+
+    //鼠标事件相应函数
+    virtual void mouseReleaseEvent(QMouseEvent *event) override;
+
 private:
     QColor currentColor;
 
-    //绘制函数，用于绘制自身
-    void paintEvent(QPaintEvent* event);
 
-    //鼠标事件相应函数
-    void mouseReleaseEvent(QMouseEvent *event);
 
 signals:
     void colorSelected(QColor currentColor);

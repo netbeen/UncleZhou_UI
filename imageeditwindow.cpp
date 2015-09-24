@@ -9,8 +9,8 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initActions();
 
 
-
-
+    //对画板填充内容
+    this->canvas->init(editPosition);
 }
 
 
@@ -31,6 +31,7 @@ void ImageEditWindow::initWindowLayout(){
     this->canvas = new Canvas(this);
     this->canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+
     this->scrollArea = new QScrollArea(this);
     this->scrollArea->setBackgroundRole(QPalette::Dark);
     this->scrollArea->setFrameShape(QFrame::NoFrame);   //消除边框
@@ -39,6 +40,12 @@ void ImageEditWindow::initWindowLayout(){
     this->scrollArea->setAlignment(Qt::AlignHCenter);
 
     this->setCentralWidget(this->scrollArea);
+
+
+    //设置状态栏
+    this->statusBar()->setStyleSheet("QStatusBar{background-color: #535353;}QStatusBar::item{border:0px}QSizeGrip{background-color: #535353;}");
+
+    //this->menuBar()->setStyleSheet(" QMenuBar{background-color: #535353; padding-left: 5px;}QMenuBar::item {background-color: #535353; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
 
 

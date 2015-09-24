@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QAction>
 #include <QScrollArea>
+#include <QStatusBar>
+#include <QMenuBar>
 
 #include <vector>
 
