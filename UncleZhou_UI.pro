@@ -19,14 +19,16 @@ SOURCES += main.cpp\
     util.cpp \
     imageeditwindow.cpp \
     swatch.cpp \
-    layerdock.cpp
+    layerdock.cpp \
+    canvas.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
     util.h \
     imageeditwindow.h \
     swatch.h \
-    layerdock.h
+    layerdock.h \
+    canvas.h
 
 FORMS    +=
 

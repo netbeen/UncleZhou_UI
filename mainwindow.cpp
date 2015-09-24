@@ -174,8 +174,5 @@ void MainWindow::newImage(){
 
 void MainWindow::editSourceGuidance(){
     ImageEditWindow* imageEditWindow = new ImageEditWindow(config::sourceGuidance, config::editable, this);
-    /*if(imageEditDialog->exec() == QDialog::Accepted){
-        qDebug() << "OK";
-    }*/
     imageEditWindow->show();
 }

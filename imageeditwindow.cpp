@@ -15,9 +15,9 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
 
 
 void ImageEditWindow::initWindowLayout(){
+    this->setWindowState(Qt::WindowMaximized);      //设置窗口最大化
     this->setStyleSheet("background-color: #333337; color: #f1f1f1;");
-    this->setMinimumWidth(1024);
-    this->setMinimumHeight(768);
+
 
     this->toolbar = new QToolBar("Toolbar",this);
     this->addToolBar(Qt::LeftToolBarArea,this->toolbar);
@@ -27,6 +27,18 @@ void ImageEditWindow::initWindowLayout(){
     this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->layerDock);
 
+
+    this->canvas = new Canvas(this);
+    this->canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    this->scrollArea = new QScrollArea(this);
+    this->scrollArea->setBackgroundRole(QPalette::Dark);
+    this->scrollArea->setFrameShape(QFrame::NoFrame);   //消除边框
+    this->scrollArea->setWidget(this->canvas);
+    this->scrollArea->setWidgetResizable(true);
+    this->scrollArea->setAlignment(Qt::AlignHCenter);
+
+    this->setCentralWidget(this->scrollArea);
 
 
 

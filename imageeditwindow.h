@@ -4,11 +4,14 @@
 #include <QToolBar>
 #include <QMainWindow>
 #include <QAction>
+#include <QScrollArea>
+
 #include <vector>
 
 #include "util.h"
 #include "swatch.h"
 #include "layerdock.h"
+#include "canvas.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -49,6 +52,8 @@ private:
     Swatch* backSwatch;
 
     LayerDock* layerDock;
+    Canvas* canvas;
+    QScrollArea* scrollArea;
 
 
 signals:
