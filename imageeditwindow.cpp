@@ -22,6 +22,10 @@ void ImageEditWindow::initWindowLayout(){
     this->toolbar = new QToolBar("Toolbar",this);
     this->addToolBar(Qt::LeftToolBarArea,this->toolbar);
 
+    this->layerDock = new LayerDock(this);
+    this->layerDock->setWindowTitle("Layer");
+    this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->layerDock);
 
 
 

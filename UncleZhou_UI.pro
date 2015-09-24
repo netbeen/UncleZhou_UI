@@ -18,13 +18,15 @@ SOURCES += main.cpp\
     newimagedialog.cpp \
     util.cpp \
     imageeditwindow.cpp \
-    swatch.cpp
+    swatch.cpp \
+    layerdock.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
     util.h \
     imageeditwindow.h \
-    swatch.h
+    swatch.h \
+    layerdock.h
 
 FORMS    +=
 

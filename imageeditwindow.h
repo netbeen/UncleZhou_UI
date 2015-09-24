@@ -8,6 +8,7 @@
 
 #include "util.h"
 #include "swatch.h"
+#include "layerdock.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -46,6 +47,8 @@ private:
 
     Swatch* foreSwatch;
     Swatch* backSwatch;
+
+    LayerDock* layerDock;
 
 
 signals:
