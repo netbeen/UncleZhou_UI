@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "util.h"
+#include "swatch.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -42,6 +43,9 @@ private:
     QAction* bucketAction;  //颜料桶工具
     QAction* zoomInAction;  //放大工具
     QAction* zoomOutAction;     //缩小工具
+
+    Swatch* foreSwatch;
+    Swatch* backSwatch;
 
 
 signals:

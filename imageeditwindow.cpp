@@ -25,6 +25,8 @@ void ImageEditWindow::initWindowLayout(){
 
 
 
+
+
 }
 
 
@@ -54,6 +56,16 @@ void ImageEditWindow::initActions(){
     this->toolbar->addSeparator();
 
 
+    this->foreSwatch = new Swatch(this);
+    this->foreSwatch->setMinimumSize(30,30);
+    this->toolbar->addWidget(foreSwatch);
+
+    this->toolbar->addSeparator();
+
+    this->backSwatch = new Swatch(this);
+    this->backSwatch->setMinimumSize(30,30);
+    this->backSwatch->setColor(QColor(255,255,255));
+    this->toolbar->addWidget(backSwatch);
 
 }
 
