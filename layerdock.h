@@ -3,14 +3,18 @@
 
 #include <QDockWidget>
 
+#include "layermanager.h"
+
 class LayerDock : public QDockWidget
 {
 public:
     LayerDock(QWidget* parent);
 
+private:
+    LayerManager* layerManager;
+
 signals:
 
-public slots:
 };
 
 #endif // LAYERDOCK_H

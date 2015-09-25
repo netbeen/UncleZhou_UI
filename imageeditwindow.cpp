@@ -5,12 +5,12 @@
 
 ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent)
 {
+    this->layerManager = LayerManager::getInstance();
+    this->layerManager->init(editPosition);
+
     this->initWindowLayout();
     this->initActions();
 
-
-    this->layerManager = LayerManager::getInstance();
-    this->layerManager->init(editPosition);
 
     //对画板填充内容
     this->canvas->init(editPosition);

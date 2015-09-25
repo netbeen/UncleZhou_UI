@@ -13,9 +13,7 @@ public:
 
     const QString layerName;
     QImage image;
-    float transparence;     //透明度
     bool isShow;                    //是否显示
-    bool isSelected;        //是否被选中
 
 private:
 
