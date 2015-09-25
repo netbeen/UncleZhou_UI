@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     swatch.cpp \
     layerdock.cpp \
     canvas.cpp \
-    layeritem.cpp
+    layeritem.cpp \
+    layermanager.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -30,7 +31,8 @@ HEADERS  += mainwindow.h \
     swatch.h \
     layerdock.h \
     canvas.h \
-    layeritem.h
+    layeritem.h \
+    layermanager.h
 
 FORMS    +=
 

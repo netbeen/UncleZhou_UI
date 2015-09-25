@@ -14,6 +14,7 @@
 #include "swatch.h"
 #include "layerdock.h"
 #include "canvas.h"
+#include "layermanager.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -56,6 +57,9 @@ private:
     LayerDock* layerDock;
     Canvas* canvas;
     QScrollArea* scrollArea;
+
+    //后台控制变量
+    LayerManager* layerManager;
 
 
 signals:

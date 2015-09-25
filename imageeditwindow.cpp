@@ -9,6 +9,9 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initActions();
 
 
+    this->layerManager = LayerManager::getInstance();
+    this->layerManager->init(editPosition);
+
     //对画板填充内容
     this->canvas->init(editPosition);
 }
