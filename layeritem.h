@@ -1,0 +1,27 @@
+#ifndef LAYERITEM_H
+#define LAYERITEM_H
+
+#include <QObject>
+#include <QString>
+#include <QImage>
+
+class LayerItem : public QObject
+{
+    Q_OBJECT
+public:
+    explicit LayerItem(QString layerName, QImage image, QObject *parent);
+
+    const QString layerName;
+    QImage image;
+    float transparence;     //透明度
+    bool isShow;                    //是否显示
+    bool isSelected;        //是否被选中
+
+private:
+
+
+signals:
+
+};
+
+#endif // LAYERITEM_H
