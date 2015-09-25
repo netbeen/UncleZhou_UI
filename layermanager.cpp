@@ -4,7 +4,7 @@
 
 LayerManager* LayerManager::ptr2LayerManager = nullptr;
 
-LayerManager::LayerManager(QObject *parent) : QObject(parent)
+LayerManager::LayerManager(QObject *parent) : QObject(parent),currentDisplayLayerIndex(-1)
 {
 
 }
@@ -45,4 +45,9 @@ LayerManager* LayerManager::getInstance(){
         LayerManager::ptr2LayerManager = new LayerManager();
     }
     return ptr2LayerManager;
+}
+
+
+void LayerManager::setDisplayLayer(int index){
+    this->currentDisplayLayerIndex = index;
 }

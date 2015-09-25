@@ -17,12 +17,18 @@ public:
 
     std::vector<LayerItem*> layerItemVector;
 
+    void setDisplayLayer(int index);
+
+
 private:
     explicit LayerManager(QObject *parent = 0);
 
     static LayerManager* ptr2LayerManager;
 
+    int currentDisplayLayerIndex;
+
 signals:
+    void displayLayerChanged(int index);
 
 };
 

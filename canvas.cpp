@@ -7,7 +7,8 @@
 
 Canvas::Canvas(QWidget* parent) : QWidget(parent)
 {
-
+    this->layerManager = LayerManager::getInstance();
+    QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
 }
 
 
@@ -18,7 +19,7 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
  * @return 没有返回值
  */
 void Canvas::init(config::editPosition editPosition){
-    switch(editPosition){
+    /*switch(editPosition){
         case config::sourceImage:
             this->surfaceImage = QImage("./sourceImage.png");
             this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
@@ -30,7 +31,8 @@ void Canvas::init(config::editPosition editPosition){
             break;
         case config::targetImage:
             break;
-    }
+    }*/
+
 
 }
 
@@ -57,4 +59,12 @@ void Canvas::paintEvent(QPaintEvent* e){
 
     painter.drawPixmap(topLeftPoint, this->surfacePixmap);   //绘制，制定左上角，绘制pixmap
 
+}
+
+
+void Canvas::receiveDisplayLayerChanged(int index){
+    this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
+    this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
+    this->update();
+    qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;
 }

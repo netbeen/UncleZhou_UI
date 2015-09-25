@@ -13,7 +13,6 @@ public:
 
     const QString layerName;
     QImage image;
-    bool isShow;                    //是否显示
 
 private:
 

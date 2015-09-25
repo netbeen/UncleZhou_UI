@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QPixmap>
 
+#include "layermanager.h"
 #include "util.h"
 
 class Canvas : public QWidget
@@ -21,7 +22,9 @@ private:
     QImage surfaceImage;
     QPixmap surfacePixmap;
 
+    LayerManager* layerManager;
 
+    void receiveDisplayLayerChanged(int index);
 
 signals:
 

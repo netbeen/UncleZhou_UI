@@ -25,14 +25,13 @@ void ImageEditWindow::initWindowLayout(){
     this->toolbar = new QToolBar("Toolbar",this);
     this->addToolBar(Qt::LeftToolBarArea,this->toolbar);
 
+    this->canvas = new Canvas(this);
+    this->canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     this->layerDock = new LayerDock(this);
     this->layerDock->setWindowTitle("Layer");
     this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->layerDock);
-
-
-    this->canvas = new Canvas(this);
-    this->canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 
     this->scrollArea = new QScrollArea(this);
