@@ -66,5 +66,5 @@ void Canvas::receiveDisplayLayerChanged(int index){
     this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
     this->update();
-    qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;
+    //qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;
 }
