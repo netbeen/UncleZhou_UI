@@ -17,6 +17,8 @@ public:
     //void init(config::editPosition editPosition);
     void setOperationType(config::operationType inputOperationType);
 
+    void receiveDisplayLayerChanged();  //slot函数，用于接受layerManager传来的图层切换信号
+
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
     virtual void mousePressEvent(QMouseEvent *e) override;
@@ -31,8 +33,6 @@ private:
     float scaleFactor;      //缩放因子
     QPoint topLeftPoint;     //绘图起始的左上角的坐标点
     config::operationType operationType;
-
-    void receiveDisplayLayerChanged(int index);
 
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改

@@ -28,8 +28,6 @@ LayerDock::LayerDock(QWidget* parent) : QDockWidget(parent)
         this->radioButtonVector.push_back(radio);
     }
 
-    QObject::connect(this, &LayerDock::displayLayerChanged, this->layerManager, &LayerManager::displayLayerChanged);
-
     radioButtonVector.front()->setChecked(true);
     if(radioButtonVector.size() == 1){
         radioButtonVector.front()->setEnabled(false);
@@ -42,7 +40,7 @@ LayerDock::LayerDock(QWidget* parent) : QDockWidget(parent)
 }
 
 void LayerDock::findTheToggledButton(){
-    int index = 0;
+    size_t index = 0;
     while(this->radioButtonVector.at(index)->isChecked() == false){
         //qDebug() << "radioButtonVector at " << index << " isChecked = false.";
         index++;
@@ -51,7 +49,6 @@ void LayerDock::findTheToggledButton(){
         }
     }
     this->layerManager->setDisplayLayerIndex(index);
-    emit this->displayLayerChanged(index);
     //qDebug() << "radioButtonVector at " << index << " isChecked = true.";
 
 }

@@ -48,6 +48,7 @@ LayerManager* LayerManager::getInstance(){
 
 void LayerManager::setDisplayLayerIndex(int index){
     this->currentDisplayLayerIndex = index;
+    emit this->displayLayerChanged();
 }
 
 int LayerManager::getDisplayLayerIndex(){

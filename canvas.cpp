@@ -63,8 +63,9 @@ void Canvas::paintEvent(QPaintEvent* e){
 }
 
 
-void Canvas::receiveDisplayLayerChanged(int index){
-    this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
+void Canvas::receiveDisplayLayerChanged(){
+    //this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
+    this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
     this->update();
     //qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;

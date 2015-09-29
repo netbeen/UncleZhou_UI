@@ -19,7 +19,7 @@ private:
     std::vector<QRadioButton*> radioButtonVector;       //用来追踪所有的按钮，并且选中第一个按钮
 
 signals:
-    void displayLayerChanged(int index);
+
 
 };
 

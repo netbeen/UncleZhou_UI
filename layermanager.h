@@ -35,7 +35,7 @@ private:
     int currentDisplayLayerIndex;
 
 signals:
-    void displayLayerChanged(int index);
+    void displayLayerChanged();
 
 };
 
