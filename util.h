@@ -8,7 +8,7 @@
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
     enum editLevel{readOnly, editable};
-    enum operationType{None, Pencil};
+    enum operationType{None, Pencil, ZoomIn, ZoomOut};
 }
 
 class Util

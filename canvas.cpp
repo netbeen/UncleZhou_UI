@@ -53,12 +53,13 @@ void Canvas::paintEvent(QPaintEvent* e){
     //painter.setRenderHint(QPainter::SmoothPixmapTransform);       //这条不知道啥用，先注释了
 
     QSize imageSize = this->surfacePixmap.size();
+    imageSize = imageSize*this->scaleFactor;
     this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
     this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
     this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
 
-    painter.drawPixmap(this->topLeftPoint, this->surfacePixmap);   //绘制，制定左上角，绘制pixmap
+    painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
 
 }
 
@@ -79,6 +80,16 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 return;
             case config::Pencil:
                 this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                break;
+            case config::ZoomIn:
+                this->scaleFactor *= 1.1;
+                this->update();
+                qDebug() << "Current scale factor = " << this->scaleFactor;
+                break;
+            case config::ZoomOut:
+                this->scaleFactor *= 0.9;
+                this->update();
+                qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
         }
     }
