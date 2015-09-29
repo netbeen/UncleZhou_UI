@@ -9,6 +9,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QDebug>
+#include <QMessageBox>
 #include "newimagedialog.h"
 #include "util.h"
 #include "imageeditwindow.h"
@@ -29,10 +30,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QIcon icon(":/image/open.png"); //设置程序图标
     this->setWindowIcon(icon);
 
-    QMenu* file = this->menuBar()->addMenu("&File");
-    file->addAction(this->loadSourceImageAction);
+    this->fileMenu = this->menuBar()->addMenu("&File");
+    this->fileMenu->addAction(this->loadSourceImageAction);
 
-    QMenu* htlp = this->menuBar()->addMenu("&Help");
+    this->helpMenu = this->menuBar()->addMenu("&Help");
+    this->helpMenu->addAction(this->aboutAction);
 
     QToolBar* toolbar = this->addToolBar("Standard Tool Bar");
     toolbar->addAction(this->loadSourceImageAction);
@@ -61,6 +63,9 @@ void MainWindow::initAction(){
     this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create new guidance",this);
     QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
 
+    this->aboutAction = new QAction(QIcon(":/image/open.png"),"&About",this);
+    QObject::connect(this->aboutAction, &QAction::triggered, this, &MainWindow::about);
+
     //Action 插入段
     this->sourceImageLabel->addAction(this->viewSourceImageAction);     //左上角的view
     this->sourceImageLabel->addAction(this->loadSourceImageAction);     //左上角的load
@@ -71,6 +76,8 @@ void MainWindow::initAction(){
     this->targetGuidanceLabel->addAction(new QAction("&View",this));
     this->targetGuidanceLabel->addAction(this->newImageAction);
     this->targetGuidanceLabel->addAction(new QAction("&Edit",this));
+
+
 }
 
 
@@ -185,4 +192,16 @@ void MainWindow::editSourceGuidance(){
 void MainWindow::viewSourceImage(){
     ImageEditWindow* imageEditWindow = new ImageEditWindow(config::sourceImage, config::readOnly, this);
     imageEditWindow->show();
+}
+
+
+void MainWindow::about()
+{
+    QMessageBox::about(this, tr("About Uncle Zhou UI"),
+        tr("<p><b>Uncle Zhou UI</b></p>"
+        "Open sourced under the <b>MIT</b> license.<br/>"
+           "Copyright (c) 2015 NetBeen<br/>"
+           "netbeen.cn@gmail.com"));
+
+
 }

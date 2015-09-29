@@ -34,6 +34,11 @@ private:
 
     QAction* newImageAction;
 
+    QAction* aboutAction;
+
+    QMenu* fileMenu;
+    QMenu* helpMenu;
+
     // 初始化函数
     void initWindowLayout();
     void initAction();
@@ -45,6 +50,7 @@ private:
     void editSourceGuidance();
 
     void newImage();
+    void about();
 };
 
 #endif // MAINWINDOW_H
