@@ -34,7 +34,7 @@ private:
     void receiveDisplayLayerChanged(int index);
 
     bool isContained(const QPoint testPoint) const;
-    void paint(QPoint center, int radius, QColor color);   //绘图函数，对图像进行实际修改
+    void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
     QPoint mapToPixmap(QPoint screenPoint);
 
 signals:

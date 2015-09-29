@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QString>
 #include <vector>
+#include <QPoint>
 
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
@@ -17,6 +18,8 @@ public:
     static void init();
 
     static std::vector<QString> guidanceChannel;
+
+    static float calcL2Distance(const QPoint point1, const QPoint point2);
 
 
 

@@ -79,7 +79,7 @@ void Canvas::mousePressEvent(QMouseEvent *e){
     if(e->button() & Qt::LeftButton && this->isContained(e->pos())){
         switch (this->operationType) {
             case config::Pencil:
-                this->paint(this->mapToPixmap(e->pos()),1,QColor(255,0,0));
+                this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
                 break;
         }
     }
@@ -98,16 +98,32 @@ void Canvas::setOperationType(config::operationType inputOperationType){
 }
 
 
-void Canvas::paint(QPoint center, int radius, QColor color){
+void Canvas::paint(const QPoint center, const int radius,const QColor color){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
-    currentDisplayLayerItem->image.setPixel(center.x(), center.y(),color.rgb());
+    //currentDisplayLayerItem->image.setPixel(center.x(), center.y(),color.rgb());
+
+    for(int x = center.x()-radius; x < center.x()+radius; x++){
+        for(int y = center.y()-radius; y < center.y()+radius; y++){
+            if(Util::calcL2Distance(center, QPoint(x,y)) < radius){
+                currentDisplayLayerItem->image.setPixel(x, y,color.rgb());
+            }
+        }
+    }
+
     this->surfacePixmap = QPixmap::fromImage(currentDisplayLayerItem->image);
     this->update();
 }
 
+
+/**
+ * @brief Canvas::mapToPixmap
+ * @brief 将canvas中的一个点映射至实际图像的某一个像素上
+ * @param screenPoint   canvas坐标中的点
+ * @return 返回实际像素点的位置
+ */
 QPoint Canvas::mapToPixmap(QPoint screenPoint){
     QPoint finalPosition;
-    finalPosition.setX(screenPoint.x() - this->topLeftPoint.x());
-    finalPosition.setY(screenPoint.y() - this->topLeftPoint.y());
+    finalPosition.setX(screenPoint.x() - this->topLeftPoint.x()/this->scaleFactor);
+    finalPosition.setY(screenPoint.y() - this->topLeftPoint.y()/this->scaleFactor);
     return finalPosition;
 }
