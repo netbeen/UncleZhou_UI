@@ -73,7 +73,7 @@ void Canvas::receiveDisplayLayerChanged(){
 
 
 void Canvas::mousePressEvent(QMouseEvent *e){
-    if(e->button() & Qt::LeftButton && this->isContained(e->pos())){
+    if(e->buttons() & Qt::LeftButton && this->isContained(e->pos())){
         switch (this->operationType) {
             case config::None:
                 return;
@@ -86,7 +86,7 @@ void Canvas::mousePressEvent(QMouseEvent *e){
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *e){
-    if( this->isContained(e->pos())){
+    if( e->buttons() & Qt::LeftButton && this->isContained(e->pos())){
         switch (this->operationType) {
             case config::None:
                 return;
