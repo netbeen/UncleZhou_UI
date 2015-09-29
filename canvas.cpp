@@ -54,11 +54,15 @@ void Canvas::paintEvent(QPaintEvent* e){
 
     QSize imageSize = this->surfacePixmap.size();
     imageSize = imageSize*this->scaleFactor;
-    this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
+    //this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
     this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
     this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
 
+    //qDebug() << "this->width() , imageSize.width() = " << this->width() << "  " << imageSize.width();
+    //qDebug() << "this->width() - imageSize.width() = " << this->width() - imageSize.width();
+    //qDebug() << "(this->width() - imageSize.width()) / 2 = " << (this->width() - imageSize.width()) / 2;
+    //qDebug() << "Drawing: topleft = (" << topLeftPoint.x() << "," << topLeftPoint.y() << ").";
     painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
 
 }
@@ -111,7 +115,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
 
 bool Canvas::isContained(const QPoint testPoint) const{
     assert(this->surfaceImage.isNull() == false);
-    QSize canvasSize = QSize(this->surfaceImage.width(), this->surfaceImage.height());
+    QSize canvasSize = QSize(this->surfaceImage.width()*this->scaleFactor, this->surfaceImage.height()*this->scaleFactor);
     QRect canvasRect = QRect(this->topLeftPoint, canvasSize);
     return canvasRect.contains(testPoint);
 }
@@ -148,8 +152,10 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
  */
 QPoint Canvas::mapToPixmap(QPoint screenPoint){
     QPoint finalPosition;
-    finalPosition.setX(screenPoint.x() - this->topLeftPoint.x()/this->scaleFactor);
-    finalPosition.setY(screenPoint.y() - this->topLeftPoint.y()/this->scaleFactor);
+    //qDebug() << "screenPoint = (" << screenPoint.x() << ","  << screenPoint.y() << ").";
+    finalPosition.setX((screenPoint.x() - this->topLeftPoint.x())/this->scaleFactor);
+    finalPosition.setY((screenPoint.y() - this->topLeftPoint.y())/this->scaleFactor);
+    //qDebug() << "finalPosition = (" << finalPosition.x() << ","  << finalPosition.y() << ").";
     return finalPosition;
 }
 
