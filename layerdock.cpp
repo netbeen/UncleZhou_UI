@@ -50,6 +50,7 @@ void LayerDock::findTheToggledButton(){
             return;
         }
     }
+    this->layerManager->setDisplayLayerIndex(index);
     emit this->displayLayerChanged(index);
     //qDebug() << "radioButtonVector at " << index << " isChecked = true.";
 
