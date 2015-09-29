@@ -55,9 +55,6 @@ void Canvas::paintEvent(QPaintEvent* e){
     QSize imageSize = this->surfacePixmap.size();
     this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
-    qDebug() << this->width();
-    qDebug() << this->height();
-
     this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
     this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
 
@@ -75,8 +72,18 @@ void Canvas::receiveDisplayLayerChanged(int index){
 
 
 void Canvas::mousePressEvent(QMouseEvent *e){
-    //qDebug() << "Press";
     if(e->button() & Qt::LeftButton && this->isContained(e->pos())){
+        switch (this->operationType) {
+            case config::Pencil:
+                this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                break;
+        }
+    }
+}
+
+
+void Canvas::mouseMoveEvent(QMouseEvent *e){
+    if( this->isContained(e->pos())){
         switch (this->operationType) {
             case config::Pencil:
                 this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
@@ -115,6 +122,8 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
 }
 
 
+
+
 /**
  * @brief Canvas::mapToPixmap
  * @brief 将canvas中的一个点映射至实际图像的某一个像素上
@@ -127,3 +136,6 @@ QPoint Canvas::mapToPixmap(QPoint screenPoint){
     finalPosition.setY(screenPoint.y() - this->topLeftPoint.y()/this->scaleFactor);
     return finalPosition;
 }
+
+
+

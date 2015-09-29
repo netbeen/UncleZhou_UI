@@ -20,6 +20,7 @@ public:
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
     virtual void mousePressEvent(QMouseEvent *e) override;
+    virtual void mouseMoveEvent(QMouseEvent *e) override;
 
 private:
     QImage surfaceImage;
