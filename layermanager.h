@@ -8,6 +8,11 @@
 #include "util.h"
 #include "layeritem.h"
 
+
+/**
+ * @brief The LayerManager class
+ * @brief 图层管理器：负责保存当前编辑位置、当前所有图层状态。
+ */
 class LayerManager : public QObject
 {
     Q_OBJECT
@@ -17,7 +22,9 @@ public:
 
     std::vector<LayerItem*> layerItemVector;
 
-    void setDisplayLayer(int index);
+    void setDisplayLayerIndex(int index);
+    int getDisplayLayerIndex();
+    LayerItem* getDisplayLayerItem();
 
 
 private:

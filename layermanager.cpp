@@ -12,12 +12,11 @@ LayerManager::LayerManager(QObject *parent) : QObject(parent),currentDisplayLaye
 void LayerManager::init(config::editPosition editPosition){
     this->layerItemVector.clear();
     switch (editPosition) {
+        LayerItem* singleLayer;
         case config::sourceImage:
-        {
-            LayerItem* sourceImageLayer = new LayerItem("Source Image", QImage("./sourceImage.png"),this);
-            this->layerItemVector.push_back(sourceImageLayer);
+            singleLayer = new LayerItem("Source Image", QImage("./sourceImage.png"),this);
+            this->layerItemVector.push_back(singleLayer);
             break;
-        }
         case config::sourceGuidance:
             for(QString elem : Util::guidanceChannel){
                 LayerItem* layerItem = new LayerItem(elem, QImage("./sourceGuidance" + elem +".png"),this);
@@ -31,12 +30,11 @@ void LayerManager::init(config::editPosition editPosition){
             }
             break;
         case config::targetImage:
-        {
-            LayerItem* targetImageLayer = new LayerItem("Target Image", QImage("./targetImage.png"),this);
-            this->layerItemVector.push_back(targetImageLayer);
+            singleLayer = new LayerItem("Target Image", QImage("./targetImage.png"),this);
+            this->layerItemVector.push_back(singleLayer);
             break;
-        }
     }
+    this->currentDisplayLayerIndex = 0;
     //qDebug() << "LayerManager::init compete, size of layerItemVector = " << this->layerItemVector.size();
 }
 
@@ -48,6 +46,14 @@ LayerManager* LayerManager::getInstance(){
 }
 
 
-void LayerManager::setDisplayLayer(int index){
+void LayerManager::setDisplayLayerIndex(int index){
     this->currentDisplayLayerIndex = index;
+}
+
+int LayerManager::getDisplayLayerIndex(){
+    return this->currentDisplayLayerIndex;
+}
+
+LayerItem* LayerManager::getDisplayLayerItem(){
+    return this->layerItemVector.at(this->currentDisplayLayerIndex);
 }

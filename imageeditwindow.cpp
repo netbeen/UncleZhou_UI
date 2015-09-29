@@ -13,7 +13,7 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
 
 
     //对画板填充内容
-    this->canvas->init(editPosition);
+    //this->canvas->init(editPosition);
 }
 
 

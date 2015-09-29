@@ -5,7 +5,9 @@
 #include <QDebug>
 #include <QSize>
 
-Canvas::Canvas(QWidget* parent) : QWidget(parent)
+#include <assert.h>
+
+Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0)
 {
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
@@ -18,7 +20,7 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
  * @param editPosition 是指定canvas显示的数据来源，可选项有：原图、原引导、目标引导、目标图
  * @return 没有返回值
  */
-void Canvas::init(config::editPosition editPosition){
+//void Canvas::init(config::editPosition editPosition){
     /*switch(editPosition){
         case config::sourceImage:
             this->surfaceImage = QImage("./sourceImage.png");
@@ -34,7 +36,7 @@ void Canvas::init(config::editPosition editPosition){
     }*/
 
 
-}
+//}
 
 /**
  * @brief Canvas::paintEvent
@@ -53,11 +55,13 @@ void Canvas::paintEvent(QPaintEvent* e){
     QSize imageSize = this->surfacePixmap.size();
     this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
-    QPoint topLeftPoint(-10,-10);     //指定左上角点作为起始位置，计算左上角可以使得图像居中
-    topLeftPoint.setX((this->width() - imageSize.width()) / 2);
-    topLeftPoint.setY((this->height() - imageSize.height()) / 2);
+    qDebug() << this->width();
+    qDebug() << this->height();
 
-    painter.drawPixmap(topLeftPoint, this->surfacePixmap);   //绘制，制定左上角，绘制pixmap
+    this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
+    this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
+
+    painter.drawPixmap(this->topLeftPoint, this->surfacePixmap);   //绘制，制定左上角，绘制pixmap
 
 }
 
@@ -67,4 +71,43 @@ void Canvas::receiveDisplayLayerChanged(int index){
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
     this->update();
     //qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;
+}
+
+
+void Canvas::mousePressEvent(QMouseEvent *e){
+    //qDebug() << "Press";
+    if(e->button() & Qt::LeftButton && this->isContained(e->pos())){
+        switch (this->operationType) {
+            case config::Pencil:
+                this->paint(this->mapToPixmap(e->pos()),1,QColor(255,0,0));
+                break;
+        }
+    }
+}
+
+
+bool Canvas::isContained(const QPoint testPoint) const{
+    assert(this->surfaceImage.isNull() == false);
+    QSize canvasSize = QSize(this->surfaceImage.width(), this->surfaceImage.height());
+    QRect canvasRect = QRect(this->topLeftPoint, canvasSize);
+    return canvasRect.contains(testPoint);
+}
+
+void Canvas::setOperationType(config::operationType inputOperationType){
+    this->operationType = inputOperationType;
+}
+
+
+void Canvas::paint(QPoint center, int radius, QColor color){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    currentDisplayLayerItem->image.setPixel(center.x(), center.y(),color.rgb());
+    this->surfacePixmap = QPixmap::fromImage(currentDisplayLayerItem->image);
+    this->update();
+}
+
+QPoint Canvas::mapToPixmap(QPoint screenPoint){
+    QPoint finalPosition;
+    finalPosition.setX(screenPoint.x() - this->topLeftPoint.x());
+    finalPosition.setY(screenPoint.y() - this->topLeftPoint.y());
+    return finalPosition;
 }
