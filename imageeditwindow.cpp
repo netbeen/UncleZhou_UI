@@ -59,6 +59,7 @@ void ImageEditWindow::initActions(){
 
     this->moveAction = new QAction(QIcon(":/image/move.png"),"&Move",this);
     this->pencilAction= new QAction(QIcon(":/image/pencil.png"),"&Pencil",this);
+    QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
     this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
@@ -100,6 +101,7 @@ void ImageEditWindow::moveToolSlot(){
 }
 
 void ImageEditWindow::pencilToolSlot(){
+    this->canvas->setOperationType(config::Pencil);
 
 }
 

@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0)
+Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None)
 {
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
@@ -75,6 +75,8 @@ void Canvas::receiveDisplayLayerChanged(){
 void Canvas::mousePressEvent(QMouseEvent *e){
     if(e->button() & Qt::LeftButton && this->isContained(e->pos())){
         switch (this->operationType) {
+            case config::None:
+                return;
             case config::Pencil:
                 this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
                 break;
@@ -86,6 +88,8 @@ void Canvas::mousePressEvent(QMouseEvent *e){
 void Canvas::mouseMoveEvent(QMouseEvent *e){
     if( this->isContained(e->pos())){
         switch (this->operationType) {
+            case config::None:
+                return;
             case config::Pencil:
                 this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
                 break;
