@@ -8,8 +8,8 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->layerManager = LayerManager::getInstance();
     this->layerManager->init(editPosition);
 
-    this->initWindowLayout();
-    this->initActions();
+    this->initWindowLayout(editLevel);
+    this->initActions(editLevel);
 
 
 
@@ -19,7 +19,7 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
 }
 
 
-void ImageEditWindow::initWindowLayout(){
+void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->setWindowState(Qt::WindowMaximized);      //设置窗口最大化
     this->setStyleSheet("background-color: #333337; color: #f1f1f1;");
 
@@ -57,7 +57,7 @@ void ImageEditWindow::initWindowLayout(){
 }
 
 
-void ImageEditWindow::initActions(){
+void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->moveAction = new QAction(QIcon(":/image/move.png"),"&Move",this);
     QObject::connect(this->moveAction, &QAction::triggered, this, &ImageEditWindow::moveToolSlot);
@@ -73,30 +73,39 @@ void ImageEditWindow::initActions(){
 
     this->toolActionVector = std::vector<QAction*>();
 
+
     this->toolActionVector.push_back(this->moveAction);
-    this->toolActionVector.push_back(this->pencilAction);
-    this->toolActionVector.push_back(this->eraserAction);
-    this->toolActionVector.push_back(this->selectionAction);
-    this->toolActionVector.push_back(this->bucketAction);
     this->toolActionVector.push_back(this->zoomInAction);
     this->toolActionVector.push_back(this->zoomOutAction);
+
+    if(editLevel == config::editable){
+        this->toolActionVector.push_back(this->pencilAction);
+        this->toolActionVector.push_back(this->eraserAction);
+        this->toolActionVector.push_back(this->selectionAction);
+        this->toolActionVector.push_back(this->bucketAction);
+
+    }
 
     for(QAction* elem : toolActionVector){
         this->toolbar->addAction(elem);
     }
-    this->toolbar->addSeparator();
+
+    if(editLevel == config::editable){
+        this->toolbar->addSeparator();
 
 
-    this->foreSwatch = new Swatch(this);
-    this->foreSwatch->setMinimumSize(30,30);
-    this->toolbar->addWidget(foreSwatch);
+        this->foreSwatch = new Swatch(this);
+        this->foreSwatch->setMinimumSize(30,30);
+        this->toolbar->addWidget(foreSwatch);
 
-    this->toolbar->addSeparator();
+        this->toolbar->addSeparator();
 
-    this->backSwatch = new Swatch(this);
-    this->backSwatch->setMinimumSize(30,30);
-    this->backSwatch->setColor(QColor(255,255,255));
-    this->toolbar->addWidget(backSwatch);
+        this->backSwatch = new Swatch(this);
+        this->backSwatch->setMinimumSize(30,30);
+        this->backSwatch->setColor(QColor(255,255,255));
+        this->toolbar->addWidget(backSwatch);
+    }
+
 
 }
 

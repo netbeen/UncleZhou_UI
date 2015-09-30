@@ -29,8 +29,8 @@ private:
 
 
     //初始化函数
-    void initWindowLayout();
-    void initActions();
+    void initWindowLayout(config::editLevel editLevel);
+    void initActions(config::editLevel editLevel);
 
     // slots函数
     void moveToolSlot();
