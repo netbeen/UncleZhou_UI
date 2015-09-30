@@ -7,5 +7,7 @@
         <file>pencil.png</file>
         <file>selection.png</file>
         <file>zoom.png</file>
+        <file>zoomIn.png</file>
+        <file>zoomOut.png</file>
     </qresource>
 </RCC>

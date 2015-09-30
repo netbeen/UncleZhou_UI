@@ -66,9 +66,9 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
     this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
-    this->zoomInAction= new QAction(QIcon(":/image/zoom.png"),"&ZoomIn",this);
+    this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
     QObject::connect(this->zoomInAction, &QAction::triggered, this, &ImageEditWindow::zoomInToolSlot);
-    this->zoomOutAction= new QAction(QIcon(":/image/zoom.png"),"&ZoomOut",this);
+    this->zoomOutAction= new QAction(QIcon(":/image/zoomOut.png"),"&ZoomOut",this);
     QObject::connect(this->zoomOutAction, &QAction::triggered, this, &ImageEditWindow::zoomOutToolSlot);
 
     this->toolActionVector = std::vector<QAction*>();
