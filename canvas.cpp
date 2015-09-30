@@ -7,10 +7,11 @@
 
 #include <assert.h>
 
-Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None)
+Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false)
 {
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
+
 }
 
 
@@ -56,13 +57,13 @@ void Canvas::paintEvent(QPaintEvent* e){
     imageSize = imageSize*this->scaleFactor;
     //this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
-    this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
-    this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
+    if(this->isInited == false){
+        this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
+        this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
+        this->isInited = true;
+    }
 
-    //qDebug() << "this->width() , imageSize.width() = " << this->width() << "  " << imageSize.width();
-    //qDebug() << "this->width() - imageSize.width() = " << this->width() - imageSize.width();
-    //qDebug() << "(this->width() - imageSize.width()) / 2 = " << (this->width() - imageSize.width()) / 2;
-    //qDebug() << "Drawing: topleft = (" << topLeftPoint.x() << "," << topLeftPoint.y() << ").";
+
     painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
 
 }
@@ -70,20 +71,39 @@ void Canvas::paintEvent(QPaintEvent* e){
 
 void Canvas::receiveDisplayLayerChanged(){
     //this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
+    /*this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
+    this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
+
+    this->topLeftPoint.setX((this->width() - this->surfaceImage.size().width()) / 2);
+    this->topLeftPoint.setY((this->height() - this->surfaceImage.size().height()) / 2);*/
+
+
     this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
+
     this->update();
-    //qDebug() << "Canvas::receiveDisplayLayerChanged index=" << index;
+    //qDebug() << "Canvas::receiveDisplayLayerChanged";
 }
 
 
 void Canvas::mousePressEvent(QMouseEvent *e){
-    if(e->buttons() & Qt::LeftButton && this->isContained(e->pos())){
+    if(e->buttons() & Qt::LeftButton ){
+        if( this->isContained(e->pos())){
+            switch (this->operationType) {
+                case config::None:
+                    return;
+                case config::Pencil:
+                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                    break;
+            }
+        }
         switch (this->operationType) {
             case config::None:
                 return;
-            case config::Pencil:
-                this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+            case config::Move:
+                this->moveStartPoint = e->pos();
+                this->topLeftPointBackup = topLeftPoint;
+                qDebug() << "moveStartPoint=" << e->pos().x() << " " << e->pos().y();
                 break;
             case config::ZoomIn:
                 this->scaleFactor *= 1.1;
@@ -101,14 +121,29 @@ void Canvas::mousePressEvent(QMouseEvent *e){
 
 
 void Canvas::mouseMoveEvent(QMouseEvent *e){
-    if( e->buttons() & Qt::LeftButton && this->isContained(e->pos())){
+    if( e->buttons() & Qt::LeftButton ){
+        QPoint delta;
         switch (this->operationType) {
             case config::None:
                 return;
-            case config::Pencil:
-                this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+            case config::Move:{
+                delta = e->pos() - this->moveStartPoint;
+                this->topLeftPoint = topLeftPointBackup + delta;
+                this->update();
+                //qDebug() << "topLeftPoint=" << topLeftPoint.x() << " " << topLeftPoint.y();
                 break;
+            }
         }
+        if(this->isContained(e->pos())){
+            switch (this->operationType) {
+                case config::None:
+                    return;
+                case config::Pencil:
+                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                    break;
+            }
+        }
+
     }
 }
 

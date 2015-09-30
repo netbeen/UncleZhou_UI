@@ -12,6 +12,8 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initActions();
 
 
+
+
     //对画板填充内容
     //this->canvas->init(editPosition);
 }
@@ -58,6 +60,7 @@ void ImageEditWindow::initWindowLayout(){
 void ImageEditWindow::initActions(){
 
     this->moveAction = new QAction(QIcon(":/image/move.png"),"&Move",this);
+    QObject::connect(this->moveAction, &QAction::triggered, this, &ImageEditWindow::moveToolSlot);
     this->pencilAction= new QAction(QIcon(":/image/pencil.png"),"&Pencil",this);
     QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
@@ -99,7 +102,7 @@ void ImageEditWindow::initActions(){
 
 
 void ImageEditWindow::moveToolSlot(){
-
+    this->canvas->setOperationType(config::Move);
 }
 
 void ImageEditWindow::pencilToolSlot(){

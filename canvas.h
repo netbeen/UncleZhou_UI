@@ -32,7 +32,10 @@ private:
 
     float scaleFactor;      //缩放因子
     QPoint topLeftPoint;     //绘图起始的左上角的坐标点
+    QPoint moveStartPoint;
+    QPoint topLeftPointBackup;  //用于移动的时候保存左上角点作为参照坐标
     config::operationType operationType;
+    bool isInited;
 
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
