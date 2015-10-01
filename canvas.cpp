@@ -88,15 +88,6 @@ void Canvas::receiveDisplayLayerChanged(){
 
 void Canvas::mousePressEvent(QMouseEvent *e){
     if(e->buttons() & Qt::LeftButton ){
-        if( this->isContained(e->pos())){
-            switch (this->operationType) {
-                case config::None:
-                    return;
-                case config::Pencil:
-                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
-                    break;
-            }
-        }
         switch (this->operationType) {
             case config::None:
                 return;
@@ -115,7 +106,24 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 this->update();
                 qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
+            default:
+                break;
         }
+        if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+            switch (this->operationType) {
+                case config::None:
+                    return;
+                case config::Pencil:
+                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                    break;
+                case config::Eraser:
+                    this->erase(this->mapToPixmap(e->pos()),10);
+                    break;
+                default:
+                    break;
+            }
+        }    //以上操作只有在画布内部才有效
+
     }
 }
 
@@ -130,19 +138,25 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 delta = e->pos() - this->moveStartPoint;
                 this->topLeftPoint = topLeftPointBackup + delta;
                 this->update();
-                //qDebug() << "topLeftPoint=" << topLeftPoint.x() << " " << topLeftPoint.y();
+                break;
+            default:
                 break;
             }
         }
-        if(this->isContained(e->pos())){
+        if(this->isContained(e->pos())){    //以下操作只有在画布内部才有效
             switch (this->operationType) {
                 case config::None:
                     return;
                 case config::Pencil:
                     this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
                     break;
+                case config::Eraser:
+                    this->erase(this->mapToPixmap(e->pos()),10);
+                    break;
+                default:
+                    break;
             }
-        }
+        }    //以上操作只有在画布内部才有效
 
     }
 }
@@ -162,7 +176,6 @@ void Canvas::setOperationType(config::operationType inputOperationType){
 
 void Canvas::paint(const QPoint center, const int radius,const QColor color){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
-    //currentDisplayLayerItem->image.setPixel(center.x(), center.y(),color.rgb());
 
     for(int x = center.x()-radius; x < center.x()+radius; x++){
         for(int y = center.y()-radius; y < center.y()+radius; y++){
@@ -176,7 +189,20 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
     this->update();
 }
 
+void Canvas::erase(const QPoint center, const int radius){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
 
+    for(int x = center.x()-radius; x < center.x()+radius; x++){
+        for(int y = center.y()-radius; y < center.y()+radius; y++){
+            if(Util::calcL2Distance(center, QPoint(x,y)) < radius){
+                currentDisplayLayerItem->image.setPixel(x, y,QColor(255,255,255).rgb());
+            }
+        }
+    }
+
+    this->surfacePixmap = QPixmap::fromImage(currentDisplayLayerItem->image);
+    this->update();
+}
 
 
 /**
@@ -193,6 +219,7 @@ QPoint Canvas::mapToPixmap(QPoint screenPoint){
     //qDebug() << "finalPosition = (" << finalPosition.x() << ","  << finalPosition.y() << ").";
     return finalPosition;
 }
+
 
 
 

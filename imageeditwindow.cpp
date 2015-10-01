@@ -64,6 +64,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->pencilAction= new QAction(QIcon(":/image/pencil.png"),"&Pencil",this);
     QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
+    QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
     this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
@@ -120,7 +121,7 @@ void ImageEditWindow::pencilToolSlot(){
 }
 
 void ImageEditWindow::eraserToolSlot(){
-
+    this->canvas->setOperationType(config::Eraser);
 }
 
 void ImageEditWindow::selectionToolSlot(){
