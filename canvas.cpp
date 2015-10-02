@@ -86,7 +86,6 @@ void Canvas::paintEvent(QPaintEvent* e){
 void Canvas::receiveDisplayLayerChanged(){
     this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
-
     this->update();
 }
 
