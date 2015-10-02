@@ -43,6 +43,7 @@ private:
     QPoint mapToPixmap(QPoint screenPoint);
 
 signals:
+    void canvasUpdatedSignal();
 
 
 };

@@ -5,8 +5,8 @@
 
 ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent)
 {
-    this->layerManager = LayerManager::getInstance();
-    this->layerManager->init(editPosition);
+    this->layerManager = LayerManager::getInstance();   //
+    this->layerManager->init(editPosition);                           //优先初始化图层管理器
 
     this->initWindowLayout(editLevel);
     this->initActions(editLevel);
@@ -30,11 +30,16 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->canvas = new Canvas(this);
     this->canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+    this->navigatorDock = new NavigatorDock(this);
+    this->navigatorDock->setWindowTitle("Navigator");
+    this->navigatorDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->navigatorDock);
+    QObject::connect(this->canvas, &Canvas::canvasUpdatedSignal, this->navigatorDock, &NavigatorDock::navigatorUpdate);
+
     this->layerDock = new LayerDock(this);
     this->layerDock->setWindowTitle("Layer");
     this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->layerDock);
-
 
     this->scrollArea = new QScrollArea(this);
     this->scrollArea->setBackgroundRole(QPalette::Dark);
@@ -84,7 +89,6 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
         this->toolActionVector.push_back(this->eraserAction);
         this->toolActionVector.push_back(this->selectionAction);
         this->toolActionVector.push_back(this->bucketAction);
-
     }
 
     for(QAction* elem : toolActionVector){

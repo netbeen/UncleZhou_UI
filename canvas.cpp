@@ -51,7 +51,6 @@ void Canvas::paintEvent(QPaintEvent* e){
     }
 
     QPainter painter(this);     //声明绘制器
-    //painter.setRenderHint(QPainter::SmoothPixmapTransform);       //这条不知道啥用，先注释了
 
     QSize imageSize = this->surfacePixmap.size();
     imageSize = imageSize*this->scaleFactor;
@@ -65,6 +64,7 @@ void Canvas::paintEvent(QPaintEvent* e){
 
 
     painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
+    emit this->canvasUpdatedSignal();
 
 }
 

@@ -22,7 +22,9 @@ SOURCES += main.cpp\
     layerdock.cpp \
     canvas.cpp \
     layeritem.cpp \
-    layermanager.cpp
+    layermanager.cpp \
+    navigatordock.cpp \
+    navigatorcanvas.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -32,7 +34,9 @@ HEADERS  += mainwindow.h \
     layerdock.h \
     canvas.h \
     layeritem.h \
-    layermanager.h
+    layermanager.h \
+    navigatordock.h \
+    navigatorcanvas.h
 
 FORMS    +=
 
