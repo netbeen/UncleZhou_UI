@@ -7,10 +7,16 @@
 
 #include <assert.h>
 
-Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false)
+Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false),isShowBackground(false)
 {
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
+
+    this->backgroundImage = QImage("sourceImage.png");
+    this->backgroundPixmap = QPixmap::fromImage(this->backgroundImage);
+
+    this->alpha = QImage(this->backgroundImage.width(), this->backgroundImage.height(), QImage::Format_RGBA8888);
+    alpha.fill(QColor::fromRgbF(0.0,0.0,0.0,0.8));
 
 }
 
@@ -50,6 +56,12 @@ void Canvas::paintEvent(QPaintEvent* e){
         return;
     }
 
+    if(this->isShowBackground == true){
+        this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
+        this->surfaceImage.setAlphaChannel(this->alpha.alphaChannel());     //将当前图形变为半透明
+        this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
+    }
+
     QPainter painter(this);     //声明绘制器
 
     QSize imageSize = this->surfacePixmap.size();
@@ -62,7 +74,9 @@ void Canvas::paintEvent(QPaintEvent* e){
         this->isInited = true;
     }
 
-
+    if(this->isShowBackground == true){
+            painter.drawPixmap(this->topLeftPoint, backgroundPixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制背景
+    }
     painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
     emit this->canvasUpdatedSignal();
 
@@ -70,19 +84,10 @@ void Canvas::paintEvent(QPaintEvent* e){
 
 
 void Canvas::receiveDisplayLayerChanged(){
-    //this->surfaceImage = this->layerManager->layerItemVector.at(index)->image;
-    /*this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
-    this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
-
-    this->topLeftPoint.setX((this->width() - this->surfaceImage.size().width()) / 2);
-    this->topLeftPoint.setY((this->height() - this->surfaceImage.size().height()) / 2);*/
-
-
     this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
     this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
 
     this->update();
-    //qDebug() << "Canvas::receiveDisplayLayerChanged";
 }
 
 
@@ -223,3 +228,8 @@ QPoint Canvas::mapToPixmap(QPoint screenPoint){
 
 
 
+void Canvas::receiveShowBackground(bool isShow){
+    this->isShowBackground = isShow;
+    qDebug() << isShow;
+    this->update();
+}

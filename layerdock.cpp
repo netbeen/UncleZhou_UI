@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QRadioButton>
 #include <QButtonGroup>
+#include <QCheckBox>
 
 LayerDock::LayerDock(QWidget* parent) : QDockWidget(parent)
 {
@@ -27,6 +28,9 @@ LayerDock::LayerDock(QWidget* parent) : QDockWidget(parent)
         radioLayout->addWidget(radio);
         this->radioButtonVector.push_back(radio);
     }
+
+    this->isShowBackgroundCheckBox = new QCheckBox("Translucent Background");
+    radioLayout->addWidget(this->isShowBackgroundCheckBox);
 
     radioButtonVector.front()->setChecked(true);
     if(radioButtonVector.size() == 1){
