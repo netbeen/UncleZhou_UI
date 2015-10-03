@@ -14,7 +14,6 @@ class Canvas : public QWidget
     Q_OBJECT
 public:
     Canvas(QWidget* parent);
-    //void init(config::editPosition editPosition);
     void setOperationType(config::operationType inputOperationType);
 
     void receiveDisplayLayerChanged();  //slot函数，用于接受layerManager传来的图层切换信号
@@ -45,6 +44,7 @@ private:
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
     void erase(const QPoint center, const int radius);  //擦除函数
+    void bucket(const QColor color);
     QPoint mapToPixmap(QPoint screenPoint);
 
 signals:

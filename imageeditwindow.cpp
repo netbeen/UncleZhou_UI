@@ -73,6 +73,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
     this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
+    QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
     QObject::connect(this->zoomInAction, &QAction::triggered, this, &ImageEditWindow::zoomInToolSlot);
     this->zoomOutAction= new QAction(QIcon(":/image/zoomOut.png"),"&ZoomOut",this);
@@ -134,7 +135,7 @@ void ImageEditWindow::selectionToolSlot(){
 }
 
 void ImageEditWindow::bucketToolSlot(){
-
+    this->canvas->setOperationType(config::Bucket);
 }
 
 void ImageEditWindow::zoomInToolSlot(){

@@ -106,6 +106,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),10);
                     break;
+                case config::Bucket:
+                    this->bucket(QColor(0,0,255));
+                    break;
                 default:
                     break;
             }
@@ -199,6 +202,25 @@ void Canvas::erase(const QPoint center, const int radius){
             if(Util::calcL2Distance(center, QPoint(x,y)) < radius){
                 currentDisplayLayerItem->image.setPixel(x, y,QColor(255,255,255).rgb());
             }
+        }
+    }
+
+    this->update();
+}
+
+
+/**
+ * @brief Canvas::bucket
+ * @brief 颜料桶工具的绘制函数，用特定的颜色填充整个图像区域
+ * @param color 表示所绘制的颜色
+ * @return 没有返回值
+ */
+void Canvas::bucket(const QColor color){
+    QImage* image = &(this->layerManager->getDisplayLayerItem()->image);
+
+    for(int x = 0; x < image->width(); x++){
+        for(int y = 0; y < image->height(); y++){
+                image->setPixel(x, y,color.rgb());
         }
     }
 
