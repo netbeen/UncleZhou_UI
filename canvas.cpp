@@ -7,6 +7,12 @@
 
 #include <assert.h>
 
+/**
+ * @brief Canvas::Canvas
+ * @brief Canvas的构造函数。负责初始化图层管理器，载入背景图片，生成半透明模式图片
+ * @param parent 作为canvas对象的父对象
+ * @return 没有返回值
+ */
 Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false),isShowBackground(false)
 {
     this->layerManager = LayerManager::getInstance();
@@ -16,38 +22,13 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationTyp
     this->backgroundPixmap = QPixmap::fromImage(this->backgroundImage);
 
     this->alpha = QImage(this->backgroundImage.width(), this->backgroundImage.height(), QImage::Format_RGBA8888);
-    alpha.fill(QColor::fromRgbF(0.0,0.0,0.0,0.8));
+    alpha.fill(QColor::fromRgbF(0.0,0.0,0.0,0.5));
 
 }
 
-
-/**
- * @brief Canvas::init
- * @brief canvas初始化函数，用于初始化canvas的各项参数
- * @param editPosition 是指定canvas显示的数据来源，可选项有：原图、原引导、目标引导、目标图
- * @return 没有返回值
- */
-//void Canvas::init(config::editPosition editPosition){
-    /*switch(editPosition){
-        case config::sourceImage:
-            this->surfaceImage = QImage("./sourceImage.png");
-            this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
-
-            break;
-        case config::sourceGuidance:
-            break;
-        case config::targetGuidance:
-            break;
-        case config::targetImage:
-            break;
-    }*/
-
-
-//}
-
 /**
  * @brief Canvas::paintEvent
- * @brief 重写virtual的绘制函数，系统自动调用
+ * @brief 重写virtual的绘制函数，系统自动调用。负责更新canvas图像，绘制半透明背景，显示画笔等工具的绘制结果。
  * @param e
  * @return 没有返回值
  */
@@ -56,17 +37,14 @@ void Canvas::paintEvent(QPaintEvent* e){
         return;
     }
 
+    this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
     if(this->isShowBackground == true){
-        this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
         this->surfaceImage.setAlphaChannel(this->alpha.alphaChannel());     //将当前图形变为半透明
-        this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
     }
-
-    QPainter painter(this);     //声明绘制器
+    this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
 
     QSize imageSize = this->surfacePixmap.size();
     imageSize = imageSize*this->scaleFactor;
-    //this->setMinimumSize(imageSize);      //将canvas的最小尺寸限定在图像大小，若窗口继续缩小，则外层的scrollArea会生成滚动条
 
     if(this->isInited == false){
         this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
@@ -74,6 +52,7 @@ void Canvas::paintEvent(QPaintEvent* e){
         this->isInited = true;
     }
 
+    QPainter painter(this);     //声明绘制器
     if(this->isShowBackground == true){
             painter.drawPixmap(this->topLeftPoint, backgroundPixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制背景
     }
@@ -82,10 +61,14 @@ void Canvas::paintEvent(QPaintEvent* e){
 
 }
 
-
+/**
+ * @brief Canvas::receiveDisplayLayerChanged
+ * @brief 作为slot函数，接受图层管理器发出的显示图层改变的信号。遂更新Canvas的保存图像，并刷新canvas。
+ * @param 没有参数
+ * @return 没有返回值
+ */
 void Canvas::receiveDisplayLayerChanged(){
     this->surfaceImage = this->layerManager->getDisplayLayerItem()->image;
-    this->surfacePixmap = QPixmap::fromImage(this->surfaceImage);
     this->update();
 }
 
@@ -178,6 +161,14 @@ void Canvas::setOperationType(config::operationType inputOperationType){
 }
 
 
+/**
+ * @brief Canvas::paint
+ * @brief 铅笔工具的绘制函数
+ * @param center 表示鼠标点击的中心
+ * @param radius 表示铅笔的有效半径
+ * @param color 表示铅笔的绘制颜色
+ * @return 没有返回值
+ */
 void Canvas::paint(const QPoint center, const int radius,const QColor color){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
 
@@ -189,10 +180,17 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
         }
     }
 
-    this->surfacePixmap = QPixmap::fromImage(currentDisplayLayerItem->image);
     this->update();
 }
 
+
+/**
+ * @brief Canvas::erase
+ * @brief 橡皮工具的绘制函数
+ * @param center 表示橡皮的鼠标中心
+ * @param radius 表示橡皮的有效半径
+ * @return 没有返回值
+ */
 void Canvas::erase(const QPoint center, const int radius){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
 
@@ -204,7 +202,6 @@ void Canvas::erase(const QPoint center, const int radius){
         }
     }
 
-    this->surfacePixmap = QPixmap::fromImage(currentDisplayLayerItem->image);
     this->update();
 }
 
@@ -217,18 +214,20 @@ void Canvas::erase(const QPoint center, const int radius){
  */
 QPoint Canvas::mapToPixmap(QPoint screenPoint){
     QPoint finalPosition;
-    //qDebug() << "screenPoint = (" << screenPoint.x() << ","  << screenPoint.y() << ").";
     finalPosition.setX((screenPoint.x() - this->topLeftPoint.x())/this->scaleFactor);
     finalPosition.setY((screenPoint.y() - this->topLeftPoint.y())/this->scaleFactor);
-    //qDebug() << "finalPosition = (" << finalPosition.x() << ","  << finalPosition.y() << ").";
     return finalPosition;
 }
 
 
 
-
+/**
+ * @brief Canvas::receiveShowBackground
+ * @brief 作为slot函数，接收layerDock传来的“显示透明背景”的信号
+ * @param isShow 作为是否显示背景的bool值
+ * @return 没有返回值
+ */
 void Canvas::receiveShowBackground(bool isShow){
     this->isShowBackground = isShow;
-    qDebug() << isShow;
     this->update();
 }
