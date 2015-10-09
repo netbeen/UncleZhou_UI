@@ -19,6 +19,7 @@
 #include "navigatordock.h"
 #include "tooloptiondock.h"
 #include "tooloptionframe.h"
+#include "palettedock.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -69,6 +70,7 @@ private:
     LayerDock* layerDock;
     NavigatorDock* navigatorDock;
     ToolOptionDock* toolOptionDock;
+    PaletteDock* paletteDock;
     Canvas* canvas;
     QScrollArea* scrollArea;
 

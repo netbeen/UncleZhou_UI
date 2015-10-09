@@ -41,6 +41,12 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->addDockWidget(Qt::RightDockWidgetArea, this->toolOptionDock);
     QObject::connect(this, &ImageEditWindow::sendFrameToToolOptionDock, this->toolOptionDock, &ToolOptionDock::setFrame);
 
+    this->paletteDock = new PaletteDock(this);
+    this->paletteDock->setWindowTitle("Palette");
+    this->paletteDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->paletteDock);
+
+
     this->layerDock = new LayerDock(this);
     this->layerDock->setWindowTitle("Layer");
     this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);

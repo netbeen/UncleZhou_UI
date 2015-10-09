@@ -1,0 +1,30 @@
+#include "palettedock.h"
+#include <QGridLayout>
+#include "paletteitem.h"
+#include <vector>
+
+PaletteDock::PaletteDock(QWidget* parent) : QDockWidget(parent)
+{
+    this->setMinimumSize(300, 200);
+    this->setStyleSheet("background-color: #696969; padding: 0px;");
+    this->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);
+    this->setContentsMargins(0, 0, 0, 0);
+
+    QWidget* mainWidget = new QWidget(this);
+    QGridLayout* gridLayout = new QGridLayout(mainWidget);
+
+    std::vector<int> enumColor = std::vector<int>{0,127,255};
+
+    for(int i = 0; i < 3 ; i++){
+        for(int j = 0; j < 3; j ++){
+            for(int k = 0; k < 3; k++){
+                PaletteItem* paletteItem = new PaletteItem(QColor(enumColor.at(i),enumColor.at(j),enumColor.at(k)),this);
+                gridLayout->addWidget(paletteItem,i,j*3+k);
+            }
+        }
+    }
+
+    mainWidget->setLayout(gridLayout);
+    this->setWidget(mainWidget);
+}
+

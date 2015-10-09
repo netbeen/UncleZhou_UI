@@ -26,7 +26,9 @@ SOURCES += main.cpp\
     navigatordock.cpp \
     navigatorcanvas.cpp \
     tooloptiondock.cpp \
-    tooloptionframe.cpp
+    tooloptionframe.cpp \
+    palettedock.cpp \
+    paletteitem.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -40,7 +42,9 @@ HEADERS  += mainwindow.h \
     navigatordock.h \
     navigatorcanvas.h \
     tooloptiondock.h \
-    tooloptionframe.h
+    tooloptionframe.h \
+    palettedock.h \
+    paletteitem.h
 
 FORMS    +=
 
