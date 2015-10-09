@@ -24,7 +24,9 @@ SOURCES += main.cpp\
     layeritem.cpp \
     layermanager.cpp \
     navigatordock.cpp \
-    navigatorcanvas.cpp
+    navigatorcanvas.cpp \
+    tooloptiondock.cpp \
+    tooloptionframe.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -36,7 +38,9 @@ HEADERS  += mainwindow.h \
     layeritem.h \
     layermanager.h \
     navigatordock.h \
-    navigatorcanvas.h
+    navigatorcanvas.h \
+    tooloptiondock.h \
+    tooloptionframe.h
 
 FORMS    +=
 

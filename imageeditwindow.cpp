@@ -3,6 +3,8 @@
 #include <QGridLayout>
 #include <QIcon>
 
+#include "tooloptionframe.h"
+
 ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent)
 {
     this->layerManager = LayerManager::getInstance();   //
@@ -35,6 +37,12 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->navigatorDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->navigatorDock);
     QObject::connect(this->canvas, &Canvas::canvasUpdatedSignal, this->navigatorDock, &NavigatorDock::navigatorUpdate);
+
+    this->toolOptionDock = new ToolOptionDock(this);
+    this->toolOptionDock->setWindowTitle("Tool Option");
+    this->toolOptionDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->toolOptionDock);
+    QObject::connect(this, &ImageEditWindow::sendFrameToToolOptionDock, this->toolOptionDock, &ToolOptionDock::setFrame);
 
     this->layerDock = new LayerDock(this);
     this->layerDock->setWindowTitle("Layer");
@@ -119,15 +127,24 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
 void ImageEditWindow::moveToolSlot(){
     this->canvas->setOperationType(config::Move);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Move");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 }
 
 void ImageEditWindow::pencilToolSlot(){
     this->canvas->setOperationType(config::Pencil);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Pencil");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 
 }
 
 void ImageEditWindow::eraserToolSlot(){
     this->canvas->setOperationType(config::Eraser);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Eraser");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 }
 
 void ImageEditWindow::selectionToolSlot(){
@@ -136,13 +153,22 @@ void ImageEditWindow::selectionToolSlot(){
 
 void ImageEditWindow::bucketToolSlot(){
     this->canvas->setOperationType(config::Bucket);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Bucket");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 }
 
 void ImageEditWindow::zoomInToolSlot(){
     this->canvas->setOperationType(config::ZoomIn);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Zoom In");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 
 }
 
 void ImageEditWindow::zoomOutToolSlot(){
     this->canvas->setOperationType(config::ZoomOut);
+    ToolOptionFrame* toolOptionFrame = new ToolOptionFrame(this);
+    toolOptionFrame->titleLabel->setText("Zoom Out");
+    emit this->sendFrameToToolOptionDock(toolOptionFrame);
 }

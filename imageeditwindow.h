@@ -16,6 +16,7 @@
 #include "canvas.h"
 #include "layermanager.h"
 #include "navigatordock.h"
+#include "tooloptiondock.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -57,6 +58,7 @@ private:
 
     LayerDock* layerDock;
     NavigatorDock* navigatorDock;
+    ToolOptionDock* toolOptionDock;
     Canvas* canvas;
     QScrollArea* scrollArea;
 
@@ -65,6 +67,7 @@ private:
 
 
 signals:
+    void sendFrameToToolOptionDock(QFrame* inputFrame);
 
 };
 
