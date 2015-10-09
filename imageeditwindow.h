@@ -17,6 +17,7 @@
 #include "layermanager.h"
 #include "navigatordock.h"
 #include "tooloptiondock.h"
+#include "tooloptionframe.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -52,6 +53,14 @@ private:
     QAction* bucketAction;  //颜料桶工具
     QAction* zoomInAction;  //放大工具
     QAction* zoomOutAction;     //缩小工具
+
+    ToolOptionFrame* moveToolOptionFrame;   //以下是每个工具的frame选项，用于被选中的时候发送至ToolOptionDock
+    ToolOptionFrame* pencilToolOptionFrame;
+    ToolOptionFrame* eraserToolOptionFrame;
+    ToolOptionFrame* selectionToolOptionFrame;
+    ToolOptionFrame* bucketToolOptionFrame;
+    ToolOptionFrame* zoomInToolOptionFrame;
+    ToolOptionFrame* zoomOutToolOptionFrame;
 
     Swatch* foreSwatch;
     Swatch* backSwatch;
