@@ -1,13 +1,13 @@
 #include "tooloptionframe.h"
 
-ToolOptionFrame::ToolOptionFrame(QWidget* parent) : QFrame(parent)
+ToolOptionFrame::ToolOptionFrame(QString title,QWidget* parent) : QFrame(parent)
 {
-    this->mainLayout = new QHBoxLayout(this);
+    this->mainLayout = new QGridLayout(this);
 
-    this->titleLabel = new QLabel("Null",this);
-    this->titleLabel->setAlignment(Qt::AlignHCenter);
+    this->titleLabel = new QLabel(title,this);
     this->titleLabel->setStyleSheet("font-size:30px;");
-    this->mainLayout->addWidget(this->titleLabel);
+
+    this->mainLayout->addWidget(this->titleLabel,0,0,1,2,Qt::AlignHCenter);
 
     this->setLayout(this->mainLayout);
     this->hide();

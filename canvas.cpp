@@ -13,7 +13,7 @@
  * @param parent 作为canvas对象的父对象
  * @return 没有返回值
  */
-Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false),isShowBackground(false)
+Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationType(config::None),isInited(false),isShowBackground(false),pencilRadius(10),eraserRadius(10)
 {
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
@@ -101,10 +101,10 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::None:
                     return;
                 case config::Pencil:
-                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,QColor(255,0,0));
                     break;
                 case config::Eraser:
-                    this->erase(this->mapToPixmap(e->pos()),10);
+                    this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
                 case config::Bucket:
                     this->bucket(QColor(0,0,255));
@@ -138,10 +138,10 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 case config::None:
                     return;
                 case config::Pencil:
-                    this->paint(this->mapToPixmap(e->pos()),10,QColor(255,0,0));
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,QColor(255,0,0));
                     break;
                 case config::Eraser:
-                    this->erase(this->mapToPixmap(e->pos()),10);
+                    this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
                 default:
                     break;
@@ -252,4 +252,14 @@ QPoint Canvas::mapToPixmap(QPoint screenPoint){
 void Canvas::receiveShowBackground(bool isShow){
     this->isShowBackground = isShow;
     this->update();
+}
+
+
+void Canvas::setPencilRadius(int inputRadius){
+    this->pencilRadius = inputRadius;
+}
+
+
+void Canvas::setEraserRadius(int inputRadius){
+    this->eraserRadius = inputRadius;
 }

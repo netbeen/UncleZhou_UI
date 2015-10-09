@@ -2,15 +2,19 @@
 #define TOOLOPTIONFRAME_H
 
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QFrame>
 #include <QLabel>
 
 class ToolOptionFrame : public QFrame
 {
 public:
-    ToolOptionFrame(QWidget* parent);
+    ToolOptionFrame(QString title,QWidget* parent);
 
-    QHBoxLayout* mainLayout;
+    QGridLayout* mainLayout;
+
+
+private:
     QLabel* titleLabel;
 
 signals:

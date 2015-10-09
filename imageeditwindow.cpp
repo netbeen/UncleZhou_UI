@@ -2,6 +2,7 @@
 
 #include <QGridLayout>
 #include <QIcon>
+#include <QSpinBox>
 
 
 
@@ -14,10 +15,6 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initActions(editLevel);
 
 
-
-
-    //对画板填充内容
-    //this->canvas->init(editPosition);
 }
 
 
@@ -80,6 +77,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
     QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
     this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
+    QObject::connect(this->selectionAction, &QAction::triggered, this, &ImageEditWindow::selectionToolSlot);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
@@ -121,26 +119,31 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     }
 
 
-    this->moveToolOptionFrame = new ToolOptionFrame(this);
-    this->moveToolOptionFrame->titleLabel->setText("Move");
+    this->moveToolOptionFrame = new ToolOptionFrame("Move",this);
 
-    this->pencilToolOptionFrame = new ToolOptionFrame(this);
-    this->pencilToolOptionFrame->titleLabel->setText("Pencil");
+    this->pencilToolOptionFrame = new ToolOptionFrame("Pencil",this);   //  铅笔工具选项卡配置
+    QLabel* pencilRadiusLabel = new QLabel("Pencil radius: ",this->pencilToolOptionFrame);
+    this->pencilToolOptionFrame->mainLayout->addWidget(pencilRadiusLabel,1,0,1,1,Qt::AlignCenter);
+    QSpinBox* pencilRadiusSpinBox = new QSpinBox(this->pencilToolOptionFrame);
+    pencilRadiusSpinBox->setValue(10);
+    QObject::connect(pencilRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setPencilRadius);
+    this->pencilToolOptionFrame->mainLayout->addWidget(pencilRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
 
-    this->eraserToolOptionFrame = new ToolOptionFrame(this);
-    this->eraserToolOptionFrame->titleLabel->setText("Eraser");
+    this->eraserToolOptionFrame = new ToolOptionFrame("Eraser",this);   //橡皮工具选项卡配置
+    QLabel* eraserRadiusLabel = new QLabel("Eraser radius: ",this->eraserToolOptionFrame);
+    this->eraserToolOptionFrame->mainLayout->addWidget(eraserRadiusLabel,1,0,1,1,Qt::AlignCenter);
+    QSpinBox* eraserRadiusSpinBox = new QSpinBox(this->eraserToolOptionFrame);
+    eraserRadiusSpinBox->setValue(10);
+    QObject::connect(eraserRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setEraserRadius);
+    this->eraserToolOptionFrame->mainLayout->addWidget(eraserRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
 
-    this->bucketToolOptionFrame = new ToolOptionFrame(this);
-    this->bucketToolOptionFrame->titleLabel->setText("Bucket");
+    this->bucketToolOptionFrame = new ToolOptionFrame("Bucket",this);
 
-    this->selectionToolOptionFrame = new ToolOptionFrame(this);
-    this->selectionToolOptionFrame->titleLabel->setText("Select");
+    this->selectionToolOptionFrame = new ToolOptionFrame("Selection",this);
 
-    this->zoomInToolOptionFrame = new ToolOptionFrame(this);
-    this->zoomInToolOptionFrame->titleLabel->setText("Zoom In");
+    this->zoomInToolOptionFrame = new ToolOptionFrame("Zoom In",this);
 
-    this->zoomOutToolOptionFrame = new ToolOptionFrame(this);
-    this->zoomOutToolOptionFrame->titleLabel->setText("Zoom Out");
+    this->zoomOutToolOptionFrame = new ToolOptionFrame("Zoom Out",this);
 }
 
 
@@ -161,7 +164,7 @@ void ImageEditWindow::eraserToolSlot(){
 }
 
 void ImageEditWindow::selectionToolSlot(){
-
+    emit this->sendFrameToToolOptionDock(this->selectionToolOptionFrame);
 }
 
 void ImageEditWindow::bucketToolSlot(){
