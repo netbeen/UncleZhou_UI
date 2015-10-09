@@ -19,6 +19,7 @@ PaletteDock::PaletteDock(QWidget* parent) : QDockWidget(parent)
         for(int j = 0; j < 3; j ++){
             for(int k = 0; k < 3; k++){
                 PaletteItem* paletteItem = new PaletteItem(QColor(enumColor.at(i),enumColor.at(j),enumColor.at(k)),this);
+                QObject::connect(paletteItem, &PaletteItem::colorSelected, this, &PaletteDock::colorSelected);
                 gridLayout->addWidget(paletteItem,i,j*3+k);
             }
         }

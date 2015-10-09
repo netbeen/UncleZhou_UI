@@ -24,6 +24,8 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationTyp
     this->alpha = QImage(this->backgroundImage.width(), this->backgroundImage.height(), QImage::Format_RGBA8888);
     alpha.fill(QColor::fromRgbF(0.0,0.0,0.0,0.5));
 
+    this->color = QColor(255,0,0);
+
 }
 
 /**
@@ -101,13 +103,13 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::None:
                     return;
                 case config::Pencil:
-                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,QColor(255,0,0));
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
                     break;
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
                 case config::Bucket:
-                    this->bucket(QColor(0,0,255));
+                    this->bucket(this->color);
                     break;
                 default:
                     break;
@@ -138,7 +140,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 case config::None:
                     return;
                 case config::Pencil:
-                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,QColor(255,0,0));
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
                     break;
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
@@ -262,4 +264,8 @@ void Canvas::setPencilRadius(int inputRadius){
 
 void Canvas::setEraserRadius(int inputRadius){
     this->eraserRadius = inputRadius;
+}
+
+void Canvas::setColor(QColor inputColor){
+    this->color = inputColor;
 }

@@ -18,8 +18,9 @@ public:
 
     void receiveDisplayLayerChanged();  //slot函数，用于接受layerManager传来的图层切换信号
     void receiveShowBackground(bool isShow);   //slot，用于接受显示半透明背景的信号
-    void setPencilRadius(int inputRadius);
+    void setPencilRadius(int inputRadius);  //slot
     void setEraserRadius(int inputRadius);
+    void setColor(QColor inputColor);
 
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
@@ -44,6 +45,7 @@ private:
     bool isShowBackground;
     int pencilRadius;
     int eraserRadius;
+    QColor color;
 
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改

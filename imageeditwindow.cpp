@@ -45,6 +45,8 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->paletteDock->setWindowTitle("Palette");
     this->paletteDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->paletteDock);
+    QObject::connect(this->paletteDock, &PaletteDock::colorSelected, this->canvas, &Canvas::setColor);
+
 
 
     this->layerDock = new LayerDock(this);
@@ -115,6 +117,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
         this->foreSwatch = new Swatch(this);
         this->foreSwatch->setMinimumSize(30,30);
         this->toolbar->addWidget(foreSwatch);
+        QObject::connect(this->paletteDock, &PaletteDock::colorSelected, this->foreSwatch, &Swatch::setColor);
 
         this->toolbar->addSeparator();
 

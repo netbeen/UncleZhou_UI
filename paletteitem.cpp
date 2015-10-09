@@ -13,3 +13,12 @@ void PaletteItem::paintEvent(QPaintEvent* event) {
     painter.setBrush(this->color);
     painter.drawRect(rect());
 }
+
+QColor PaletteItem::getColor() const{
+    return this->color;
+}
+
+
+void PaletteItem::mouseReleaseEvent(QMouseEvent *event){
+    emit this->colorSelected(this->color);
+}

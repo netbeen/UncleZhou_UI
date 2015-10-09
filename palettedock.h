@@ -5,10 +5,12 @@
 
 class PaletteDock : public QDockWidget
 {
+    Q_OBJECT
 public:
     PaletteDock(QWidget* parent);
 
 signals:
+    void colorSelected(QColor inputColor);
 
 };
 

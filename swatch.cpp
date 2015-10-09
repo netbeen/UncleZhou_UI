@@ -42,4 +42,5 @@ void Swatch::mouseReleaseEvent(QMouseEvent *event)
 
 void Swatch::setColor(QColor inputColor){
     this->currentColor = inputColor;
+    this->update();
 }
