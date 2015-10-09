@@ -8,5 +8,6 @@
         <file>selection.png</file>
         <file>zoomIn.png</file>
         <file>zoomOut.png</file>
+        <file>none.png</file>
     </qresource>
 </RCC>

@@ -38,6 +38,7 @@ private:
     void initActions(config::editLevel editLevel);
 
     // slots函数
+    void noneToolSlot();
     void moveToolSlot();
     void pencilToolSlot();
     void eraserToolSlot();
@@ -48,6 +49,7 @@ private:
 
 
     //Actions
+    QAction* noneAction;
     QAction* moveAction;    //移动工具
     QAction* pencilAction;  //铅笔工具
     QAction* eraserAction;  //橡皮工具
@@ -56,6 +58,7 @@ private:
     QAction* zoomInAction;  //放大工具
     QAction* zoomOutAction;     //缩小工具
 
+    ToolOptionFrame* noneToolOptionFrame;
     ToolOptionFrame* moveToolOptionFrame;   //以下是每个工具的frame选项，用于被选中的时候发送至ToolOptionDock
     ToolOptionFrame* pencilToolOptionFrame;
     ToolOptionFrame* eraserToolOptionFrame;

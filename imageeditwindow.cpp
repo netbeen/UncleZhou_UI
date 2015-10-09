@@ -78,6 +78,8 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
 
 void ImageEditWindow::initActions(config::editLevel editLevel){
 
+    this->noneAction = new QAction(QIcon(":/image/none.png"),"&None",this);
+    QObject::connect(this->noneAction, &QAction::triggered, this, &ImageEditWindow::noneToolSlot);
     this->moveAction = new QAction(QIcon(":/image/move.png"),"&Move",this);
     QObject::connect(this->moveAction, &QAction::triggered, this, &ImageEditWindow::moveToolSlot);
     this->pencilAction= new QAction(QIcon(":/image/pencil.png"),"&Pencil",this);
@@ -95,6 +97,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->toolActionVector = std::vector<QAction*>();
 
+    this->toolActionVector.push_back(this->noneAction);
     this->toolActionVector.push_back(this->moveAction);
     this->toolActionVector.push_back(this->zoomInAction);
     this->toolActionVector.push_back(this->zoomOutAction);
@@ -127,6 +130,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
         this->toolbar->addWidget(backSwatch);
     }
 
+    this->noneToolOptionFrame = new ToolOptionFrame("None",this);
 
     this->moveToolOptionFrame = new ToolOptionFrame("Move",this);
 
@@ -157,17 +161,21 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
 
 void ImageEditWindow::moveToolSlot(){
+    QCursor moveCursor = QCursor(QPixmap(":image/move.png").scaled(QSize(40,40)),0,0);
+    this->setCursor(moveCursor);
     this->canvas->setOperationType(config::Move);
     emit this->sendFrameToToolOptionDock(this->moveToolOptionFrame);
 }
 
 void ImageEditWindow::pencilToolSlot(){
+    this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Pencil);
     emit this->sendFrameToToolOptionDock(this->pencilToolOptionFrame);
 
 }
 
 void ImageEditWindow::eraserToolSlot(){
+    this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Eraser);
     emit this->sendFrameToToolOptionDock(this->eraserToolOptionFrame);
 }
@@ -177,17 +185,29 @@ void ImageEditWindow::selectionToolSlot(){
 }
 
 void ImageEditWindow::bucketToolSlot(){
+    QCursor bucketCursor = QCursor(QPixmap(":image/bucket.png").scaled(QSize(40,40)));
+    this->setCursor(bucketCursor);
     this->canvas->setOperationType(config::Bucket);
     emit this->sendFrameToToolOptionDock(this->bucketToolOptionFrame);
 }
 
 void ImageEditWindow::zoomInToolSlot(){
+    QCursor zoomInCursor = QCursor(QPixmap(":image/zoomIn.png").scaled(QSize(40,40)));
+    this->setCursor(zoomInCursor);
     this->canvas->setOperationType(config::ZoomIn);
     emit this->sendFrameToToolOptionDock(this->zoomInToolOptionFrame);
 
 }
 
 void ImageEditWindow::zoomOutToolSlot(){
+    QCursor zoomOutCursor = QCursor(QPixmap(":image/zoomOut.png").scaled(QSize(40,40)));
+    this->setCursor(zoomOutCursor);
     this->canvas->setOperationType(config::ZoomOut);
     emit this->sendFrameToToolOptionDock(this->zoomOutToolOptionFrame);
+}
+
+void ImageEditWindow::noneToolSlot(){
+    this->setCursor(Qt::ArrowCursor);
+    this->canvas->setOperationType(config::None);
+    emit this->sendFrameToToolOptionDock(this->noneToolOptionFrame);
 }
