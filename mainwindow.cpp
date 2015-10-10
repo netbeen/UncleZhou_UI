@@ -66,8 +66,14 @@ void MainWindow::initAction(){
     this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
     QObject::connect(this->editSourceGuidanceAction, &QAction::triggered, this, &MainWindow::editSourceGuidance);
 
+    this->viewTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&View",this);
+    QObject::connect(this->viewTargetGuidanceAction, &QAction::triggered, this, &MainWindow::viewTargetGuidance);
+
     this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create new guidance",this);
     QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
+
+    this->editTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
+    QObject::connect(this->editTargetGuidanceAction, &QAction::triggered, this, &MainWindow::editTargetGuidance);
 
     this->aboutAction = new QAction(QIcon(":/image/open.png"),"&About",this);
     QObject::connect(this->aboutAction, &QAction::triggered, this, &MainWindow::about);
@@ -79,9 +85,9 @@ void MainWindow::initAction(){
     this->sourceGuidanceLabel->addAction(new QAction("&View",this));
     this->sourceGuidanceLabel->addAction(this->editSourceGuidanceAction);
 
-    this->targetGuidanceLabel->addAction(new QAction("&View",this));
+    this->targetGuidanceLabel->addAction(this->viewTargetGuidanceAction);
     this->targetGuidanceLabel->addAction(this->newImageAction);
-    this->targetGuidanceLabel->addAction(new QAction("&Edit",this));
+    this->targetGuidanceLabel->addAction(this->editTargetGuidanceAction);
 
 
 }
@@ -210,4 +216,15 @@ void MainWindow::about()
            "netbeen.cn@gmail.com"));
 
 
+}
+
+
+void MainWindow::editTargetGuidance(){
+    ImageEditWindow* imageEditWindow = new ImageEditWindow(config::targetGuidance, config::editable, this);
+    imageEditWindow->show();
+}
+
+void MainWindow::viewTargetGuidance(){
+    ImageEditWindow* imageEditWindow = new ImageEditWindow(config::targetGuidance, config::readOnly, this);
+    imageEditWindow->show();
 }

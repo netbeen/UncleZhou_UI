@@ -185,6 +185,7 @@ void ImageEditWindow::eraserToolSlot(){
 }
 
 void ImageEditWindow::selectionToolSlot(){
+    this->setCursor(Qt::CrossCursor);
     emit this->sendFrameToToolOptionDock(this->selectionToolOptionFrame);
 }
 

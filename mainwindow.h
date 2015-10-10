@@ -32,7 +32,9 @@ private:
 
     QAction* editSourceGuidanceAction;
 
+    QAction* viewTargetGuidanceAction;
     QAction* newImageAction;
+    QAction* editTargetGuidanceAction;
 
     QAction* aboutAction;
 
@@ -49,7 +51,10 @@ private:
 
     void editSourceGuidance();
 
+    void viewTargetGuidance();
     void newImage();
+    void editTargetGuidance();
+
     void about();
 };
 
