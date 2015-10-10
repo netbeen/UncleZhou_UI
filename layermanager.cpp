@@ -35,7 +35,6 @@ void LayerManager::init(config::editPosition editPosition){
             break;
     }
     this->currentDisplayLayerIndex = 0;
-    //qDebug() << "LayerManager::init compete, size of layerItemVector = " << this->layerItemVector.size();
 }
 
 LayerManager* LayerManager::getInstance(){

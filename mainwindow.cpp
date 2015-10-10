@@ -36,6 +36,12 @@ MainWindow::MainWindow(QWidget *parent) :
     this->helpMenu = this->menuBar()->addMenu("&Help");
     this->helpMenu->addAction(this->aboutAction);
 
+    this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}\
+                            QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} \
+                            QMenuBar::item:selected {background: #3e3e40;} \
+                            QMenuBar::item:pressed {background: #1b1b1c;}\
+                            ");
+
     QToolBar* toolbar = this->addToolBar("Standard Tool Bar");
     toolbar->addAction(this->loadSourceImageAction);
 
