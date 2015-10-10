@@ -57,22 +57,22 @@ MainWindow::MainWindow(QWidget *parent) :
  * @return 没有返回值
  */
 void MainWindow::initAction(){
-    this->loadSourceImageAction = new QAction(QIcon(":/image/open.png"),"&Load",this);
+    this->loadSourceImageAction = new QAction(QIcon(":/image/open.png"),"&Load Source Image",this);
     QObject::connect(this->loadSourceImageAction, &QAction::triggered, this, &MainWindow::loadSourceImage);
 
-    this->viewSourceImageAction = new QAction(QIcon(":/image/open.png"),"&View",this);
+    this->viewSourceImageAction = new QAction(QIcon(":/image/open.png"),"&View Source Image",this);
     QObject::connect(this->viewSourceImageAction, &QAction::triggered, this, &MainWindow::viewSourceImage);
 
-    this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
+    this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit Source Guidance",this);
     QObject::connect(this->editSourceGuidanceAction, &QAction::triggered, this, &MainWindow::editSourceGuidance);
 
-    this->viewTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&View",this);
+    this->viewTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&View Target Guidance",this);
     QObject::connect(this->viewTargetGuidanceAction, &QAction::triggered, this, &MainWindow::viewTargetGuidance);
 
-    this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create new guidance",this);
+    this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create New Guidance",this);
     QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
 
-    this->editTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit",this);
+    this->editTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit Target Guidance",this);
     QObject::connect(this->editTargetGuidanceAction, &QAction::triggered, this, &MainWindow::editTargetGuidance);
 
     this->aboutAction = new QAction(QIcon(":/image/open.png"),"&About",this);
