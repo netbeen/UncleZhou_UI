@@ -22,6 +22,7 @@ public:
     void setEraserRadius(int inputRadius);
     void setColor(QColor inputColor);
 
+
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
     virtual void mousePressEvent(QMouseEvent *e) override;
@@ -47,6 +48,7 @@ private:
     int eraserRadius;
     QColor color;
 
+    void setScale(float inputScaleFactor);
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
     void erase(const QPoint center, const int radius);  //擦除函数
@@ -55,6 +57,7 @@ private:
 
 signals:
     void canvasUpdatedSignal();
+    void scaleFactorChanged(float currentScaleFactor);
 
 
 };

@@ -47,6 +47,8 @@ private:
     void zoomInToolSlot();
     void zoomOutToolSlot();
 
+    void receiveScaleChanged(float inputScale);
+
 
     //Actions
     QAction* noneAction;
@@ -64,8 +66,7 @@ private:
     ToolOptionFrame* eraserToolOptionFrame;
     ToolOptionFrame* selectionToolOptionFrame;
     ToolOptionFrame* bucketToolOptionFrame;
-    ToolOptionFrame* zoomInToolOptionFrame;
-    ToolOptionFrame* zoomOutToolOptionFrame;
+    ToolOptionFrame* zoomToolOptionFrame;
 
     Swatch* foreSwatch;
     Swatch* backSwatch;
@@ -76,6 +77,8 @@ private:
     PaletteDock* paletteDock;
     Canvas* canvas;
     QScrollArea* scrollArea;
+
+    QLabel* magnificationValueLabel;    //
 
     //后台控制变量
     LayerManager* layerManager;

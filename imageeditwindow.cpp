@@ -3,6 +3,7 @@
 #include <QGridLayout>
 #include <QIcon>
 #include <QSpinBox>
+#include <QDebug>
 
 
 
@@ -154,9 +155,12 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->selectionToolOptionFrame = new ToolOptionFrame("Selection",this);
 
-    this->zoomInToolOptionFrame = new ToolOptionFrame("Zoom In",this);
-
-    this->zoomOutToolOptionFrame = new ToolOptionFrame("Zoom Out",this);
+    this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);
+    QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);
+    this->zoomToolOptionFrame->mainLayout->addWidget(magnificationLabel,1,0,1,1,Qt::AlignCenter);
+    this->magnificationValueLabel = new QLabel("100%",this->eraserToolOptionFrame);
+    this->zoomToolOptionFrame->mainLayout->addWidget(this->magnificationValueLabel,1,1,1,1,Qt::AlignCenter);
+    QObject::connect(this->canvas, &Canvas::scaleFactorChanged, this, &ImageEditWindow::receiveScaleChanged);
 }
 
 
@@ -195,7 +199,7 @@ void ImageEditWindow::zoomInToolSlot(){
     QCursor zoomInCursor = QCursor(QPixmap(":image/zoomIn.png").scaled(QSize(40,40)));
     this->setCursor(zoomInCursor);
     this->canvas->setOperationType(config::ZoomIn);
-    emit this->sendFrameToToolOptionDock(this->zoomInToolOptionFrame);
+    emit this->sendFrameToToolOptionDock(this->zoomToolOptionFrame);
 
 }
 
@@ -203,11 +207,16 @@ void ImageEditWindow::zoomOutToolSlot(){
     QCursor zoomOutCursor = QCursor(QPixmap(":image/zoomOut.png").scaled(QSize(40,40)));
     this->setCursor(zoomOutCursor);
     this->canvas->setOperationType(config::ZoomOut);
-    emit this->sendFrameToToolOptionDock(this->zoomOutToolOptionFrame);
+    emit this->sendFrameToToolOptionDock(this->zoomToolOptionFrame);
 }
 
 void ImageEditWindow::noneToolSlot(){
     this->setCursor(Qt::ArrowCursor);
     this->canvas->setOperationType(config::None);
     emit this->sendFrameToToolOptionDock(this->noneToolOptionFrame);
+}
+
+
+void ImageEditWindow::receiveScaleChanged(float inputScale){
+    this->magnificationValueLabel->setText(QString("%1%").arg(inputScale*100));
 }

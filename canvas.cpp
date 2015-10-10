@@ -83,17 +83,17 @@ void Canvas::mousePressEvent(QMouseEvent *e){
             case config::Move:
                 this->moveStartPoint = e->pos();
                 this->topLeftPointBackup = topLeftPoint;
-                qDebug() << "moveStartPoint=" << e->pos().x() << " " << e->pos().y();
+                //qDebug() << "moveStartPoint=" << e->pos().x() << " " << e->pos().y();
                 break;
             case config::ZoomIn:
-                this->scaleFactor *= 1.1;
+                this->setScale(this->scaleFactor*1.1);
                 this->update();
-                qDebug() << "Current scale factor = " << this->scaleFactor;
+                //qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
             case config::ZoomOut:
-                this->scaleFactor *= 0.9;
+                this->setScale(this->scaleFactor*0.9);
                 this->update();
-                qDebug() << "Current scale factor = " << this->scaleFactor;
+                //qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
             default:
                 break;
@@ -268,4 +268,9 @@ void Canvas::setEraserRadius(int inputRadius){
 
 void Canvas::setColor(QColor inputColor){
     this->color = inputColor;
+}
+
+void Canvas::setScale(float inputScaleFactor){
+    this->scaleFactor = inputScaleFactor;
+    emit this->scaleFactorChanged(this->scaleFactor);
 }
