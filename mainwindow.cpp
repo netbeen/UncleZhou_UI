@@ -37,13 +37,13 @@ MainWindow::MainWindow(QWidget *parent) :
     this->helpMenu->addAction(this->aboutAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}\
-                            QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} \
-                            QMenuBar::item:selected {background: #3e3e40;} \
-                            QMenuBar::item:pressed {background: #1b1b1c;}\
-                            ");
+                                   QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} \
+                                   QMenuBar::item:selected {background: #3e3e40;} \
+                                   QMenuBar::item:pressed {background: #1b1b1c;}\
+                                   ");
 
-    QToolBar* toolbar = this->addToolBar("Standard Tool Bar");
-    toolbar->addAction(this->loadSourceImageAction);
+                                   QToolBar* toolbar = this->addToolBar("Standard Tool Bar");
+            toolbar->addAction(this->loadSourceImageAction);
 
     QStatusBar* statusBar = this->statusBar();
 
@@ -79,15 +79,15 @@ void MainWindow::initAction(){
     QObject::connect(this->aboutAction, &QAction::triggered, this, &MainWindow::about);
 
     //Action 插入段
-    this->sourceImageLabel->addAction(this->viewSourceImageAction);     //左上角的view
-    this->sourceImageLabel->addAction(this->loadSourceImageAction);     //左上角的load
+    this->sourceImageWidget->addAction(this->viewSourceImageAction);     //左上角的view
+    this->sourceImageWidget->addAction(this->loadSourceImageAction);     //左上角的load
 
-    this->sourceGuidanceLabel->addAction(new QAction("&View",this));
-    this->sourceGuidanceLabel->addAction(this->editSourceGuidanceAction);
+    this->sourceGuidanceWidget->addAction(new QAction("&View",this));
+    this->sourceGuidanceWidget->addAction(this->editSourceGuidanceAction);
 
-    this->targetGuidanceLabel->addAction(this->viewTargetGuidanceAction);
-    this->targetGuidanceLabel->addAction(this->newImageAction);
-    this->targetGuidanceLabel->addAction(this->editTargetGuidanceAction);
+    this->targetGuidanceWidget->addAction(this->viewTargetGuidanceAction);
+    this->targetGuidanceWidget->addAction(this->newImageAction);
+    this->targetGuidanceWidget->addAction(this->editTargetGuidanceAction);
 
 
 }
@@ -116,6 +116,9 @@ void MainWindow::loadSourceImage(){
             this->sourceGuidance->save("./sourceGuidance"+elem+".png");
         }
         this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+
+        this->sourceImageWidgetStackedLayout->setCurrentIndex(1);
+        this->sourceGuidanceWidgetStackedLayout->setCurrentIndex(1);
     }
 }
 
@@ -140,38 +143,63 @@ void MainWindow::initWindowLayout(){
     QGridLayout* gridLayout = new QGridLayout(centerWidget);    //在中央widget开启网格布局
     centerWidget->setLayout(gridLayout);
 
-    this->sourceImageLabel = new QLabel(centerWidget);  //左上角label声明：放置source image
-    this->sourceImageLabel->setStyleSheet("background-color: #696969;");
-    gridLayout->addWidget(sourceImageLabel,0,0);
-    this->sourceImageLabel->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    QGridLayout* sourceImageLabelGridLayout = new QGridLayout(this->sourceImageLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
-    this->sourceImageLabel->setLayout(sourceImageLabelGridLayout);
-    this->sourceImageFrame = new QFrame(this->sourceImageLabel);
-    sourceImageLabelGridLayout->addWidget(this->sourceImageFrame,0,0);
+    this->sourceImageWidget = new QWidget(centerWidget);  //左上角widget声明：放置source image
+    this->sourceImageWidget->setStyleSheet("background-color: #696969;");
+    gridLayout->addWidget(sourceImageWidget,0,0);
+    this->sourceGuidanceWidget = new QWidget(centerWidget);   //右上角label声明：放置source guidance
+    this->sourceGuidanceWidget->setStyleSheet("background-color: #696969;");
+    gridLayout->addWidget(this->sourceGuidanceWidget,0,1);
+    this->targetGuidanceWidget = new QWidget(centerWidget);   //  左下角label声明：放置target guidance
+    this->targetGuidanceWidget->setStyleSheet("background-color: #696969;");
+    gridLayout->addWidget(this->targetGuidanceWidget,1,0);
+    this->targetImageWidget = new QWidget(centerWidget);  //右下角widget声明：放置target image
+    this->targetImageWidget->setStyleSheet("background-color: #696969;");
+    gridLayout->addWidget(targetImageWidget,1,1);
 
-    this->sourceGuidanceLabel = new QLabel(centerWidget);   //右上角label声明：放置source guidance
-    this->sourceGuidanceLabel->setStyleSheet("background-color: #696969;");
-    gridLayout->addWidget(this->sourceGuidanceLabel,0,1);
-    this->sourceGuidanceLabel->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    QGridLayout* sourceGuidanceLabelGridLayout = new QGridLayout(this->sourceGuidanceLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
-    this->sourceGuidanceLabel->setLayout(sourceGuidanceLabelGridLayout);
-    this->sourceGuidanceFrame = new QFrame(this->sourceGuidanceLabel);
-    sourceGuidanceLabelGridLayout->addWidget(this->sourceGuidanceFrame,0,0);
 
-    this->targetGuidanceLabel = new QLabel(centerWidget);   //  左下角label声明：放置target guidance
-    this->targetGuidanceLabel->setStyleSheet("background-color: #696969;");
-    gridLayout->addWidget(this->targetGuidanceLabel,1,0);
-    this->targetGuidanceLabel->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    QGridLayout* targetGuidanceLabelGridLayout = new QGridLayout(this->targetGuidanceLabel);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
-    this->targetGuidanceLabel->setLayout(targetGuidanceLabelGridLayout);
-    this->targetGuidanceFrame = new QFrame(this->targetGuidanceLabel);
-    targetGuidanceLabelGridLayout->addWidget(this->targetGuidanceFrame,0,0);
+    this->sourceImageWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
+    this->sourceGuidanceWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
+    this->targetGuidanceWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
+    this->targetImageWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-    QLabel* label4 = new QLabel(centerWidget);
-    label4->setStyleSheet("background-color: #696969;");
-    gridLayout->addWidget(label4,1,1);
-    label4->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    label4->addAction(new QAction("&View",this));
+    this->sourceImageWidgetStackedLayout = new QStackedLayout(this->sourceImageWidget);
+    this->sourceImageWidget->setLayout(this->sourceImageWidgetStackedLayout);
+    this->sourceImageFrame = new QFrame(this->sourceImageWidget);
+    QLabel* hintLabel1 = new QLabel("Source Image Area", this->sourceImageWidget);
+    hintLabel1->setStyleSheet("font-size : 40px");
+    hintLabel1->setAlignment(Qt::AlignCenter);
+    this->sourceImageWidgetStackedLayout->addWidget(hintLabel1);
+    this->sourceImageWidgetStackedLayout->addWidget(this->sourceImageFrame);
+
+
+    this->sourceGuidanceWidgetStackedLayout = new QStackedLayout(this->sourceGuidanceWidget);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
+    this->sourceGuidanceWidget->setLayout(this->sourceGuidanceWidgetStackedLayout);
+    this->sourceGuidanceFrame = new QFrame(this->sourceGuidanceWidget);
+    QLabel* hintLabel2 = new QLabel("Source Guidance Area", this->sourceGuidanceWidget);
+    hintLabel2->setStyleSheet("font-size : 40px");
+    hintLabel2->setAlignment(Qt::AlignCenter);
+    this->sourceGuidanceWidgetStackedLayout->addWidget(hintLabel2);
+    this->sourceGuidanceWidgetStackedLayout->addWidget(this->sourceGuidanceFrame);
+
+    this->targetGuidanceWidgetStackedLayout = new QStackedLayout(this->targetGuidanceWidget);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
+    this->targetGuidanceWidget->setLayout(this->targetGuidanceWidgetStackedLayout);
+    this->targetGuidanceFrame = new QFrame(this->targetGuidanceWidget);
+    QLabel* hintLabel3 = new QLabel("Target Guidance Area", this->targetGuidanceWidget);
+    hintLabel3->setStyleSheet("font-size : 40px");
+    hintLabel3->setAlignment(Qt::AlignCenter);
+    this->targetGuidanceWidgetStackedLayout->addWidget(hintLabel3);
+    this->targetGuidanceWidgetStackedLayout->addWidget(this->targetGuidanceFrame);
+
+    this->targetImageWidgetStackedLayout = new QStackedLayout(this->targetImageWidget);    //在label内建一个layout放置一个Frame，可以保证右键菜单的背景不受改变
+    this->targetImageWidget->setLayout(this->targetImageWidgetStackedLayout);
+    this->targetImageFrame = new QFrame(this->targetImageWidget);
+    QLabel* hintLabel4 = new QLabel("Target Image Area", this->targetImageWidget);
+    hintLabel4->setStyleSheet("font-size : 40px");
+    hintLabel4->setAlignment(Qt::AlignCenter);
+    this->targetImageWidgetStackedLayout->addWidget(hintLabel4);
+    this->targetImageWidgetStackedLayout->addWidget(this->targetImageFrame);
+
+    this->targetImageWidget->addAction(new QAction("&View",this));
 
 }
 
@@ -188,6 +216,7 @@ void MainWindow::newImage(){
     if(newImageDialog->exec() == QDialog::Accepted){
         this->targetGuidanceFrame->setStyleSheet("background-image: url(./targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
+    this->targetGuidanceWidgetStackedLayout->setCurrentIndex(1);
 }
 
 
@@ -210,10 +239,10 @@ void MainWindow::viewSourceImage(){
 void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Uncle Zhou UI"),
-        tr("<p><b>Uncle Zhou UI</b></p>"
-        "Open sourced under the <b>MIT</b> license.<br/>"
-           "Copyright (c) 2015 NetBeen<br/>"
-           "netbeen.cn@gmail.com"));
+                       tr("<p><b>Uncle Zhou UI</b></p>"
+                          "Open sourced under the <b>MIT</b> license.<br/>"
+                          "Copyright (c) 2015 NetBeen<br/>"
+                          "netbeen.cn@gmail.com"));
 
 
 }

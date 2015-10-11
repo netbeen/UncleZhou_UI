@@ -9,7 +9,6 @@ NavigatorCanvas::NavigatorCanvas(QWidget* parent) : QWidget(parent)
 }
 
 
-
 void NavigatorCanvas::paintEvent(QPaintEvent* e){
 
     QImage image = this->layerManager->getDisplayLayerItem()->image;

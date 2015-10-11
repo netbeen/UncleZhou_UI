@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QLabel>
 #include <QFrame>
+#include <QStackedLayout>
 
 class MainWindow : public QMainWindow
 {
@@ -15,17 +16,25 @@ public:
     ~MainWindow();
 
 private:
-    QLabel* sourceImageLabel;
-    QLabel* sourceGuidanceLabel;
-    QLabel* targetGuidanceLabel;
+    QWidget* sourceImageWidget;
+    QWidget* sourceGuidanceWidget;
+    QWidget* targetGuidanceWidget;
+    QWidget* targetImageWidget;
 
     QFrame* sourceImageFrame;
     QFrame* sourceGuidanceFrame;
     QFrame* targetGuidanceFrame;
+    QFrame* targetImageFrame;
 
     QImage* sourceImage;
     QImage* sourceGuidance;
     QImage* targetGuidance;
+    QImage* targetImage;
+
+    QStackedLayout* sourceImageWidgetStackedLayout;
+    QStackedLayout* sourceGuidanceWidgetStackedLayout;
+    QStackedLayout* targetGuidanceWidgetStackedLayout;
+    QStackedLayout* targetImageWidgetStackedLayout;
 
     QAction* loadSourceImageAction;
     QAction* viewSourceImageAction;
