@@ -62,18 +62,22 @@ void MainWindow::initAction(){
 
     this->viewSourceImageAction = new QAction(QIcon(":/image/open.png"),"&View Source Image",this);
     QObject::connect(this->viewSourceImageAction, &QAction::triggered, this, &MainWindow::viewSourceImage);
+    this->viewSourceImageAction->setEnabled(false);
 
     this->editSourceGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit Source Guidance",this);
     QObject::connect(this->editSourceGuidanceAction, &QAction::triggered, this, &MainWindow::editSourceGuidance);
+    this->editSourceGuidanceAction->setEnabled(false);
 
     this->viewTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&View Target Guidance",this);
     QObject::connect(this->viewTargetGuidanceAction, &QAction::triggered, this, &MainWindow::viewTargetGuidance);
+    this->viewTargetGuidanceAction->setEnabled(false);
 
-    this->newImageAction = new QAction(QIcon(":/image/open.png"),"&Create New Guidance",this);
-    QObject::connect(this->newImageAction, &QAction::triggered, this, &MainWindow::newImage);
+    this->createNewTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Create New Guidance",this);
+    QObject::connect(this->createNewTargetGuidanceAction, &QAction::triggered, this, &MainWindow::newImage);
 
     this->editTargetGuidanceAction = new QAction(QIcon(":/image/open.png"),"&Edit Target Guidance",this);
     QObject::connect(this->editTargetGuidanceAction, &QAction::triggered, this, &MainWindow::editTargetGuidance);
+    this->editTargetGuidanceAction->setEnabled(false);
 
     this->aboutAction = new QAction(QIcon(":/image/open.png"),"&About",this);
     QObject::connect(this->aboutAction, &QAction::triggered, this, &MainWindow::about);
@@ -86,7 +90,7 @@ void MainWindow::initAction(){
     this->sourceGuidanceWidget->addAction(this->editSourceGuidanceAction);
 
     this->targetGuidanceWidget->addAction(this->viewTargetGuidanceAction);
-    this->targetGuidanceWidget->addAction(this->newImageAction);
+    this->targetGuidanceWidget->addAction(this->createNewTargetGuidanceAction);
     this->targetGuidanceWidget->addAction(this->editTargetGuidanceAction);
 
 
@@ -119,6 +123,10 @@ void MainWindow::loadSourceImage(){
 
         this->sourceImageWidgetStackedLayout->setCurrentIndex(1);
         this->sourceGuidanceWidgetStackedLayout->setCurrentIndex(1);
+
+        this->viewSourceImageAction->setEnabled(true);
+        this->viewSourceImageAction->setEnabled(true);
+        this->editSourceGuidanceAction->setEnabled(true);
     }
 }
 
@@ -160,7 +168,7 @@ void MainWindow::initWindowLayout(){
     this->sourceImageWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
     this->sourceGuidanceWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
     this->targetGuidanceWidget->setContextMenuPolicy(Qt::ActionsContextMenu);       //激活右键菜单策略
-    this->targetImageWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    this->targetImageWidget->setContextMenuPolicy(Qt::ActionsContextMenu);      //激活右键菜单策略
 
     this->sourceImageWidgetStackedLayout = new QStackedLayout(this->sourceImageWidget);
     this->sourceImageWidget->setLayout(this->sourceImageWidgetStackedLayout);
@@ -217,6 +225,8 @@ void MainWindow::newImage(){
         this->targetGuidanceFrame->setStyleSheet("background-image: url(./targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
     this->targetGuidanceWidgetStackedLayout->setCurrentIndex(1);
+    this->viewTargetGuidanceAction->setEnabled(true);
+    this->editTargetGuidanceAction->setEnabled(true);
 }
 
 

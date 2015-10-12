@@ -42,7 +42,7 @@ private:
     QAction* editSourceGuidanceAction;
 
     QAction* viewTargetGuidanceAction;
-    QAction* newImageAction;
+    QAction* createNewTargetGuidanceAction;
     QAction* editTargetGuidanceAction;
 
     QAction* aboutAction;
