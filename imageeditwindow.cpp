@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QSpinBox>
 #include <QDebug>
+#include <QPushButton>
 
 
 
@@ -139,6 +140,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QLabel* pencilRadiusLabel = new QLabel("Pencil radius: ",this->pencilToolOptionFrame);
     this->pencilToolOptionFrame->mainLayout->addWidget(pencilRadiusLabel,1,0,1,1,Qt::AlignCenter);
     QSpinBox* pencilRadiusSpinBox = new QSpinBox(this->pencilToolOptionFrame);
+    pencilRadiusSpinBox->setMinimumSize(QSize(75,30));
     pencilRadiusSpinBox->setValue(10);
     QObject::connect(pencilRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setPencilRadius);
     this->pencilToolOptionFrame->mainLayout->addWidget(pencilRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
@@ -147,6 +149,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QLabel* eraserRadiusLabel = new QLabel("Eraser radius: ",this->eraserToolOptionFrame);
     this->eraserToolOptionFrame->mainLayout->addWidget(eraserRadiusLabel,1,0,1,1,Qt::AlignCenter);
     QSpinBox* eraserRadiusSpinBox = new QSpinBox(this->eraserToolOptionFrame);
+    eraserRadiusSpinBox->setMinimumSize(QSize(75,30));
     eraserRadiusSpinBox->setValue(10);
     QObject::connect(eraserRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setEraserRadius);
     this->eraserToolOptionFrame->mainLayout->addWidget(eraserRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
@@ -155,12 +158,15 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->selectionToolOptionFrame = new ToolOptionFrame("Selection",this);
 
-    this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);
+    this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);       //缩放工具的选项卡配置（放大缩小共享同一张选项卡）
     QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);
     this->zoomToolOptionFrame->mainLayout->addWidget(magnificationLabel,1,0,1,1,Qt::AlignCenter);
     this->magnificationValueLabel = new QLabel("100%",this->eraserToolOptionFrame);
     this->zoomToolOptionFrame->mainLayout->addWidget(this->magnificationValueLabel,1,1,1,1,Qt::AlignCenter);
     QObject::connect(this->canvas, &Canvas::scaleFactorChanged, this, &ImageEditWindow::receiveScaleChanged);
+    QPushButton* resetTheScaleFactorButton = new QPushButton("Reset Scale Factor",this->zoomToolOptionFrame);
+    this->zoomToolOptionFrame->mainLayout->addWidget(resetTheScaleFactorButton,2,0,1,1,Qt::AlignCenter);
+    QObject::connect(resetTheScaleFactorButton, &QPushButton::clicked, this->canvas, &Canvas::resetScale);
 }
 
 
@@ -221,3 +227,4 @@ void ImageEditWindow::noneToolSlot(){
 void ImageEditWindow::receiveScaleChanged(float inputScale){
     this->magnificationValueLabel->setText(QString("%1%").arg(inputScale*100));
 }
+

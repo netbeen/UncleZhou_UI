@@ -49,8 +49,7 @@ void Canvas::paintEvent(QPaintEvent* e){
     imageSize = imageSize*this->scaleFactor;
 
     if(this->isInited == false){
-        this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
-        this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
+        this->setImageToTheCenter();
         this->isInited = true;
     }
 
@@ -273,4 +272,19 @@ void Canvas::setColor(QColor inputColor){
 void Canvas::setScale(float inputScaleFactor){
     this->scaleFactor = inputScaleFactor;
     emit this->scaleFactorChanged(this->scaleFactor);
+}
+
+void Canvas::resetScale(){
+    this->scaleFactor = 1.0;
+    emit this->scaleFactorChanged(this->scaleFactor);
+    this->setImageToTheCenter();
+    this->update();
+}
+
+void Canvas::setImageToTheCenter(){
+    QSize imageSize = this->surfacePixmap.size();
+    imageSize = imageSize*this->scaleFactor;
+
+    this->topLeftPoint.setX((this->width() - imageSize.width()) / 2);
+    this->topLeftPoint.setY((this->height() - imageSize.height()) / 2);
 }

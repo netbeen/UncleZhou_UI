@@ -18,9 +18,11 @@ public:
 
     void receiveDisplayLayerChanged();  //slot函数，用于接受layerManager传来的图层切换信号
     void receiveShowBackground(bool isShow);   //slot，用于接受显示半透明背景的信号
-    void setPencilRadius(int inputRadius);  //slot
-    void setEraserRadius(int inputRadius);
-    void setColor(QColor inputColor);
+    void setPencilRadius(int inputRadius);  //slot,用于接受参数设置铅笔半径
+    void setEraserRadius(int inputRadius);  //slot ， 用于接受参数设置橡皮半径
+    void setColor(QColor inputColor);   //slot， 用于接受参数设置当前颜色
+    void resetScale();
+
 
 
 protected:
@@ -54,6 +56,7 @@ private:
     void erase(const QPoint center, const int radius);  //擦除函数
     void bucket(const QColor color);
     QPoint mapToPixmap(QPoint screenPoint);
+    void setImageToTheCenter();
 
 signals:
     void canvasUpdatedSignal();
