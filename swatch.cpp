@@ -22,6 +22,12 @@ QColor Swatch::getColor() const{
 }
 
 
+/**
+ * @brief Swatch::paintEvent
+ * @brief 自身绘制函数
+ * @param event
+ * @return 没有返回值
+ */
 void Swatch::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
@@ -30,6 +36,13 @@ void Swatch::paintEvent(QPaintEvent* event)
     painter.drawRect(rect());
 }
 
+
+/**
+ * @brief Swatch::mouseReleaseEvent
+ * @brief 响应鼠标点击事件
+ * @param event
+ * @return 没有返回值
+ */
 void Swatch::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
@@ -40,6 +53,13 @@ void Swatch::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+
+/**
+ * @brief Swatch::setColor
+ * @brief 设置当前示色器颜色的接口
+ * @param inputColor 表示输入的颜色
+ * @return 没有返回值
+ */
 void Swatch::setColor(QColor inputColor){
     this->currentColor = inputColor;
     this->update();

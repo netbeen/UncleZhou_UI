@@ -3,6 +3,12 @@
 #include "paletteitem.h"
 #include <vector>
 
+/**
+ * @brief PaletteDock::PaletteDock
+ * @brief 调色板Dock构造函数
+ * @param parent 父对象
+ * @return 没有返回值
+ */
 PaletteDock::PaletteDock(QWidget* parent) : QDockWidget(parent)
 {
     this->setMinimumSize(300, 200);
