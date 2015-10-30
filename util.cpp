@@ -192,6 +192,22 @@ void Util::construct_gabor_bank()
     waitKey(0);
 }
 
+void Util::labelOtherPoints(std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend){
+    // assign labels for other points
+    // query points through the density list of descending order
+    std::vector<std::pair<int, double> >::iterator iter_d_descend = v_density_Descend.begin();
+    iter_d_descend = v_density_Descend.begin();
+    for(int i=0; i<v_points.size(); i++, iter_d_descend++) {
+        int curID = iter_d_descend->first;
+        if(v_points[curID].label != -1)
+            continue;
+
+        int nNNHD = v_points[curID].nNNHD;
+        v_points[curID].label = v_points[nNNHD].label;
+    }
+}
+
+
 Mat Util::gabor_filter(Mat& img, int type)
 {
     const int kernel_size = 7; // should be odd
@@ -275,13 +291,29 @@ Mat Util::gabor_filter(Mat& img, int type)
 }
 
 
+void Util::imgUndoScale(const cv::Mat& scaled, cv::Mat& withoutScale, int scaleFactor){
+    assert(scaled.type() == CV_8UC3);
+    withoutScale = cv::Mat(scaled.rows*scaleFactor,scaled.cols*scaleFactor,CV_8UC3);
+    for(int i = 0; i < scaled.rows; i++){
+        for(int j = 0; j < scaled.cols; j++){
+            for(int patchX = 0; patchX < scaleFactor; patchX++){
+                for(int patchY = 0; patchY < scaleFactor; patchY++){
+                    withoutScale.at<cv::Vec3b>(i*scaleFactor + patchX, j *scaleFactor +patchY)[0] = scaled.at<cv::Vec3b>(i,j)[0];
+                    withoutScale.at<cv::Vec3b>(i*scaleFactor + patchX, j *scaleFactor +patchY)[1] = scaled.at<cv::Vec3b>(i,j)[1];
+                    withoutScale.at<cv::Vec3b>(i*scaleFactor + patchX, j *scaleFactor +patchY)[2] = scaled.at<cv::Vec3b>(i,j)[2];
+                }
+            }
+        }
+    }
+}
 
-void Util::calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPoints>& v_points){
+
+void Util::calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend){
     v_points = std::vector<ClusteringPoints>();
+    v_density_Descend = std::vector<std::pair<int, double> >();
 
     // 0. 全局参数
     int nMaxSearch = 128;
-
     int numPts = features.rows;
     int DIMENSION = features.cols;
 
@@ -298,7 +330,6 @@ void Util::calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPo
     ClusteringPoints pt;
     v_points.assign(numPts, pt);
 
-    std::vector<std::pair<int, double> > v_density_Descend;
     v_density_Descend.assign(numPts, std::pair<int, double>(-1, 0.0));
 
     for(int i=0; i<numPts; i++) {

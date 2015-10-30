@@ -6,6 +6,7 @@
 
 class DensityPeakCanvas: public QWidget
 {
+    Q_OBJECT
 public:
     DensityPeakCanvas(QWidget* parent);
     void init(const std::vector<ClusteringPoints>& v_points);
@@ -28,7 +29,10 @@ private:
     QPoint selectionTopleft;
     QPoint selectionButtomDown;
 
+    int maxDensityIndex;
+
 signals:
+    void selectCompetedSignal(std::vector<int> selectPointIndex);
 
 };
 

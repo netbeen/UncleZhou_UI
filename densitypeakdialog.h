@@ -16,6 +16,7 @@ public:
 
 private:
     void initDialogLayout();
+    void initColorTabel();
 
     float scaleFactor;
     cv::Mat sourceImageMat;
@@ -23,6 +24,12 @@ private:
     ReadonlyCanvas* previewOriginImage;
     ReadonlyCanvas* previewGuidanceImage;
     DensityPeakCanvas* densityPeakCanvas;
+
+    void receiveSelectionCompeted(std::vector<int> selectPointIndex);
+
+    std::vector<ClusteringPoints> v_points;
+    std::vector<std::pair<int, double> > v_density_Descend;
+    std::vector<QColor> colorTabel;
 
 signals:
 

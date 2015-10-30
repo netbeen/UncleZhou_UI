@@ -27,29 +27,27 @@ void DensityPeakCanvas::mouseMoveEvent(QMouseEvent *e){
 
 void DensityPeakCanvas::mouseReleaseEvent(QMouseEvent *e){
     int densityLow = std::min(this->selectionTopleft.x(),this->selectionButtomDown.x());
-    //std::cout << "densityLow raw: " <<  densityLow << std::endl;
     densityLow = (double)(densityLow-PADDING)/(this->width()-PADDING*2)*this->densityMax;
     int densityHigh = std::max(this->selectionTopleft.x(),this->selectionButtomDown.x());
-    //std::cout << "densityHigh raw: " <<  densityHigh << std::endl;
     densityHigh = (double)(densityHigh-PADDING)/(this->width()-PADDING*2)*this->densityMax;
     double deltaLow = std::max(this->selectionTopleft.y(),this->selectionButtomDown.y());
     deltaLow = -((deltaLow + PADDING-this->height()) / (this->height()-PADDING*2)*this->deltaMax);
     double deltaHigh = std::min(this->selectionTopleft.y(),this->selectionButtomDown.y());
     deltaHigh = -((deltaHigh + PADDING-this->height()) / (this->height()-PADDING*2)*this->deltaMax);
 
-    std::cout << "densityLow: " <<  densityLow << " densityHigh" << densityHigh << " deltaLow:" << deltaLow <<  " deltaHigh" << deltaHigh<< std::endl;
     selectPointIndex.clear();
     for(int i = 0; i < this->v_points.size(); i++){
         if(v_points.at(i).density >= densityLow && v_points.at(i).density <= densityHigh && v_points.at(i).dis2NNHD >= deltaLow && v_points.at(i).dis2NNHD <= deltaHigh){
-            std::cout << i << std::endl;
             selectPointIndex.push_back(i);
         }
     }
     this->update();
+    if(this->selectPointIndex.empty() == false){
+        emit this->selectCompetedSignal(this->selectPointIndex);
+    }
 }
 
 void DensityPeakCanvas::paintEvent(QPaintEvent* event){
-    std::cout << "paint start" << std::endl;
     QPainter painter(this);
     painter.setPen(QPen(Qt::gray, 2, Qt::SolidLine, Qt::FlatCap));
     painter.setBrush(QColor(192,192,192));
@@ -74,7 +72,6 @@ void DensityPeakCanvas::paintEvent(QPaintEvent* event){
             }
         }
     }
-    std::cout << "paint done" << std::endl;
 }
 
 void DensityPeakCanvas::init(const std::vector<ClusteringPoints>& v_points){
@@ -84,6 +81,7 @@ void DensityPeakCanvas::init(const std::vector<ClusteringPoints>& v_points){
     for(int i = 0; i < v_points.size(); i++){
         if(this->densityMax < v_points.at(i).density){
             this->densityMax = v_points.at(i).density;
+            this->maxDensityIndex = i;
         }
         if(this->deltaMax < v_points.at(i).dis2NNHD){
             secondDelta = this->deltaMax;

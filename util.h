@@ -37,7 +37,9 @@ public:
 
     static float calcL2Distance(const QPoint point1, const QPoint point2);
     static void generateGaborFeatureFromImage(const cv::Mat& sourceImage, cv::Mat& features);
-    static void calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPoints>& v_points);
+    static void calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend);
+    static void labelOtherPoints(std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend);
+    static void imgUndoScale(const cv::Mat& scaled, cv::Mat& withoutScale, int scaleFactor);
 
     static cv::Mat getMyGabor(int width, int height, int U, int V, double Kmax, double f,double sigma, int ktype, const std::string kernel_name);
     static void construct_gabor_bank();
