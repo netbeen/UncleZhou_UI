@@ -20,6 +20,7 @@
 #include "tooloptiondock.h"
 #include "tooloptionframe.h"
 #include "palettedock.h"
+#include "densitypeakdialog.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -82,6 +83,11 @@ private:
 
     //后台控制变量
     LayerManager* layerManager;
+
+    QMenu* testFunctionMenu;
+
+    QAction* densityPeakInteractiveAction;
+    void densityPeakInteractiveSlot();
 
 
 signals:

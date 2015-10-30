@@ -17,6 +17,12 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initActions(editLevel);
 
 
+    this->testFunctionMenu = this->menuBar()->addMenu("&Test functions");
+    this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
+
+    this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
+
+
 }
 
 
@@ -78,6 +84,13 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
 }
 
 
+void ImageEditWindow::densityPeakInteractiveSlot(){
+    DensityPeakDialog* densityPeakDialog = new DensityPeakDialog(this);
+    if(densityPeakDialog->exec() == QDialog::Accepted){
+        ;
+    }
+}
+
 void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->noneAction = new QAction(QIcon(":/image/none.png"),"&None",this);
@@ -96,6 +109,9 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->zoomInAction, &QAction::triggered, this, &ImageEditWindow::zoomInToolSlot);
     this->zoomOutAction= new QAction(QIcon(":/image/zoomOut.png"),"&ZoomOut",this);
     QObject::connect(this->zoomOutAction, &QAction::triggered, this, &ImageEditWindow::zoomOutToolSlot);
+
+    this->densityPeakInteractiveAction = new QAction(QIcon(":image/open.png"),"&Density Peak",this);
+    QObject::connect(this->densityPeakInteractiveAction,&QAction::triggered, this, &ImageEditWindow::densityPeakInteractiveSlot);
 
     this->toolActionVector = std::vector<QAction*>();
 

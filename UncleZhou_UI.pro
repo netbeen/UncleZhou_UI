@@ -28,7 +28,10 @@ SOURCES += main.cpp\
     tooloptiondock.cpp \
     tooloptionframe.cpp \
     palettedock.cpp \
-    paletteitem.cpp
+    paletteitem.cpp \
+    densitypeakdialog.cpp \
+    readonlycanvas.cpp \
+    densitypeakcanvas.cpp
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -44,9 +47,21 @@ HEADERS  += mainwindow.h \
     tooloptiondock.h \
     tooloptionframe.h \
     palettedock.h \
-    paletteitem.h
+    paletteitem.h \
+    densitypeakdialog.h \
+    readonlycanvas.h \
+    densitypeakcanvas.h
 
 FORMS    +=
 
 RESOURCES += \
     resource.qrc
+
+LIBS += /usr/local/lib/libopencv_core.so    \
+		/usr/local/lib/libopencv_imgproc.so \
+		/usr/local/lib/libopencv_highgui.so \
+		/usr/local/lib/libopencv_objdetect.so \
+		/usr/local/lib/libopencv_video.so	\
+		/usr/local/lib/libopencv_videoio.so	\
+		/usr/local/lib/libopencv_imgcodecs.so	\
+		/usr/local/lib/libopencv_flann.so		\
