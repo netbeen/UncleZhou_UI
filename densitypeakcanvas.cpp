@@ -36,11 +36,52 @@ void DensityPeakCanvas::mouseReleaseEvent(QMouseEvent *e){
     deltaHigh = -((deltaHigh + PADDING-this->height()) / (this->height()-PADDING*2)*this->deltaMax);
 
     selectPointIndex.clear();
-    for(int i = 0; i < this->v_points.size(); i++){
+    /*for(int i = 0; i < this->v_points.size(); i++){
         if(v_points.at(i).density >= densityLow && v_points.at(i).density <= densityHigh && v_points.at(i).dis2NNHD >= deltaLow && v_points.at(i).dis2NNHD <= deltaHigh){
             selectPointIndex.push_back(i);
         }
+    }*/
+
+    /////改为输出前200个类
+    std::cout <<"进入修改区"  << this->v_points.size()<< std::endl;
+    std::vector<double> densityVector;
+    std::vector<double> deltaVector;
+    for(int i = 0; i < this->v_points.size(); i++){
+        densityVector.push_back(v_points.at(i).density);
+        deltaVector.push_back(v_points.at(i).dis2NNHD);
     }
+    std::cout << "pass 1" << std::endl;
+    double densityVectorMax;
+    double deltaVectorMax;
+    for(int i = 0; i <this->v_points.size(); i++){
+        densityVectorMax = (densityVectorMax<densityVector.at(i))?densityVector.at(i):densityVectorMax;
+        deltaVectorMax = (deltaVectorMax<deltaVector.at(i))?deltaVector.at(i):deltaVectorMax;
+    }
+    std::cout << "pass 2" << std::endl;
+    for(int i = 0; i <this->v_points.size(); i++){
+        densityVector.at(i) /= densityVectorMax;
+        deltaVector.at(i) /= deltaVectorMax;
+    }
+    std::vector<double> densityMultiDelta;
+    std::vector<double> densityMultiDeltaSort;
+    std::cout << "pass 3" << std::endl;
+    for(int i = 0; i <this->v_points.size(); i++){
+        densityMultiDelta.push_back( densityVector.at(i) * deltaVector.at(i));
+        densityMultiDeltaSort.push_back( densityVector.at(i) * deltaVector.at(i));
+    }
+    std::cout << "pass 4" << std::endl;
+    std::sort(densityMultiDeltaSort.rbegin(),densityMultiDeltaSort.rend());
+    /*for(double elem : densityMultiDeltaSort){
+        std::cout << elem << std::endl;
+    }*/
+    double threshold = densityMultiDeltaSort.at(3);/////////////////////////////////////////在此处设置需要输出多少个聚类中心
+    for(int i = 0; i < this->v_points.size(); i++){
+        if(densityMultiDelta.at(i)>threshold){
+            selectPointIndex.push_back(i);
+        }
+    }
+    std::cout << selectPointIndex.size() << std::endl;
+    /////修改结束
     this->update();
     if(this->selectPointIndex.empty() == false){
         emit this->selectCompetedSignal(this->selectPointIndex);

@@ -110,6 +110,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Bucket:
                     this->bucket(this->color);
                     break;
+                case config::Polygon:
+                    this->polygon(this->mapToPixmap(e->pos()),this->color);
+                    break;
                 default:
                     break;
             }
@@ -183,6 +186,55 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
             }
         }
     }
+
+    this->update();
+}
+
+
+
+void Canvas::polygon(const QPoint center, const QColor color){  //多边形工具
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+
+    if(this->polygonStarted == false){
+        //初始化
+        this->polygonPointVector.clear();
+        this->beforePolygonBackup = currentDisplayLayerItem->image;
+        this->polygonStarted = true;
+    }else{
+        float distance = Util::calcL2Distance(center, this->polygonPointVector.front());
+        if(distance < 8){
+            cv::Mat_<cv::Vec3b> cvImage;
+            Util::convertQImageToMat(this->beforePolygonBackup,cvImage);
+            int pointNumber = this->polygonPointVector.size();
+
+            cv::Point rook_points[1][pointNumber];
+            for(int i = 0; i < pointNumber; i++){
+                rook_points[0][i] = cv::Point( this->polygonPointVector.at(i).x(), this->polygonPointVector.at(i).y() );
+            }
+            const cv::Point* ppt[1] = { rook_points[0] };
+            int npt[] = {pointNumber};
+            cv::fillPoly(cvImage,ppt,npt,1,cv::Scalar(color.blue(),color.green(),color.red()));
+            Util::convertMattoQImage(cvImage,this->beforePolygonBackup);
+            currentDisplayLayerItem->image = this->beforePolygonBackup;
+            this->update();
+
+            this->polygonStarted = false;
+            return;
+        }
+    }
+
+    this->polygonPointVector.push_back(center);
+
+    for(QPoint elem : this->polygonPointVector){
+        for(int r = 10; r > 0; r--){
+            if(r%2==0){
+                this->paint(elem,r,QColor(0,0,0));
+            }else{
+                this->paint(elem,r,QColor(255,255,255));
+            }
+        }
+    }
+    this->paint(this->polygonPointVector.front(),6,color);
 
     this->update();
 }

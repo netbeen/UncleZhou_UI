@@ -21,6 +21,7 @@
 #include "tooloptionframe.h"
 #include "palettedock.h"
 #include "densitypeakdialog.h"
+#include "viewpatchdistributedialog.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -43,7 +44,7 @@ private:
     void moveToolSlot();
     void pencilToolSlot();
     void eraserToolSlot();
-    void selectionToolSlot();
+    void polygonToolSlot();
     void bucketToolSlot();
     void zoomInToolSlot();
     void zoomOutToolSlot();
@@ -56,7 +57,7 @@ private:
     QAction* moveAction;    //移动工具
     QAction* pencilAction;  //铅笔工具
     QAction* eraserAction;  //橡皮工具
-    QAction* selectionAction;   //选择工具
+    QAction* polygonAction;   //多边形工具
     QAction* bucketAction;  //颜料桶工具
     QAction* zoomInAction;  //放大工具
     QAction* zoomOutAction;     //缩小工具
@@ -65,7 +66,7 @@ private:
     ToolOptionFrame* moveToolOptionFrame;   //以下是每个工具的frame选项，用于被选中的时候发送至ToolOptionDock
     ToolOptionFrame* pencilToolOptionFrame;
     ToolOptionFrame* eraserToolOptionFrame;
-    ToolOptionFrame* selectionToolOptionFrame;
+    ToolOptionFrame* polygonToolOptionFrame;
     ToolOptionFrame* bucketToolOptionFrame;
     ToolOptionFrame* zoomToolOptionFrame;
 
@@ -86,8 +87,11 @@ private:
 
     QMenu* testFunctionMenu;
 
-    QAction* densityPeakInteractiveAction;
+    QAction* densityPeakInteractiveAction;  //打开dp算法的窗口的action以及slot
     void densityPeakInteractiveSlot();
+
+    QAction* viewPatchDistributeAction;     //查看patch分布的窗口的action以及slot
+    void viewPatchDistributeSlot();
 
 
 signals:

@@ -9,7 +9,7 @@
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
     enum editLevel{readOnly, editable};
-    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut};
+    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon};
 }
 
 
@@ -37,6 +37,9 @@ public:
 
     static float calcL2Distance(const QPoint point1, const QPoint point2);
     static void generateGaborFeatureFromImage(const cv::Mat& sourceImage, cv::Mat& features);
+    static void generateRgbFeatureFromImage(const cv::Mat& sourceImage, cv::Mat& features);
+    static void generateRgbFeatureFromImageWithPatch(const cv::Mat& sourceImage, cv::Mat& features, int patchSize);
+    static void generateFeatureFromFile(const QString filename, cv::Mat& feature);
     static void calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend);
     static void labelOtherPoints(std::vector<ClusteringPoints>& v_points, std::vector<std::pair<int, double> >& v_density_Descend);
     static void imgUndoScale(const cv::Mat& scaled, cv::Mat& withoutScale, int scaleFactor);
@@ -48,6 +51,8 @@ public:
     static int cmp(const std::pair<int, double> &x, const std::pair<int, double> &y );
     static double GetSearchRadius(cv::flann::Index &myKdTree, const cv::Mat &features, int nMaxSearch, float percent);
 
+    static void convertMattoQImage( cv::Mat_<cv::Vec3b>& img_cv, QImage &img_qt);
+    static void convertQImageToMat( QImage &img_qt,  cv::Mat_<cv::Vec3b>& img_cv);
     static double PI;
 
 };

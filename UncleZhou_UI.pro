@@ -31,7 +31,10 @@ SOURCES += main.cpp\
     paletteitem.cpp \
     densitypeakdialog.cpp \
     readonlycanvas.cpp \
-    densitypeakcanvas.cpp
+    densitypeakcanvas.cpp \
+    viewpatchdistributedialog.cpp \
+    viewpatchdistributecavvas.cpp \
+
 
 HEADERS  += mainwindow.h \
     newimagedialog.h \
@@ -50,7 +53,10 @@ HEADERS  += mainwindow.h \
     paletteitem.h \
     densitypeakdialog.h \
     readonlycanvas.h \
-    densitypeakcanvas.h
+    densitypeakcanvas.h \
+    viewpatchdistributedialog.h \
+    viewpatchdistributecavvas.h \
+
 
 FORMS    +=
 

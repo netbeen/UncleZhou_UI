@@ -5,9 +5,9 @@
         <file>eraser.png</file>
         <file>move.png</file>
         <file>pencil.png</file>
-        <file>selection.png</file>
         <file>zoomIn.png</file>
         <file>zoomOut.png</file>
         <file>none.png</file>
+        <file>polygon.png</file>
     </qresource>
 </RCC>

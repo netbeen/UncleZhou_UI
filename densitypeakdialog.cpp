@@ -2,9 +2,10 @@
 #include "QGridLayout"
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <fstream>
 
 
-DensityPeakDialog::DensityPeakDialog(QWidget* parent) : QDialog(parent),scaleFactor(4.0)
+DensityPeakDialog::DensityPeakDialog(QWidget* parent) : QDialog(parent),scaleFactor(1.0)
 {
     this->initColorTabel();
     this->initDialogLayout();
@@ -14,7 +15,11 @@ DensityPeakDialog::DensityPeakDialog(QWidget* parent) : QDialog(parent),scaleFac
     //cv::imshow("sourceImageMat",sourceImageMat);
 
     cv::Mat features;
-    Util::generateGaborFeatureFromImage(this->sourceImageMat,features);
+    //Util::generateGaborFeatureFromImage(this->sourceImageMat,features);
+    //Util::generateRgbFeatureFromImage(this->sourceImageMat,features);
+    //Util::generateRgbFeatureFromImageWithPatch(this->sourceImageMat,features,6);
+    Util::generateFeatureFromFile("/home/netbeen/桌面/博剑文件夹/attribute_1.txt",features);
+    this->sourceImageMat = cv::Mat(384,512,CV_8UC3);//DEBUG: 用后删除
 
     Util::calcDistanceAndDelta(features,this->v_points, this->v_density_Descend);
 
@@ -27,11 +32,10 @@ DensityPeakDialog::DensityPeakDialog(QWidget* parent) : QDialog(parent),scaleFac
 // re-label image
 void DensityPeakDialog::receiveSelectionCompeted(std::vector<int> selectPointIndex){
     std::cout <<"DensityPeakDialog::receiveSelectionCompeted total = " << selectPointIndex.size() << std::endl;
-    if(selectPointIndex.size() > 27){
+    /*if(selectPointIndex.size() > 27){
         std::cout << "DENY! selectPointIndex > 27" << std::endl;
         return;
-    }
-    assert(selectPointIndex.size() > 0);
+    }*/
     for(int i = 0; i < this->v_points.size(); i ++){
         v_points.at(i).label = -1;
     }
@@ -48,18 +52,28 @@ void DensityPeakDialog::receiveSelectionCompeted(std::vector<int> selectPointInd
 
     int step = this->colorTabel.size()/selectPointIndex.size();
     int tempLabel;
+    std::ofstream outputFile("./labels.txt",std::ios::out);
     for(int i = 0; i < this->v_points.size(); i++){
         assert(v_points.at(i).label != -1);
         tempLabel = this->v_points.at(i).label;
-        labelImageMat.at<cv::Vec3b>(i/labelImageMat.cols, i%labelImageMat.cols)[0] = this->colorTabel.at((tempLabel-1)*step).blue();
+        outputFile << tempLabel << "\n";
+        /*labelImageMat.at<cv::Vec3b>(i/labelImageMat.cols, i%labelImageMat.cols)[0] = this->colorTabel.at((tempLabel-1)*step).blue();
         labelImageMat.at<cv::Vec3b>(i/labelImageMat.cols, i%labelImageMat.cols)[1] = this->colorTabel.at((tempLabel-1)*step).green();
-        labelImageMat.at<cv::Vec3b>(i/labelImageMat.cols, i%labelImageMat.cols)[2] = this->colorTabel.at((tempLabel-1)*step).red();
+        labelImageMat.at<cv::Vec3b>(i/labelImageMat.cols, i%labelImageMat.cols)[2] = this->colorTabel.at((tempLabel-1)*step).red();*/
+        labelImageMat.at<cv::Vec3b>(i%labelImageMat.rows, i/labelImageMat.rows)[0] = this->colorTabel.at((tempLabel-1)*step).blue();
+        labelImageMat.at<cv::Vec3b>(i%labelImageMat.rows, i/labelImageMat.rows)[1] = this->colorTabel.at((tempLabel-1)*step).green();
+        labelImageMat.at<cv::Vec3b>(i%labelImageMat.rows, i/labelImageMat.rows)[2] = this->colorTabel.at((tempLabel-1)*step).red();
+        //用完复原上端代码，删除下段代码
     }
+    outputFile.close();
+    std::cout << "image done" << std::endl;
 
-    //cv::imshow("labelImageMat",labelImageMat);
-    cv::Mat imgWithoutScale;
-    Util::imgUndoScale(labelImageMat,imgWithoutScale,this->scaleFactor);
+    cv::Mat imgWithoutScale=labelImageMat.clone();
+    //cv::Mat imgWithoutScale;
+    //Util::imgUndoScale(labelImageMat,imgWithoutScale,this->scaleFactor);
     cv::imwrite("./previewGuidance.png", imgWithoutScale);
+
+    std::cout << "imgWithoutScale done" << std::endl;
     this->previewGuidanceImage->update();
 
 
@@ -67,7 +81,6 @@ void DensityPeakDialog::receiveSelectionCompeted(std::vector<int> selectPointInd
 
 void DensityPeakDialog::initColorTabel(){
     std::vector<int> enumColor = std::vector<int>{0,127,255};
-
     for(int i = 0; i < 3 ; i++){
         for(int j = 0; j < 3; j ++){
             for(int k = 0; k < 3; k++){

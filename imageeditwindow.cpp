@@ -19,6 +19,7 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
 
     this->testFunctionMenu = this->menuBar()->addMenu("&Test functions");
     this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
+    this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
@@ -91,6 +92,13 @@ void ImageEditWindow::densityPeakInteractiveSlot(){
     }
 }
 
+void ImageEditWindow::viewPatchDistributeSlot(){
+    ViewPatchDistributeDialog* viewPatchDistributeDialog = new ViewPatchDistributeDialog(this);
+    if(viewPatchDistributeDialog->exec() == QDialog::Accepted){
+        ;
+    }
+}
+
 void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->noneAction = new QAction(QIcon(":/image/none.png"),"&None",this);
@@ -101,8 +109,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
     QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
-    this->selectionAction= new QAction(QIcon(":/image/selection.png"),"&Selection",this);
-    QObject::connect(this->selectionAction, &QAction::triggered, this, &ImageEditWindow::selectionToolSlot);
+    this->polygonAction= new QAction(QIcon(":/image/polygon.png"),"&Polygon",this);
+    QObject::connect(this->polygonAction, &QAction::triggered, this, &ImageEditWindow::polygonToolSlot);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
@@ -112,6 +120,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->densityPeakInteractiveAction = new QAction(QIcon(":image/open.png"),"&Density Peak",this);
     QObject::connect(this->densityPeakInteractiveAction,&QAction::triggered, this, &ImageEditWindow::densityPeakInteractiveSlot);
+    this->viewPatchDistributeAction = new QAction(QIcon(":image/open.png"),"&View Patch Distribute",this);
+    QObject::connect(this->viewPatchDistributeAction,&QAction::triggered, this, &ImageEditWindow::viewPatchDistributeSlot);
 
     this->toolActionVector = std::vector<QAction*>();
 
@@ -123,7 +133,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     if(editLevel == config::editable){
         this->toolActionVector.push_back(this->pencilAction);
         this->toolActionVector.push_back(this->eraserAction);
-        this->toolActionVector.push_back(this->selectionAction);
+        this->toolActionVector.push_back(this->polygonAction);
         this->toolActionVector.push_back(this->bucketAction);
     }
 
@@ -172,7 +182,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->bucketToolOptionFrame = new ToolOptionFrame("Bucket",this);
 
-    this->selectionToolOptionFrame = new ToolOptionFrame("Selection",this);
+    this->polygonToolOptionFrame = new ToolOptionFrame("Polygon",this);
 
     this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);       //缩放工具的选项卡配置（放大缩小共享同一张选项卡）
     QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);
@@ -206,9 +216,10 @@ void ImageEditWindow::eraserToolSlot(){
     emit this->sendFrameToToolOptionDock(this->eraserToolOptionFrame);
 }
 
-void ImageEditWindow::selectionToolSlot(){
+void ImageEditWindow::polygonToolSlot(){
     this->setCursor(Qt::CrossCursor);
-    emit this->sendFrameToToolOptionDock(this->selectionToolOptionFrame);
+    this->canvas->setOperationType(config::Polygon);
+    emit this->sendFrameToToolOptionDock(this->polygonToolOptionFrame);
 }
 
 void ImageEditWindow::bucketToolSlot(){

@@ -1,6 +1,8 @@
 #include "util.h"
 
 #include <cmath>
+#include <fstream>
+#include <QImage>
 
 using namespace cv;
 using namespace std;
@@ -8,20 +10,57 @@ using namespace std;
 double Util::PI = 3.14159265;
 
 
+void Util::convertQImageToMat( QImage &img_qt,  Mat_<Vec3b>& img_cv){
+    img_cv.create(img_qt.height(), img_qt.width());
+    img_qt.convertToFormat(QImage::Format_RGB32);
+    int lineNum = 0;
+    int height = img_qt.height();
+    int width = img_qt.width();
+    uchar *imgBits = img_qt.bits();
+    for(int i=0; i<height; i++){
+        lineNum = i* width *4;
+        for(int j=0; j<width; j++){
+            img_cv(i, j)[2] = imgBits[lineNum + j*4 + 2];
+            img_cv(i, j)[1] = imgBits[lineNum + j*4 + 1];
+            img_cv(i, j)[0] = imgBits[lineNum + j*4 + 0];
+        }
+    }
+}
+
+
+void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
+    img_qt.convertToFormat(QImage::Format_RGB32); // 将QImage 转换成32位格式 32位格式是最便于处理
+    img_qt.scaled(img_cv.rows, img_cv.cols);
+    int lineNum = 0;
+    int height = img_cv.rows;
+    int width =  img_cv.cols;
+    uchar* imgBits = img_qt.bits();  // img_qt 的首字节地址
+    for( int i=0; i<height; i++ ){
+        lineNum = i* width*4;
+        for(int j=0; j<width; j++){
+            imgBits[lineNum + j*4 + 2] = img_cv(i, j)[2];
+            imgBits[lineNum + j*4 + 1] = img_cv(i, j)[1];
+            imgBits[lineNum + j*4 + 0] = img_cv(i, j)[0];
+        }
+    }
+}
+
+
+
 
 /**
- * @brief Util::guidanceChannel
- * @brief 静态的vector，用于保存引导图片的类型
- */
+      * @brief Util::guidanceChannel
+      * @brief 静态的vector，用于保存引导图片的类型
+      */
 std::vector<QString> Util::guidanceChannel = std::vector<QString>();
 
 
 /**
- * @brief Util::init
- * @brief 为util类进行初始化（初始化guidanceChannel这个vector）
- * @param 没有参数
- * @return 没有返回值
- */
+      * @brief Util::init
+      * @brief 为util类进行初始化（初始化guidanceChannel这个vector）
+      * @param 没有参数
+      * @return 没有返回值
+      */
 void Util::init(){
     Util::guidanceChannel.push_back("LabelChannel");
     Util::guidanceChannel.push_back("FeatureChannel");
@@ -30,14 +69,31 @@ void Util::init(){
 
 
 /**
- * @brief Util::calcL2Distance
- * @brief 计算两个点的L2距离
- * @param point1 表示第一个点
- * @param point2 表示第二个点
- * @return 两个点的L2距离
- */
+      * @brief Util::calcL2Distance
+      * @brief 计算两个点的L2距离
+      * @param point1 表示第一个点
+      * @param point2 表示第二个点
+      * @return 两个点的L2距离
+      */
 float Util::calcL2Distance(const QPoint point1, const QPoint point2){
     return std::sqrt(std::pow(point1.x() - point2.x(),2)+std::pow(point1.y() - point2.y(),2));
+}
+
+void Util::generateFeatureFromFile(const QString filename, cv::Mat& features){
+    std::cout << "WARNING: load featrue from file! Cannot display picture!" << std::endl;
+    ifstream file(filename.toUtf8().constData());
+
+    const int ROWS = 45;
+    const int COLS = 701;
+
+    features = cv::Mat(ROWS,COLS,CV_32F);
+    double tempD;
+    for(int row_index = 0; row_index < ROWS; row_index++){
+        for(int col_index = 0; col_index < COLS; col_index++){
+            file >> tempD;
+            features.at<float>(row_index,col_index) = tempD;
+        }
+    }
 }
 
 
@@ -75,7 +131,51 @@ void Util::generateGaborFeatureFromImage(const cv::Mat& sourceImage, cv::Mat& fe
     }
 
     return;
+}
 
+
+void Util::generateRgbFeatureFromImage(const cv::Mat& sourceImage, cv::Mat& features){
+    assert(sourceImage.channels() == 3);
+
+    features = cv::Mat(sourceImage.rows*sourceImage.cols, 3, CV_32F);
+
+    for(int offset_y = 0; offset_y < sourceImage.rows; offset_y++){
+        for(int offset_x = 0; offset_x < sourceImage.cols; offset_x++){
+            features.at<float>(offset_y*sourceImage.cols+offset_x, 0) = (float)sourceImage.at<cv::Vec3b>(offset_y,offset_x)[2];
+            features.at<float>(offset_y*sourceImage.cols+offset_x, 1) = (float)sourceImage.at<cv::Vec3b>(offset_y,offset_x)[1];
+            features.at<float>(offset_y*sourceImage.cols+offset_x, 2) = (float)sourceImage.at<cv::Vec3b>(offset_y,offset_x)[0];
+        }
+    }
+    return;
+}
+
+void Util::generateRgbFeatureFromImageWithPatch(const cv::Mat& sourceImage, cv::Mat& features, int patchSize){
+    assert(sourceImage.channels() == 3);
+
+    features = cv::Mat(sourceImage.rows*sourceImage.cols, 3*patchSize*patchSize, CV_32F);
+
+    for(int offset_y = 0; offset_y < sourceImage.rows; offset_y++){
+        for(int offset_x = 0; offset_x < sourceImage.cols; offset_x++){
+            int true_y = offset_y;
+            int true_x = offset_x;
+
+            if(true_y > sourceImage.rows-1-patchSize){
+                true_y = sourceImage.rows-1-patchSize;
+            }
+            if(true_x > sourceImage.cols-1-patchSize){
+                true_x = sourceImage.cols-1-patchSize;
+            }
+
+            for(int patch_y = 0; patch_y < patchSize; patch_y++){
+                for(int patch_x = 0; patch_x < patchSize; patch_x++){
+                    features.at<float>(offset_y*sourceImage.cols+offset_x, (patch_y*patchSize+patch_x)*3 + 0 ) = (float)sourceImage.at<cv::Vec3b>(offset_y+patch_y,offset_x+patch_x)[2];
+                    features.at<float>(offset_y*sourceImage.cols+offset_x, (patch_y*patchSize+patch_x)*3 + 1 ) = (float)sourceImage.at<cv::Vec3b>(offset_y+patch_y,offset_x+patch_x)[1];
+                    features.at<float>(offset_y*sourceImage.cols+offset_x, (patch_y*patchSize+patch_x)*3 + 2 ) = (float)sourceImage.at<cv::Vec3b>(offset_y+patch_y,offset_x+patch_x)[0];
+                }
+            }
+        }
+    }
+    return;
 }
 
 
