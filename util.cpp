@@ -48,6 +48,9 @@ void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
 
 void Util::replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor){
     cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);
+    if(currentColor == newColor){
+        return;
+    }
     image.at<cv::Vec3b>(startPoint.y,startPoint.x) = newColor;
 
     //DFS
