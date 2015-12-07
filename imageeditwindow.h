@@ -44,6 +44,7 @@ private:
     void moveToolSlot();
     void pencilToolSlot();
     void eraserToolSlot();
+    void magicEraserToolSlot();
     void polygonToolSlot();
     void bucketToolSlot();
     void zoomInToolSlot();
@@ -57,6 +58,7 @@ private:
     QAction* moveAction;    //移动工具
     QAction* pencilAction;  //铅笔工具
     QAction* eraserAction;  //橡皮工具
+    QAction* magicEraserAction;  //魔法橡皮工具
     QAction* polygonAction;   //多边形工具
     QAction* bucketAction;  //颜料桶工具
     QAction* zoomInAction;  //放大工具
@@ -66,6 +68,7 @@ private:
     ToolOptionFrame* moveToolOptionFrame;   //以下是每个工具的frame选项，用于被选中的时候发送至ToolOptionDock
     ToolOptionFrame* pencilToolOptionFrame;
     ToolOptionFrame* eraserToolOptionFrame;
+    ToolOptionFrame* magicEraserToolOptionFrame;
     ToolOptionFrame* polygonToolOptionFrame;
     ToolOptionFrame* bucketToolOptionFrame;
     ToolOptionFrame* zoomToolOptionFrame;

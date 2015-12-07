@@ -9,5 +9,6 @@
         <file>zoomOut.png</file>
         <file>none.png</file>
         <file>polygon.png</file>
+        <file>magicEraser.png</file>
     </qresource>
 </RCC>

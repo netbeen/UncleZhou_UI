@@ -9,7 +9,7 @@
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
     enum editLevel{readOnly, editable};
-    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon};
+    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon, MagicEraser};
 }
 
 
@@ -53,6 +53,8 @@ public:
 
     static void convertMattoQImage( cv::Mat_<cv::Vec3b>& img_cv, QImage &img_qt);
     static void convertQImageToMat( QImage &img_qt,  cv::Mat_<cv::Vec3b>& img_cv);
+
+    static void replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor);
     static double PI;
 
 };

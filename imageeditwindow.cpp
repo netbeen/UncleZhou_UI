@@ -109,6 +109,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
     QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
+    this->magicEraserAction= new QAction(QIcon(":/image/magicEraser.png"),"&Magic Eraser",this);
+    QObject::connect(this->magicEraserAction, &QAction::triggered, this, &ImageEditWindow::magicEraserToolSlot);
     this->polygonAction= new QAction(QIcon(":/image/polygon.png"),"&Polygon",this);
     QObject::connect(this->polygonAction, &QAction::triggered, this, &ImageEditWindow::polygonToolSlot);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
@@ -133,6 +135,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     if(editLevel == config::editable){
         this->toolActionVector.push_back(this->pencilAction);
         this->toolActionVector.push_back(this->eraserAction);
+        this->toolActionVector.push_back(this->magicEraserAction);
         this->toolActionVector.push_back(this->polygonAction);
         this->toolActionVector.push_back(this->bucketAction);
     }
@@ -180,6 +183,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(eraserRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setEraserRadius);
     this->eraserToolOptionFrame->mainLayout->addWidget(eraserRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
 
+    this->magicEraserToolOptionFrame = new ToolOptionFrame("Magic Eraser",this);   //魔术橡皮工具选项卡配置
+
     this->bucketToolOptionFrame = new ToolOptionFrame("Bucket",this);
 
     this->polygonToolOptionFrame = new ToolOptionFrame("Polygon",this);
@@ -214,6 +219,12 @@ void ImageEditWindow::eraserToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Eraser);
     emit this->sendFrameToToolOptionDock(this->eraserToolOptionFrame);
+}
+
+void ImageEditWindow::magicEraserToolSlot(){
+    this->setCursor(Qt::CrossCursor);
+    this->canvas->setOperationType(config::MagicEraser);
+    emit this->sendFrameToToolOptionDock(this->magicEraserToolOptionFrame);
 }
 
 void ImageEditWindow::polygonToolSlot(){

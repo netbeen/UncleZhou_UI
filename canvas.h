@@ -54,6 +54,7 @@ private:
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
     void erase(const QPoint center, const int radius);  //擦除函数
+    void magicErase(const QPoint center);  //魔术擦除函数
     void bucket(const QColor color);
     void polygon(const QPoint center, const QColor color);  //多边形工具
     bool polygonStarted = false;

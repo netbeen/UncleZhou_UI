@@ -46,7 +46,24 @@ void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
 }
 
 
+void Util::replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor){
+    cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);
+    image.at<cv::Vec3b>(startPoint.y,startPoint.x) = newColor;
 
+    //DFS
+    if( startPoint.x+1 < image.cols && image.at<cv::Vec3b>(startPoint.y,startPoint.x+1) == currentColor){
+        Util::replaceColorBlockDFS(image,cv::Point(startPoint.x+1,startPoint.y),newColor);
+    }
+    if(startPoint.x-1 >= 0 && image.at<cv::Vec3b>(startPoint.y,startPoint.x-1) == currentColor){
+        Util::replaceColorBlockDFS(image,cv::Point(startPoint.x-1,startPoint.y),newColor);
+    }
+    if(startPoint.y+1 < image.rows && image.at<cv::Vec3b>(startPoint.y+1,startPoint.x) == currentColor){
+        Util::replaceColorBlockDFS(image,cv::Point(startPoint.x,startPoint.y+1),newColor);
+    }
+    if(startPoint.y-1 >= 0 && image.at<cv::Vec3b>(startPoint.y-1,startPoint.x) == currentColor){
+        Util::replaceColorBlockDFS(image,cv::Point(startPoint.x,startPoint.y-1),newColor);
+    }
+}
 
 /**
       * @brief Util::guidanceChannel

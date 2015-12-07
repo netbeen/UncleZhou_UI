@@ -113,6 +113,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Polygon:
                     this->polygon(this->mapToPixmap(e->pos()),this->color);
                     break;
+                case config::MagicEraser:
+                    this->magicErase(this->mapToPixmap(e->pos()));
+                    break;
                 default:
                     break;
             }
@@ -257,6 +260,16 @@ void Canvas::erase(const QPoint center, const int radius){
             }
         }
     }
+    this->update();
+}
+
+void Canvas::magicErase(const QPoint center){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+
+    cv::Mat_<cv::Vec3b> cvMat;
+    Util::convertQImageToMat(currentDisplayLayerItem->image,cvMat);
+    Util::replaceColorBlockDFS(cvMat,cv::Point(center.x(),center.y()),cv::Vec3b(255,255,255));
+    Util::convertMattoQImage(cvMat,currentDisplayLayerItem->image);
 
     this->update();
 }
