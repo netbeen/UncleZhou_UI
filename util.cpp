@@ -9,6 +9,20 @@ using namespace std;
 
 double Util::PI = 3.14159265;
 
+void Util::meldTwoCVMat(cv::Mat& primaryMat, cv::Mat& secondMat){
+    assert(primaryMat.size() == secondMat.size());
+
+    cv::Vec3b write = cv::Vec3b(255,255,255);
+    for(int y_offset = 0; y_offset < primaryMat.rows; y_offset++){
+        for(int x_offset = 0; x_offset < secondMat.cols; x_offset++){
+            if(primaryMat.at<cv::Vec3b>(y_offset,x_offset) != write){
+                continue;
+            }else{
+                primaryMat.at<cv::Vec3b>(y_offset,x_offset) = secondMat.at<cv::Vec3b>(y_offset,x_offset);
+            }
+        }
+    }
+}
 
 void Util::convertQImageToMat( QImage &img_qt,  Mat_<Vec3b>& img_cv){
     img_cv.create(img_qt.height(), img_qt.width());
@@ -45,6 +59,50 @@ void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
     }
 }
 
+int Util::framentSizeCount = 0;
+cv::Mat Util::imageCopy = cv::Mat();
+
+void Util::clearFragment(cv::Mat_<cv::Vec3b>& image){
+    std::cout << "start clearFragment" << std::endl;
+    cv::Vec3b white = cv::Vec3b(255,255,255);
+    Util::imageCopy = image.clone();
+    for(int y_offset = 0; y_offset < Util::imageCopy.rows; y_offset++){
+        for(int x_offset = 0; x_offset < Util::imageCopy.cols; x_offset++){
+            cv::Vec3b currentColor = Util::imageCopy.at<cv::Vec3b>(y_offset,x_offset);
+            if(currentColor == white){
+                continue;
+            }
+            Util::framentSizeCount = 0;
+            Util::calcFramentSize(image,cv::Point(x_offset,y_offset));
+            std::cout << "calcFramentSize result:" << Util::framentSizeCount << "  x,y=" << x_offset <<"," <<y_offset << std::endl;
+            if(Util::framentSizeCount < 64){
+                std::cout << "Util::framentSizeCount < 64" << std::endl;
+                Util::replaceColorBlockDFS(image,cv::Point(x_offset,y_offset),white);
+            }
+        }
+    }
+}
+
+void Util::calcFramentSize(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint){
+    //std::cout << "start calcFramentSize "  << startPoint.x << " " << startPoint.y<< std::endl;
+    cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);
+
+    Util::framentSizeCount++;
+    Util::imageCopy.at<cv::Vec3b>(startPoint.y, startPoint.x) = cv::Vec3b(255,255,255);
+    //DFS
+    if( startPoint.x+1 < image.cols && Util::imageCopy.at<cv::Vec3b>(startPoint.y,startPoint.x+1) == currentColor){
+        Util::calcFramentSize(image,cv::Point(startPoint.x+1,startPoint.y));
+    }
+    if(startPoint.x-1 >= 0 && Util::imageCopy.at<cv::Vec3b>(startPoint.y,startPoint.x-1) == currentColor){
+        Util::calcFramentSize(image,cv::Point(startPoint.x-1,startPoint.y));
+    }
+    if(startPoint.y+1 < image.rows && Util::imageCopy.at<cv::Vec3b>(startPoint.y+1,startPoint.x) == currentColor){
+        Util::calcFramentSize(image,cv::Point(startPoint.x,startPoint.y+1));
+    }
+    if(startPoint.y-1 >= 0 && Util::imageCopy.at<cv::Vec3b>(startPoint.y-1,startPoint.x) == currentColor){
+        Util::calcFramentSize(image,cv::Point(startPoint.x,startPoint.y-1));
+    }
+}
 
 void Util::replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor){
     cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);

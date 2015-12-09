@@ -55,7 +55,13 @@ public:
     static void convertQImageToMat( QImage &img_qt,  cv::Mat_<cv::Vec3b>& img_cv);
 
     static void replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor);
+    static void clearFragment(cv::Mat_<cv::Vec3b>& image);
+    static void calcFramentSize(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint);
+    static int framentSizeCount;
+    static cv::Mat imageCopy;
     static double PI;
+
+    static void meldTwoCVMat(cv::Mat& primaryMat, cv::Mat& secondMat);
 
 };
 

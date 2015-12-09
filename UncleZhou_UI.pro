@@ -34,6 +34,10 @@ SOURCES += main.cpp\
     densitypeakcanvas.cpp \
     viewpatchdistributedialog.cpp \
     viewpatchdistributecavvas.cpp \
+    ../../桌面/周叔项目/20151208周叔代码/GetImageFeatures.cpp \
+    ../../桌面/周叔项目/20151208周叔代码/MyBinaryClassification.cpp \
+    ../../桌面/周叔项目/20151208周叔代码/MySharkML.cpp \
+    binaryclassificationdialog.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -56,6 +60,10 @@ HEADERS  += mainwindow.h \
     densitypeakcanvas.h \
     viewpatchdistributedialog.h \
     viewpatchdistributecavvas.h \
+    ../../桌面/周叔项目/20151208周叔代码/GetImageFeatures.h \
+    ../../桌面/周叔项目/20151208周叔代码/MyBinaryClassification.h \
+    ../../桌面/周叔项目/20151208周叔代码/MySharkML.h \
+    binaryclassificationdialog.h
 
 
 FORMS    +=
@@ -71,3 +79,10 @@ LIBS += /usr/local/lib/libopencv_core.so    \
 		/usr/local/lib/libopencv_videoio.so	\
 		/usr/local/lib/libopencv_imgcodecs.so	\
 		/usr/local/lib/libopencv_flann.so		\
+		/usr/local/lib/*.so	\
+		/usr/local/lib/libshark.a \
+		/home/netbeen/git_repo/Shark/build/lib/libshark.a
+
+QMAKE_CXXFLAGS+= -fopenmp
+QMAKE_LFLAGS +=  -fopenmp
+

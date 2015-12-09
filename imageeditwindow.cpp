@@ -1,13 +1,22 @@
 #include "imageeditwindow.h"
+#include "binaryclassificationdialog.h"
 
 #include <QGridLayout>
 #include <QIcon>
 #include <QSpinBox>
 #include <QDebug>
 #include <QPushButton>
+#include "/home/netbeen/桌面/周叔项目/20151208周叔代码/MyBinaryClassification.h"
 
 
-
+/**
+ * @brief ImageEditWindow::ImageEditWindow
+ * @brief 图像编辑窗口的构造函数
+ * @param editPosition 主窗口的4个窗格中，具体哪一个窗格被编辑
+ * @param editLevel 编辑级别
+ * @param parent 父对象
+ * @return 没有返回值
+ */
 ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent)
 {
     this->layerManager = LayerManager::getInstance();   //
@@ -16,17 +25,21 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->initWindowLayout(editLevel);
     this->initActions(editLevel);
 
-
     this->testFunctionMenu = this->menuBar()->addMenu("&Test functions");
     this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
     this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
+    this->testFunctionMenu->addAction(this->binaryClassificationAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
-
-
 }
 
 
+/**
+ * @brief ImageEditWindow::initWindowLayout
+ * @brief 初始化窗体布局，更具编辑级别创建不同的UI
+ * @param editLevel 编辑级别
+ * @return 没有返回值
+ */
 void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->setWindowState(Qt::WindowMaximized);      //设置窗口最大化
     this->setStyleSheet("background-color: #333337; color: #f1f1f1;");
@@ -56,8 +69,6 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->addDockWidget(Qt::RightDockWidgetArea, this->paletteDock);
     QObject::connect(this->paletteDock, &PaletteDock::colorSelected, this->canvas, &Canvas::setColor);
 
-
-
     this->layerDock = new LayerDock(this);
     this->layerDock->setWindowTitle("Layer");
     this->layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -73,15 +84,10 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
 
     this->setCentralWidget(this->scrollArea);
 
-
     //设置状态栏
     this->statusBar()->setStyleSheet("QStatusBar{background-color: #535353;}QStatusBar::item{border:0px}QSizeGrip{background-color: #535353;}");
 
     //this->menuBar()->setStyleSheet(" QMenuBar{background-color: #535353; padding-left: 5px;}QMenuBar::item {background-color: #535353; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
-
-
-
-
 }
 
 
@@ -99,8 +105,53 @@ void ImageEditWindow::viewPatchDistributeSlot(){
     }
 }
 
-void ImageEditWindow::initActions(config::editLevel editLevel){
+void ImageEditWindow::binaryClassificationSlot(){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    cv::Mat_<cv::Vec3b> cvImage;
+    Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
 
+    cv::imwrite("beforeClean.png",cvImage);
+    Util::clearFragment(cvImage);
+    cv::imwrite("afterClean.png",cvImage);
+    cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
+
+    BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
+    QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::getClassificationColor);
+    binaryClassificationDialog->exec();
+
+    cv::Vec3b BK_Color(uchar(255), uchar(255), uchar(255)); //whilte
+    cv::Vec3b Cur_Color = this->classificationColor;
+
+    // Read Source Image
+    cv::Mat img = cv::imread("sourceImage.png");
+
+    // Read Mask
+    cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
+
+    // Run RFBinaryClassification
+    cv::Mat_<cv::Vec3b> outputImg;
+    CMyBinaryClassification myTest;
+    //myTest.SetParametes(3, 4);
+    myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
+    Util::meldTwoCVMat(cvImage,outputImg);
+
+    Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
+
+    this->canvas->update();
+}
+
+void ImageEditWindow::getClassificationColor(cv::Vec3b newColor){
+    this->classificationColor = newColor;
+    std::cout<< "分类色被设置为" << newColor << std::endl;
+}
+
+/**
+ * @brief ImageEditWindow::initActions
+ * @brief 初始化actions，根据不同的编辑级别，构建不同的菜单action
+ * @param editLevel
+ * @return 没有返回值
+ */
+void ImageEditWindow::initActions(config::editLevel editLevel){
     this->noneAction = new QAction(QIcon(":/image/none.png"),"&None",this);
     QObject::connect(this->noneAction, &QAction::triggered, this, &ImageEditWindow::noneToolSlot);
     this->moveAction = new QAction(QIcon(":/image/move.png"),"&Move",this);
@@ -124,6 +175,10 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->densityPeakInteractiveAction,&QAction::triggered, this, &ImageEditWindow::densityPeakInteractiveSlot);
     this->viewPatchDistributeAction = new QAction(QIcon(":image/open.png"),"&View Patch Distribute",this);
     QObject::connect(this->viewPatchDistributeAction,&QAction::triggered, this, &ImageEditWindow::viewPatchDistributeSlot);
+    this->binaryClassificationAction = new QAction(QIcon(":image/open.png"),"&Binary Classification",this);
+    QObject::connect(this->binaryClassificationAction,&QAction::triggered, this, &ImageEditWindow::binaryClassificationSlot);
+
+
 
     this->toolActionVector = std::vector<QAction*>();
 
@@ -200,7 +255,11 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(resetTheScaleFactorButton, &QPushButton::clicked, this->canvas, &Canvas::resetScale);
 }
 
-
+/**
+ * @brief ImageEditWindow::moveToolSlot
+ * @brief 移动工具的slot函数
+ * @return 没有返回值
+ */
 void ImageEditWindow::moveToolSlot(){
     QCursor moveCursor = QCursor(QPixmap(":image/move.png").scaled(QSize(40,40)),0,0);
     this->setCursor(moveCursor);
@@ -208,31 +267,57 @@ void ImageEditWindow::moveToolSlot(){
     emit this->sendFrameToToolOptionDock(this->moveToolOptionFrame);
 }
 
+/**
+ * @brief ImageEditWindow::pencilToolSlot
+ * @brief 铅笔工具的slot函数
+ * @return 没有返回值
+ */
 void ImageEditWindow::pencilToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Pencil);
     emit this->sendFrameToToolOptionDock(this->pencilToolOptionFrame);
-
 }
 
+/**
+ * @brief ImageEditWindow::eraserToolSlot
+ * @brief 橡皮工具的slot工具
+ * @return 没有返回值
+ */
 void ImageEditWindow::eraserToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Eraser);
     emit this->sendFrameToToolOptionDock(this->eraserToolOptionFrame);
 }
 
+/**
+ * @brief ImageEditWindow::magicEraserToolSlot
+ * @brief 魔术橡皮擦的slot工具
+ * @return 没有返回值
+ */
 void ImageEditWindow::magicEraserToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::MagicEraser);
     emit this->sendFrameToToolOptionDock(this->magicEraserToolOptionFrame);
 }
 
+
+/**
+ * @brief ImageEditWindow::polygonToolSlot
+ * @brief 多边形的slot工具
+ * @return 没有返回值
+ */
 void ImageEditWindow::polygonToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::Polygon);
     emit this->sendFrameToToolOptionDock(this->polygonToolOptionFrame);
 }
 
+
+/**
+ * @brief ImageEditWindow::bucketToolSlot
+ * @brief 颜料桶的slot函数
+ * @return 没有返回值
+ */
 void ImageEditWindow::bucketToolSlot(){
     QCursor bucketCursor = QCursor(QPixmap(":image/bucket.png").scaled(QSize(40,40)));
     this->setCursor(bucketCursor);
@@ -240,6 +325,11 @@ void ImageEditWindow::bucketToolSlot(){
     emit this->sendFrameToToolOptionDock(this->bucketToolOptionFrame);
 }
 
+/**
+ * @brief ImageEditWindow::zoomInToolSlot
+ * @brief 放大工具的slot函数
+ * @return 没有返回值
+ */
 void ImageEditWindow::zoomInToolSlot(){
     QCursor zoomInCursor = QCursor(QPixmap(":image/zoomIn.png").scaled(QSize(40,40)));
     this->setCursor(zoomInCursor);
@@ -265,4 +355,5 @@ void ImageEditWindow::noneToolSlot(){
 void ImageEditWindow::receiveScaleChanged(float inputScale){
     this->magnificationValueLabel->setText(QString("%1%").arg(inputScale*100));
 }
+
 

@@ -55,7 +55,7 @@ void Canvas::paintEvent(QPaintEvent* e){
 
     QPainter painter(this);     //声明绘制器
     if(this->isShowBackground == true){
-            painter.drawPixmap(this->topLeftPoint, backgroundPixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制背景
+        painter.drawPixmap(this->topLeftPoint, backgroundPixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制背景
     }
     painter.drawPixmap(this->topLeftPoint, this->surfacePixmap.scaled(imageSize, Qt::KeepAspectRatio));   //绘制，制定左上角，绘制pixmap
     emit this->canvasUpdatedSignal();
@@ -73,7 +73,12 @@ void Canvas::receiveDisplayLayerChanged(){
     this->update();
 }
 
-
+/**
+ * @brief Canvas::mousePressEvent
+ * @brief 鼠标点击响应函数
+ * @param e
+ * @return 没有返回值
+ */
 void Canvas::mousePressEvent(QMouseEvent *e){
     if(e->buttons() & Qt::LeftButton ){
         switch (this->operationType) {
@@ -124,7 +129,12 @@ void Canvas::mousePressEvent(QMouseEvent *e){
     }
 }
 
-
+/**
+ * @brief Canvas::mouseMoveEvent
+ * @brief 鼠标移动响应函数
+ * @param e
+ * @return 没有返回值
+ */
 void Canvas::mouseMoveEvent(QMouseEvent *e){
     if( e->buttons() & Qt::LeftButton ){
         QPoint delta;
@@ -137,8 +147,8 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 this->update();
                 break;
             default:
-                break;
-            }
+                    break;
+                }
         }
         if(this->isContained(e->pos())){    //以下操作只有在画布内部才有效
             switch (this->operationType) {
@@ -158,7 +168,12 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
     }
 }
 
-
+/**
+ * @brief Canvas::isContained
+ * @brief 判断当前点是否在画布内部
+ * @param testPoint 当前点的坐标
+ * @return bool型判断结果
+ */
 bool Canvas::isContained(const QPoint testPoint) const{
     assert(this->surfaceImage.isNull() == false);
     QSize canvasSize = QSize(this->surfaceImage.width()*this->scaleFactor, this->surfaceImage.height()*this->scaleFactor);
@@ -166,6 +181,12 @@ bool Canvas::isContained(const QPoint testPoint) const{
     return canvasRect.contains(testPoint);
 }
 
+/**
+ * @brief Canvas::setOperationType
+ * @brief 设置当前canvas的操作模式
+ * @param inputOperationType
+ * @return 没有返回值
+ */
 void Canvas::setOperationType(config::operationType inputOperationType){
     this->operationType = inputOperationType;
 }
@@ -194,7 +215,13 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
 }
 
 
-
+/**
+ * @brief Canvas::polygon
+ * @brief 多边形绘制工具，按照顺序调用该函数，当最后一个点靠近起始点时，判定为结束点，然后绘制opencv多边形
+ * @param center 鼠标的点击中心
+ * @param color 多边形的颜色
+ * @return 没有返回值
+ */
 void Canvas::polygon(const QPoint center, const QColor color){  //多边形工具
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
 
@@ -263,6 +290,12 @@ void Canvas::erase(const QPoint center, const int radius){
     this->update();
 }
 
+/**
+ * @brief Canvas::magicErase
+ * @brief 魔术橡皮擦工具，输入鼠标位置，然后就可以就用DFS将整块的色块消除
+ * @param center 鼠标中心点
+ * @return 没有返回值
+ */
 void Canvas::magicErase(const QPoint center){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
 
@@ -286,7 +319,7 @@ void Canvas::bucket(const QColor color){
 
     for(int x = 0; x < image->width(); x++){
         for(int y = 0; y < image->height(); y++){
-                image->setPixel(x, y,color.rgb());
+            image->setPixel(x, y,color.rgb());
         }
     }
 
@@ -321,24 +354,55 @@ void Canvas::receiveShowBackground(bool isShow){
 }
 
 
+/**
+ * @brief Canvas::setPencilRadius
+ * @brief 设置铅笔的半径
+ * @param inputRadius 新的半径
+ * @return 没有返回值
+ */
 void Canvas::setPencilRadius(int inputRadius){
     this->pencilRadius = inputRadius;
 }
 
 
+/**
+ * @brief Canvas::setEraserRadius
+ * @brief 设置橡皮半径
+ * @param inputRadius 新的半径
+ * @return 没有返回值
+ */
 void Canvas::setEraserRadius(int inputRadius){
     this->eraserRadius = inputRadius;
 }
 
+/**
+ * @brief Canvas::setColor
+ * @brief 设置主调色板颜色
+ * @param inputColor 新的主调色板颜色
+ * @return 没有返回值
+ */
 void Canvas::setColor(QColor inputColor){
     this->color = inputColor;
 }
 
+
+/**
+ * @brief Canvas::setScale
+ * @brief 设置缩放参数
+ * @param inputScaleFactor 新的缩放参数
+ * @return 没有返回值
+ */
 void Canvas::setScale(float inputScaleFactor){
     this->scaleFactor = inputScaleFactor;
     emit this->scaleFactorChanged(this->scaleFactor);
 }
 
+
+/**
+ * @brief Canvas::resetScale
+ * @brief 恢复缩放状态至初始化状态
+ * @return 没有返回值
+ */
 void Canvas::resetScale(){
     this->scaleFactor = 1.0;
     emit this->scaleFactorChanged(this->scaleFactor);
@@ -346,6 +410,12 @@ void Canvas::resetScale(){
     this->update();
 }
 
+
+/**
+ * @brief Canvas::setImageToTheCenter
+ * @brief 设置图像显示在画布中心
+ * @return 没有返回值
+ */
 void Canvas::setImageToTheCenter(){
     QSize imageSize = this->surfacePixmap.size();
     imageSize = imageSize*this->scaleFactor;
