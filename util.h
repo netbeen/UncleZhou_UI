@@ -60,6 +60,7 @@ public:
     static int framentSizeCount;
     static cv::Mat imageCopy;
     static double PI;
+    static void dilateAndErode(cv::Mat& image);
 
     static void meldTwoCVMat(cv::Mat& primaryMat, cv::Mat& secondMat);
 

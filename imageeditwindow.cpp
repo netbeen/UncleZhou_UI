@@ -6,7 +6,7 @@
 #include <QSpinBox>
 #include <QDebug>
 #include <QPushButton>
-#include "/home/netbeen/桌面/周叔项目/20151208周叔代码/MyBinaryClassification.h"
+#include "BinaryClassification/MyBinaryClassification.h"
 
 
 /**
@@ -109,10 +109,7 @@ void ImageEditWindow::binaryClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
     cv::Mat_<cv::Vec3b> cvImage;
     Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
-
-    cv::imwrite("beforeClean.png",cvImage);
     Util::clearFragment(cvImage);
-    cv::imwrite("afterClean.png",cvImage);
     cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
 
     BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
@@ -131,8 +128,11 @@ void ImageEditWindow::binaryClassificationSlot(){
     // Run RFBinaryClassification
     cv::Mat_<cv::Vec3b> outputImg;
     CMyBinaryClassification myTest;
-    //myTest.SetParametes(3, 4);
+    myTest.SetParametes(8, 8);
     myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
+
+    Util::dilateAndErode(outputImg);
+
     Util::meldTwoCVMat(cvImage,outputImg);
 
     Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);

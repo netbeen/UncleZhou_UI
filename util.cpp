@@ -41,6 +41,47 @@ void Util::convertQImageToMat( QImage &img_qt,  Mat_<Vec3b>& img_cv){
     }
 }
 
+void Util::dilateAndErode(cv::Mat& image){
+    assert(image.type() == CV_8UC3);
+
+    cv::Vec3b white = cv::Vec3b(255,255,255);
+    cv::Vec3b currentColor = white;
+    for(int y_offset = 0; y_offset < image.rows; y_offset++){
+        for(int x_offset = 0 ; x_offset < image.cols; x_offset++){
+            if(image.at<cv::Vec3b>(y_offset,x_offset) != white){
+                currentColor = image.at<cv::Vec3b>(y_offset,x_offset);
+                y_offset = image.rows;
+                x_offset = image.cols;
+            }
+        }
+    }
+    assert(currentColor != white);
+    cv::Mat binaryImage = cv::Mat(image.size(), CV_8U);
+    for(int y_offset = 0; y_offset < image.rows; y_offset++){
+        for(int x_offset = 0 ; x_offset < image.cols; x_offset++){
+            if(image.at<cv::Vec3b>(y_offset,x_offset) == currentColor){
+                binaryImage.at<uchar>(y_offset,x_offset) = 255;
+            }else{
+                binaryImage.at<uchar>(y_offset,x_offset) = 0;
+            }
+        }
+    }
+    cv::dilate(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),3);
+    cv::erode(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),6);
+    cv::dilate(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),3);
+    //cv::imwrite("binary.png",binaryImage);
+
+    for(int y_offset = 0; y_offset < image.rows; y_offset++){
+        for(int x_offset = 0 ; x_offset < image.cols; x_offset++){
+            if(binaryImage.at<uchar>(y_offset,x_offset) == 255){
+                image.at<cv::Vec3b>(y_offset,x_offset) = currentColor;
+            }else{
+                image.at<cv::Vec3b>(y_offset,x_offset) = white;
+            }
+        }
+    }
+    binaryImage.release();
+}
 
 void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
     img_qt.convertToFormat(QImage::Format_RGB32); // 将QImage 转换成32位格式 32位格式是最便于处理

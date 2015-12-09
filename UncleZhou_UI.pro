@@ -34,10 +34,10 @@ SOURCES += main.cpp\
     densitypeakcanvas.cpp \
     viewpatchdistributedialog.cpp \
     viewpatchdistributecavvas.cpp \
-    ../../桌面/周叔项目/20151208周叔代码/GetImageFeatures.cpp \
-    ../../桌面/周叔项目/20151208周叔代码/MyBinaryClassification.cpp \
-    ../../桌面/周叔项目/20151208周叔代码/MySharkML.cpp \
-    binaryclassificationdialog.cpp
+    binaryclassificationdialog.cpp \
+    BinaryClassification/GetImageFeatures.cpp \
+    BinaryClassification/MyBinaryClassification.cpp \
+    BinaryClassification/MySharkML.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -60,10 +60,10 @@ HEADERS  += mainwindow.h \
     densitypeakcanvas.h \
     viewpatchdistributedialog.h \
     viewpatchdistributecavvas.h \
-    ../../桌面/周叔项目/20151208周叔代码/GetImageFeatures.h \
-    ../../桌面/周叔项目/20151208周叔代码/MyBinaryClassification.h \
-    ../../桌面/周叔项目/20151208周叔代码/MySharkML.h \
-    binaryclassificationdialog.h
+    binaryclassificationdialog.h \
+    BinaryClassification/GetImageFeatures.h \
+    BinaryClassification/MyBinaryClassification.h \
+    BinaryClassification/MySharkML.h
 
 
 FORMS    +=
