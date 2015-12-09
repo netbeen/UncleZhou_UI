@@ -13,6 +13,9 @@ TEMPLATE = app
 
 CONFIG += c++11
 
+QMAKE_CXXFLAGS+= -fopenmp
+QMAKE_LFLAGS +=  -fopenmp
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     newimagedialog.cpp \
@@ -37,7 +40,13 @@ SOURCES += main.cpp\
     binaryclassificationdialog.cpp \
     BinaryClassification/GetImageFeatures.cpp \
     BinaryClassification/MyBinaryClassification.cpp \
-    BinaryClassification/MySharkML.cpp
+    BinaryClassification/MySharkML.cpp \
+    graphcut/graphcut.cpp \
+    graphcut/gmm.cpp \
+    graphcut/gco-v3.0/GCoptimization.cpp \
+    graphcut/gco-v3.0/graph.cpp \
+    graphcut/gco-v3.0/LinkedBlockList.cpp \
+    graphcut/gco-v3.0/maxflow.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -63,7 +72,14 @@ HEADERS  += mainwindow.h \
     binaryclassificationdialog.h \
     BinaryClassification/GetImageFeatures.h \
     BinaryClassification/MyBinaryClassification.h \
-    BinaryClassification/MySharkML.h
+    BinaryClassification/MySharkML.h \
+    graphcut/graphcut.h \
+    graphcut/gmm.h \
+    graphcut/gco-v3.0/block.h \
+    graphcut/gco-v3.0/energy.h \
+    graphcut/gco-v3.0/GCoptimization.h \
+    graphcut/gco-v3.0/graph.h \
+    graphcut/gco-v3.0/LinkedBlockList.h
 
 
 FORMS    +=
@@ -83,6 +99,4 @@ LIBS += /usr/local/lib/libopencv_core.so    \
 		/usr/local/lib/libshark.a \
 		/home/netbeen/git_repo/Shark/build/lib/libshark.a
 
-QMAKE_CXXFLAGS+= -fopenmp
-QMAKE_LFLAGS +=  -fopenmp
 
