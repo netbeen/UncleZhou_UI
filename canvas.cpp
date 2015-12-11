@@ -125,7 +125,16 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                     break;
             }
         }    //以上操作只有在画布内部才有效
-
+    }else if(e->buttons() & Qt::RightButton){
+        if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+            switch (this->operationType) {
+                case config::Eraser:    //右键状态下，橡皮擦变为魔术橡皮擦
+                    this->magicErase(this->mapToPixmap(e->pos()));
+                    break;
+                default:
+                    break;
+            }
+        }//以上操作只有在画布内部才有效
     }
 }
 
