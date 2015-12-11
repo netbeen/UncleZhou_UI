@@ -96,6 +96,13 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
 }
 
 
+void ImageEditWindow::keyPressEvent(QKeyEvent *e){
+    /*if (e->key() == Qt::Key_B){
+        std::cout << "Qt::Key_B" << std::endl;
+    }*/
+}
+
+
 void ImageEditWindow::densityPeakInteractiveSlot(){
     DensityPeakDialog* densityPeakDialog = new DensityPeakDialog(this);
     if(densityPeakDialog->exec() == QDialog::Accepted){
@@ -181,10 +188,12 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->pencilAction= new QAction(QIcon(":/image/pencil.png"),"&Pencil",this);
     QObject::connect(this->pencilAction, &QAction::triggered, this, &ImageEditWindow::pencilToolSlot);
     this->eraserAction= new QAction(QIcon(":/image/eraser.png"),"&Eraser",this);
+    this->eraserAction->setShortcut(Qt::Key_E);
     QObject::connect(this->eraserAction, &QAction::triggered, this, &ImageEditWindow::eraserToolSlot);
     this->magicEraserAction= new QAction(QIcon(":/image/magicEraser.png"),"&Magic Eraser",this);
     QObject::connect(this->magicEraserAction, &QAction::triggered, this, &ImageEditWindow::magicEraserToolSlot);
     this->polygonAction= new QAction(QIcon(":/image/polygon.png"),"&Polygon",this);
+    this->polygonAction->setShortcut(Qt::Key_R);
     QObject::connect(this->polygonAction, &QAction::triggered, this, &ImageEditWindow::polygonToolSlot);
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
@@ -198,6 +207,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->viewPatchDistributeAction = new QAction(QIcon(":image/open.png"),"&View Patch Distribute",this);
     QObject::connect(this->viewPatchDistributeAction,&QAction::triggered, this, &ImageEditWindow::viewPatchDistributeSlot);
     this->binaryClassificationAction = new QAction(QIcon(":image/open.png"),"&Binary Classification",this);
+    this->binaryClassificationAction->setShortcut(Qt::Key_B);
     QObject::connect(this->binaryClassificationAction,&QAction::triggered, this, &ImageEditWindow::binaryClassificationSlot);
 
 

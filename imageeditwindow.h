@@ -24,6 +24,7 @@
 #include "viewpatchdistributedialog.h"
 
 #include "SuperPixel/readsuperpixeldat.h"
+#include <QKeyEvent>
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -105,6 +106,9 @@ private:
 
 
     ReadSuperPixelDat* readSuperPixelDat;
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *e) override;
 
 signals:
     void sendFrameToToolOptionDock(QFrame* inputFrame);
