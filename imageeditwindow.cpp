@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QPushButton>
 #include "BinaryClassification/MyBinaryClassification.h"
+#include "graphcut/graphcut.h"
 
 
 /**
@@ -31,6 +32,10 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu->addAction(this->binaryClassificationAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
+
+    //处理SuperPixel的类
+    this->readSuperPixelDat = new ReadSuperPixelDat();
+    readSuperPixelDat->segmentSourceImage();
 }
 
 
@@ -112,12 +117,18 @@ void ImageEditWindow::binaryClassificationSlot(){
     Util::clearFragment(cvImage);
     cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
 
+    //开启选颜色对话框
     BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
     QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::getClassificationColor);
     binaryClassificationDialog->exec();
 
     cv::Vec3b BK_Color(uchar(255), uchar(255), uchar(255)); //whilte
     cv::Vec3b Cur_Color = this->classificationColor;
+
+    //利用mask图像，生成analyse文件
+    std::cout << "this->readSuperPixelDat->analyseLabelFile(); start." << std::endl;
+    this->readSuperPixelDat->analyseLabelFile();
+    std::cout << "this->readSuperPixelDat->analyseLabelFile(); end." << std::endl;
 
     // Read Source Image
     cv::Mat img = cv::imread("sourceImage.png");
@@ -129,9 +140,20 @@ void ImageEditWindow::binaryClassificationSlot(){
     cv::Mat_<cv::Vec3b> outputImg;
     CMyBinaryClassification myTest;
     myTest.SetParametes(8, 8);
-    myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
+    //myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
 
-    Util::dilateAndErode(outputImg);
+    std::cout << "myTest.RandomForestBinaryClassification start." << std::endl;
+    myTest.RandomForestBinaryClassification(img,outputImg,BK_Color,Cur_Color,"analyseResult.txt");
+    std::cout << "myTest.RandomForestBinaryClassification end." << std::endl;
+
+    //Util::dilateAndErode(outputImg);
+    cv::imwrite("afterDilateAndErode.png",outputImg);
+
+    cv::imshow("before",outputImg);
+    GraphCut* graphcut = new GraphCut();
+    graphcut->main(img,outputImg);
+    cv::imshow("after",outputImg);
+
 
     Util::meldTwoCVMat(cvImage,outputImg);
 

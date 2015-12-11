@@ -4,6 +4,7 @@ CGetImageFeatures::CGetImageFeatures(void)
 {
 	m_patchSize = 16;
 	m_numBins = 16;
+    this->superPixelDat = std::vector<std::vector<cv::Point> >();
 }
 
 CGetImageFeatures::CGetImageFeatures(int patchSize, int numBins)
@@ -15,23 +16,6 @@ CGetImageFeatures::CGetImageFeatures(int patchSize, int numBins)
 
 CGetImageFeatures::~CGetImageFeatures(void)
 {
-}
-
-void CGetImageFeatures::PrepareFeatures(cv::Mat &SrcImg, cv::Mat &colorMask, cv::Mat &trainingFeat, std::vector<int> &trainingLabel, cv::Mat &TestFeat)
-{
-	GetFeatures_ColorHist_3Channels(TestFeat, SrcImg, m_patchSize, m_numBins);
-	
-	int rows = colorMask.rows;
-	int cols = colorMask.cols;
-	cv::Mat mask_crop = colorMask(cv::Range(0, rows-m_patchSize+1), cv::Range(0, cols-m_patchSize+1));
-	std::vector<int> labels;
-	ColorImg2Label(labels, mask_crop);
-
-	int L1[5] = {0, 2, 6, 20, 24};
-	int L2[5] = {9999, 1, 0, 0, 0};
-	LabelConvert(labels, 5, L1, L2);
-
-	GetTrainingSet(trainingFeat, trainingLabel, TestFeat, labels);
 }
 
 void CGetImageFeatures::OutputFeatures(std::string filepath, cv::Mat &features)
@@ -222,4 +206,122 @@ void Label2BGR(int label, cv::Vec3b &pColor)
 	bgr[1] = uchar ( (int) ( int(label/3.0)*127.5 ));
 	label = label - int(label/3.0)*3;
 	bgr[0]  = uchar ( (int) ( label*127.5 ));
+}
+
+void CGetImageFeatures::GetSuperPixelFeat(cv::Mat img, int numBinsPerChannel, cv::Mat &testFeat, cv::Mat &trainFeat, vector<int> &allLabel, int BK_Label, string dirSuperPixelDat)
+{
+	//my test about super pixels
+	vector<cv::Point> spRowsDat; //each row in super pixel data
+	vector<vector<int> > maskDat; //mask data
+	vector<int> maskIdDat; //each row id data
+	int id, numRowsDat, x,y,numSuperPixels;
+	ifstream readDat(dirSuperPixelDat);
+	if(!readDat.good()){
+		cout<<"error! open the super pixels data fail."<<endl;
+		return;
+	}
+	string line;
+	getline(readDat, line);
+	if( line == "#labels" ){
+		getline(readDat, line);
+		istringstream ss(line);
+		ss>>numSuperPixels;
+		cout<<numSuperPixels<<endl;
+		for(int i = 0; i<numSuperPixels; i++){
+			getline(readDat, line);
+			istringstream ss(line);
+			ss>>id>>numRowsDat;
+			for(int j=0;j<numRowsDat;j++){
+				ss>>y>>x;
+				spRowsDat.push_back(cv::Point(x,y));
+			}
+			this->superPixelDat.push_back(spRowsDat);
+            {
+                vector<cv::Point> swapVector;
+                spRowsDat.swap(swapVector);
+            }
+		}
+	}
+
+	int numMask, spId, color, numMaskSuperPixels = 0;
+	vector<int> maskColor;
+	getline(readDat, line);
+	if( line == "#masks" ){
+		getline(readDat, line);
+		istringstream ss(line);
+		ss>>numMask;
+		cout<<numMask<<endl;
+		for(int i = 0; i<numMask; i++){
+			getline(readDat, line);
+			istringstream ss(line);
+			ss>>id>>color>>numRowsDat;
+			maskColor.push_back(color);
+			for(int j=0;j<numRowsDat;j++, numMaskSuperPixels++){
+				ss>>spId;
+				maskIdDat.push_back(spId);
+			}
+			maskDat.push_back(maskIdDat);
+            {
+                vector<int> swapVector;
+                maskIdDat.swap(swapVector);
+            }
+
+		}
+	}
+    readDat.close();
+	int DIMENSION = numBinsPerChannel*3;
+	testFeat = cv::Mat(numSuperPixels, DIMENSION, CV_32F);
+	memset(testFeat.data, 0, sizeof(float)*numSuperPixels*DIMENSION);
+
+	trainFeat = cv::Mat(numMaskSuperPixels, DIMENSION, CV_32F);
+	memset(trainFeat.data, 0, sizeof(float)*numMaskSuperPixels*DIMENSION);
+
+	vector<int> testLabel(numSuperPixels, BK_Label);
+
+	int pf=0;
+	int nChannels = img.channels();
+	for(vector<vector<cv::Point> >::iterator iter=this->superPixelDat.begin();iter!=this->superPixelDat.end();iter++, pf++){
+		vector<cv::Point > pixelLoc = *iter;
+
+		for(vector<cv::Point >::iterator iiter=pixelLoc.begin();iiter!=pixelLoc.end();iiter++){
+			cv::Point pixel = *iiter;
+			cv::Vec3b pp = img.at<cv::Vec3b>( pixel.y, pixel.x);
+			for(int k=0; k<nChannels; k++) {
+				int intensity = (int) pp[nChannels-1-k];
+				int BinID = intensity*(numBinsPerChannel-1) / 255.0 + 0.5;
+				testFeat.at<float>(pf, k*numBinsPerChannel + BinID) += 1.0;
+			}
+		}
+	}
+
+	//corresponding to mask, the train data
+	pf=0;
+	int pnum = 0;
+	vector<vector<int> > superPixelColorHist;
+	for(vector<vector<int> >::iterator iter=maskDat.begin();iter!=maskDat.end();iter++, pf++){
+		vector<int> superPixelId = *iter;
+		color = maskColor[pf];
+		for(vector<int>::iterator iiter=superPixelId.begin();iiter!=superPixelId.end();iiter++){
+
+			trainFeat.row(pnum++) = testFeat.row(*iiter);
+			testLabel[*iiter] = color;
+		}
+	}
+	allLabel = testLabel;
+}
+
+
+void CGetImageFeatures::Label2ColorSuperPixelImage(std::vector<int> &label, cv::Mat &img)
+{
+	int nChannels = img.channels();
+	int superPixelId = 0;
+	for(vector<vector<cv::Point> >::iterator iter=this->superPixelDat.begin();iter!=this->superPixelDat.end();iter++, superPixelId++){
+		vector<cv::Point > pixelLoc = *iter;
+
+		for(vector<cv::Point >::iterator iiter=pixelLoc.begin();iiter!=pixelLoc.end();iiter++){
+			cv::Point pixel = *iiter;
+			Label2BGR(label[superPixelId], img.at<cv::Vec3b>(pixel.y, pixel.x));
+		}
+
+	}
 }

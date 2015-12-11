@@ -21,7 +21,6 @@ void CMyBinaryClassification::SetParametes(int patchSize, int numBins, int numTr
 	m_numBins = numBins;
 	m_numTrees = numTrees;
 }
-
 void CMyBinaryClassification::RandomForestBinaryClassification(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, cv::Vec3b BK_Color, cv::Vec3b Cur_Color)
 {
 	int BK_Label = BGR2Label(BK_Color);
@@ -49,7 +48,7 @@ void CMyBinaryClassification::RandomForestBinaryClassification(cv::Mat &inputImg
 
 
 	//Run Random Forest
-	CMySharkML myshark(100);
+	CMySharkML myshark(m_numTrees);
 	myshark.RFClassification(trainingFeat, trainingLabel, TestFeat, predictLabel, predictConf);
 
 	//Output
@@ -66,4 +65,41 @@ void CMyBinaryClassification::RandomForestBinaryClassification(cv::Mat &inputImg
 				outputImg.at<cv::Vec3b>(i, j) = BK_Color;
 		}
 	}
+}
+
+
+void CMyBinaryClassification::RandomForestBinaryClassification(cv::Mat &inputImg, cv::Mat &outputImg, cv::Vec3b BK_Color, cv::Vec3b Cur_Color, string dirSuperPixelDat)
+{
+	int BK_Label = BGR2Label(BK_Color);
+	int Cur_Label = BGR2Label(Cur_Color);
+	// Data Structure
+	cv::Mat trainingFeat, TestFeat; //features
+	std::vector<int> trainingLabel, predictLabel; //labels
+	std::vector<float> predictConf; //confidence
+
+
+	//GetFeatures
+	CGetImageFeatures myfeat(m_patchSize, m_numBins);
+
+	//test super pixels features
+	cv::Mat trainFeat;
+	std::vector<int> allLabel;
+	myfeat.GetSuperPixelFeat(inputImg, m_numBins, TestFeat, trainFeat, allLabel, BK_Label, dirSuperPixelDat);
+
+	myfeat.LabelConvertforBinaryClassification(allLabel, BK_Label, Cur_Label);
+	//Select Training Set
+	myfeat.GetTrainingSet(trainingFeat, trainingLabel, TestFeat, allLabel);
+	if(trainingFeat.rows < 1){
+		cout<<"training feature's dimension is illegal !"<<endl;
+		return ;
+	}
+	//Run Random Forest
+	CMySharkML myshark(m_numTrees);
+	myshark.RFClassification(trainingFeat, trainingLabel, TestFeat, predictLabel, predictConf);
+
+	//Output
+	myfeat.LabelConvertforOutputBinaryClass(predictLabel, BK_Label, Cur_Label);
+	outputImg = cv::Mat(inputImg.rows, inputImg.cols, CV_8UC3);
+
+	myfeat.Label2ColorSuperPixelImage(predictLabel, outputImg);
 }

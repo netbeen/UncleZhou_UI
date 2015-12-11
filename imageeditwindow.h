@@ -23,6 +23,8 @@
 #include "densitypeakdialog.h"
 #include "viewpatchdistributedialog.h"
 
+#include "SuperPixel/readsuperpixeldat.h"
+
 class ImageEditWindow  : public QMainWindow
 {
     Q_OBJECT
@@ -101,6 +103,8 @@ private:
     void getClassificationColor(cv::Vec3b newColor);
     cv::Vec3b classificationColor;
 
+
+    ReadSuperPixelDat* readSuperPixelDat;
 
 signals:
     void sendFrameToToolOptionDock(QFrame* inputFrame);

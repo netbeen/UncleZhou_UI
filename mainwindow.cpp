@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QToolBar* toolbar = this->addToolBar("Standard Tool Bar");
     toolbar->addAction(this->loadSourceImageAction);
 
-    QStatusBar* statusBar = this->statusBar();
+    //QStatusBar* statusBar = this->statusBar();
 
 }
 

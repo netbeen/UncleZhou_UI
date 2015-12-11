@@ -36,10 +36,10 @@ void DensityPeakDialog::receiveSelectionCompeted(std::vector<int> selectPointInd
         std::cout << "DENY! selectPointIndex > 27" << std::endl;
         return;
     }*/
-    for(int i = 0; i < this->v_points.size(); i ++){
+    for(size_t i = 0; i < this->v_points.size(); i ++){
         v_points.at(i).label = -1;
     }
-    for(int i = 0; i < selectPointIndex.size(); i ++){
+    for(size_t i = 0; i < selectPointIndex.size(); i ++){
         this->v_points.at(selectPointIndex.at(i)).label = i+1;
     }
     if(this->v_points.at(this->v_density_Descend.front().first).label == -1){
@@ -53,7 +53,7 @@ void DensityPeakDialog::receiveSelectionCompeted(std::vector<int> selectPointInd
     int step = this->colorTabel.size()/selectPointIndex.size();
     int tempLabel;
     std::ofstream outputFile("./labels.txt",std::ios::out);
-    for(int i = 0; i < this->v_points.size(); i++){
+    for(size_t i = 0; i < this->v_points.size(); i++){
         assert(v_points.at(i).label != -1);
         tempLabel = this->v_points.at(i).label;
         outputFile << tempLabel << "\n";

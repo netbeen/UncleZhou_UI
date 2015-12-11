@@ -1,6 +1,5 @@
 #include "gmm.h"
 
-
 GMM::GMM( Mat& _model )	//model是一个mat
 {
     const int modelSize = 3/*mean*/ + 9/*covariance*/ + 1/*component weight*/;

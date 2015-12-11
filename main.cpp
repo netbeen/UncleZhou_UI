@@ -3,6 +3,8 @@
 #include "BinaryClassification/MyBinaryClassification.h"
 #include "util.h"
 
+#include "graphcut/graphcut.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

@@ -7,8 +7,16 @@
 using namespace cv;
 using namespace std;
 
-double Util::PI = 3.14159265;
+double Util::PI = 3.141592654;
 
+
+/**
+ * @brief Util::meldTwoCVMat
+ * @brief 融合两幅图像，第一参数为主图像，第二参数为副图像
+ * @param primaryMat 主图像
+ * @param secondMat 副图像
+ * @return 没有返回值
+ */
 void Util::meldTwoCVMat(cv::Mat& primaryMat, cv::Mat& secondMat){
     assert(primaryMat.size() == secondMat.size());
 
@@ -24,6 +32,13 @@ void Util::meldTwoCVMat(cv::Mat& primaryMat, cv::Mat& secondMat){
     }
 }
 
+/**
+ * @brief Util::convertQImageToMat
+ * @brief 转换QImage到CV::Mat
+ * @param img_qt QImage类型
+ * @param img_cv cv::Mat类型
+ * @return 没有返回值
+ */
 void Util::convertQImageToMat( QImage &img_qt,  Mat_<Vec3b>& img_cv){
     img_cv.create(img_qt.height(), img_qt.width());
     img_qt.convertToFormat(QImage::Format_RGB32);
@@ -41,6 +56,13 @@ void Util::convertQImageToMat( QImage &img_qt,  Mat_<Vec3b>& img_cv){
     }
 }
 
+
+/**
+ * @brief Util::dilateAndErode
+ * @brief 进行Label图像的膨胀+腐蚀
+ * @param image 输入输出图像
+ * @return 没有返回值
+ */
 void Util::dilateAndErode(cv::Mat& image){
     assert(image.type() == CV_8UC3);
 
@@ -69,7 +91,6 @@ void Util::dilateAndErode(cv::Mat& image){
     cv::dilate(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),3);
     cv::erode(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),6);
     cv::dilate(binaryImage,binaryImage,cv::Mat(),cv::Point(-1,-1),3);
-    //cv::imwrite("binary.png",binaryImage);
 
     for(int y_offset = 0; y_offset < image.rows; y_offset++){
         for(int x_offset = 0 ; x_offset < image.cols; x_offset++){
@@ -83,6 +104,13 @@ void Util::dilateAndErode(cv::Mat& image){
     binaryImage.release();
 }
 
+/**
+ * @brief Util::convertMattoQImage
+ * @brief 转换cv::Mat到QImage
+ * @param img_cv cv::Mat类型
+ * @param img_qt QImage类型
+ * @return 没有返回值
+ */
 void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
     img_qt.convertToFormat(QImage::Format_RGB32); // 将QImage 转换成32位格式 32位格式是最便于处理
     img_qt.scaled(img_cv.rows, img_cv.cols);
@@ -103,6 +131,13 @@ void Util::convertMattoQImage( Mat_<Vec3b>& img_cv, QImage &img_qt){
 int Util::framentSizeCount = 0;
 cv::Mat Util::imageCopy = cv::Mat();
 
+
+/**
+ * @brief Util::clearFragment
+ * @brief 消除图像的小块碎片，先DFS遍历，若小于阈值，则DFS替换
+ * @param image 输入输出图像
+ * @return 没有返回值
+ */
 void Util::clearFragment(cv::Mat_<cv::Vec3b>& image){
     std::cout << "start clearFragment" << std::endl;
     cv::Vec3b white = cv::Vec3b(255,255,255);
@@ -124,7 +159,14 @@ void Util::clearFragment(cv::Mat_<cv::Vec3b>& image){
     }
 }
 
-void Util::calcFramentSize(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint){
+/**
+ * @brief Util::calcFramentSize
+ * @brief 计算连通区域的面积，使用DFS算法，使用Util::framentSizeCount变量
+ * @param image 输入图像
+ * @param startPoint DFS起点
+ * @return 没有返回值
+ */
+void Util::calcFramentSize(const cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint){
     //std::cout << "start calcFramentSize "  << startPoint.x << " " << startPoint.y<< std::endl;
     cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);
 
@@ -145,26 +187,28 @@ void Util::calcFramentSize(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint
     }
 }
 
+/**
+ * @brief Util::replaceColorBlockDFS
+ * @brief 使用新颜色替换指定色块的颜色
+ * @param image 输入输出图像
+ * @param startPoint DFS起点
+ * @param newColor 新颜色
+ */
 void Util::replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor){
     cv::Vec3b currentColor = image.at<cv::Vec3b>(startPoint.y,startPoint.x);
-    if(currentColor == newColor){
+    if(currentColor == newColor)
         return;
-    }
     image.at<cv::Vec3b>(startPoint.y,startPoint.x) = newColor;
 
     //DFS
-    if( startPoint.x+1 < image.cols && image.at<cv::Vec3b>(startPoint.y,startPoint.x+1) == currentColor){
+    if( startPoint.x+1 < image.cols && image.at<cv::Vec3b>(startPoint.y,startPoint.x+1) == currentColor)
         Util::replaceColorBlockDFS(image,cv::Point(startPoint.x+1,startPoint.y),newColor);
-    }
-    if(startPoint.x-1 >= 0 && image.at<cv::Vec3b>(startPoint.y,startPoint.x-1) == currentColor){
+    if(startPoint.x-1 >= 0 && image.at<cv::Vec3b>(startPoint.y,startPoint.x-1) == currentColor)
         Util::replaceColorBlockDFS(image,cv::Point(startPoint.x-1,startPoint.y),newColor);
-    }
-    if(startPoint.y+1 < image.rows && image.at<cv::Vec3b>(startPoint.y+1,startPoint.x) == currentColor){
+    if(startPoint.y+1 < image.rows && image.at<cv::Vec3b>(startPoint.y+1,startPoint.x) == currentColor)
         Util::replaceColorBlockDFS(image,cv::Point(startPoint.x,startPoint.y+1),newColor);
-    }
-    if(startPoint.y-1 >= 0 && image.at<cv::Vec3b>(startPoint.y-1,startPoint.x) == currentColor){
+    if(startPoint.y-1 >= 0 && image.at<cv::Vec3b>(startPoint.y-1,startPoint.x) == currentColor)
         Util::replaceColorBlockDFS(image,cv::Point(startPoint.x,startPoint.y-1),newColor);
-    }
 }
 
 /**
@@ -416,7 +460,7 @@ void Util::labelOtherPoints(std::vector<ClusteringPoints>& v_points, std::vector
     // query points through the density list of descending order
     std::vector<std::pair<int, double> >::iterator iter_d_descend = v_density_Descend.begin();
     iter_d_descend = v_density_Descend.begin();
-    for(int i=0; i<v_points.size(); i++, iter_d_descend++) {
+    for(size_t i=0; i<v_points.size(); i++, iter_d_descend++) {
         int curID = iter_d_descend->first;
         if(v_points[curID].label != -1)
             continue;
@@ -448,7 +492,7 @@ Mat Util::gabor_filter(Mat& img, int type)
     // variables for filter2D
     Point archor(-1,-1);
     int ddepth = CV_64F;//CV_64F
-    double delta = 0;
+    //double delta = 0;
 
     // filter image with gabor bank
     Mat totalMat, totalMat_re, totalMat_im;
@@ -626,7 +670,7 @@ void Util::calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPo
                     nchecks = 2*knn;
                 myKdTree.knnSearch(queryPos, indices, dists, knn, cv::flann::SearchParams(nchecks)); //, cv::flann::SearchParams(knn+1));
                 bool bfound = false;
-                double distest1 = dists[0];
+                //double distest1 = dists[0];
                 for(int j=startindex; j<knn; j++) {
                     int nnIndex = indices[j];
                     if(nnIndex < 0 || nnIndex >= numPts) {
@@ -635,7 +679,7 @@ void Util::calcDistanceAndDelta(const cv::Mat features, std::vector<ClusteringPo
                     }
 
                     double distest2 = dists[j];
-                    double dis = 0.0;
+                    //double dis = 0.0;
 
                     if(rankinDesityDescend[nnIndex] < curRank) { //have found the nearest neighbor of higher density
                         iter->nNNHD = nnIndex;
@@ -668,7 +712,7 @@ double Util::GetSearchRadius(cv::flann::Index &myKdTree, const cv::Mat &features
     //3.5 计算radius,目标2%
     double maxDistanceSum = 0.0;
     int numpts = features.rows;
-    int DIMENSION = features.cols;
+    //int DIMENSION = features.cols;
     int knn = numpts*percent;
     if(knn > nMaxSearch)
         knn = nMaxSearch;

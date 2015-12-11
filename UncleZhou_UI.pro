@@ -46,7 +46,9 @@ SOURCES += main.cpp\
     graphcut/gco-v3.0/GCoptimization.cpp \
     graphcut/gco-v3.0/graph.cpp \
     graphcut/gco-v3.0/LinkedBlockList.cpp \
-    graphcut/gco-v3.0/maxflow.cpp
+    graphcut/gco-v3.0/maxflow.cpp \
+    SuperPixel/readsuperpixeldat.cpp \
+    SuperPixel/SLICSuperpixels/SLIC.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -79,7 +81,9 @@ HEADERS  += mainwindow.h \
     graphcut/gco-v3.0/energy.h \
     graphcut/gco-v3.0/GCoptimization.h \
     graphcut/gco-v3.0/graph.h \
-    graphcut/gco-v3.0/LinkedBlockList.h
+    graphcut/gco-v3.0/LinkedBlockList.h \
+    SuperPixel/readsuperpixeldat.h \
+    SuperPixel/SLICSuperpixels/SLIC.h
 
 
 FORMS    +=

@@ -25,7 +25,7 @@ void ViewPatchDistributeCavvas::paintEvent(QPaintEvent* event){
 
 
 
-    for(int elem =0; elem < this->patchInfo.size(); elem ++){
+    for(size_t elem =0; elem < this->patchInfo.size(); elem ++){
     //for(int elem : this->drawList){
         QImage image(patchInfo.at(elem).image.data, patchInfo.at(elem).image.cols, patchInfo.at(elem).image.rows, patchInfo.at(elem).image.step, QImage::Format_RGB888);
         painter.drawImage(this->patchInfo.at(elem).x*this->width(),this->patchInfo.at(elem).y*this->height(),image);
@@ -38,7 +38,7 @@ void ViewPatchDistributeCavvas::mouseReleaseEvent(QMouseEvent *e){
 
     std::cout <<"mouse " << mouseX << " " << mouseY << std::endl;
 
-    for(int i = 0; i < this->patchInfo.size(); i++){
+    for(size_t i = 0; i < this->patchInfo.size(); i++){
         float distanceX = std::pow(mouseX-patchInfo.at(i).x,2);
         float distanceY = std::pow(mouseY-patchInfo.at(i).y,2);
         float distance = distanceX + distanceY;

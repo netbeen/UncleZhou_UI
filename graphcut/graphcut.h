@@ -16,10 +16,11 @@ class GraphCut
 public:
     GraphCut();
     void main();
+    void main(cv::Mat& sourceImage, cv::Mat& initGuess);
 
 private:
     int CLASS_NUMBER;
-    int scaleFactor = 1;
+    int scaleFactor;
     cv::Mat rawImage;
 
     cv::Mat initGuess;

@@ -6,8 +6,6 @@
 //#include <opencv2/imgproc/imgproc.hpp>
 
 #include <shark/Data/Csv.h> //importing the file
-#include <shark/Algorithms/Trainers/RFTrainer.h> //the random forest trainer
-#include <shark/ObjectiveFunctions/Loss/ZeroOneLoss.h> //zero one loss for evaluation
 //###end<includes>
 
 using namespace std; 

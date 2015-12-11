@@ -1,4 +1,6 @@
 #include "MySharkML.h"
+#include <shark/Algorithms/Trainers/RFTrainer.h> //the random forest trainer
+#include <shark/ObjectiveFunctions/Loss/ZeroOneLoss.h> //zero one loss for evaluation
 
 #include <iostream>
 

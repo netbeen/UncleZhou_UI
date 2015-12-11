@@ -2,7 +2,7 @@
 #include "gmm.h"
 #include <cmath>
 
-GraphCut::GraphCut()
+GraphCut::GraphCut():scaleFactor(1.0)
 {
 }
 
@@ -56,12 +56,12 @@ void GraphCut::generateGMMProbability(){
 
     //验证每个sample的样本数与label数相等
     for(int i = 0; i < this->CLASS_NUMBER; i++){
-        assert(samples.at(i).size() == mat_samples_label.at(i).rows);
+        assert(samples.at(i).size() == static_cast<size_t>(mat_samples_label.at(i).rows));
     }
 
     //把每个sample加入到GMM中
     for(int i = 0; i < this->CLASS_NUMBER; i++){
-        for(int sampleIndex = 0; sampleIndex < samples.at(i).size(); sampleIndex++){
+        for(size_t sampleIndex = 0; sampleIndex < samples.at(i).size(); sampleIndex++){
             GMMs.at(i).addSample(mat_samples_label.at(i).at<int>(sampleIndex,0), samples.at(i).at(sampleIndex));
         }
     }
@@ -126,14 +126,14 @@ void GraphCut::GridGraph_Individually(int width,int height,int num_pixels,int nu
         for ( int l1 = 0; l1 < num_labels; l1++ ){
             for (int l2 = 0; l2 < num_labels; l2++ ){
                 int cost = (l1-l2)*(l1-l2) <= 32  ? 2*(l1-l2)*(l1-l2):32;
-                gc->setSmoothCost(l1,l2,1.4*cost);
+                gc->setSmoothCost(l1,l2,5*cost);
             }
         }
 
-        printf("\nBefore optimization energy is %d",gc->compute_energy());
+        printf("\nBefore optimization energy is %d",static_cast<int>(gc->compute_energy()));
         //gc->expansion(5);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
         gc->swap(5);
-        printf("\nAfter optimization energy is %d\n",gc->compute_energy());
+        printf("\nAfter optimization energy is %d\n",static_cast<int>(gc->compute_energy()));
 
         for ( int  i = 0; i < num_pixels; i++ ){
             result[i] = gc->whatLabel(i);
@@ -157,7 +157,7 @@ void GraphCut::generateInitGuessMask(){
     for(int y_offset = 0; y_offset < this->initGuess.rows; y_offset++){
         for(int x_offset = 0; x_offset < this->initGuess.cols; x_offset++){
             cv::Vec3b currentColor = this->initGuess.at<cv::Vec3b>(y_offset,x_offset);
-            for(int i = 0; i < this->label2Value.size(); i++){
+            for(size_t i = 0; i < this->label2Value.size(); i++){
                 if(this->label2Value.at(i) == currentColor){
                     this->initGuessMask.at<int>(y_offset,x_offset) = i;
                     break;
@@ -209,6 +209,40 @@ void GraphCut::main(){
 }
 
 
+void GraphCut::main(cv::Mat& sourceImage, cv::Mat& initGuess){
+    this->rawImage = sourceImage;
+    this->initGuess = initGuess;
+
+    this->rawImage = this->rawImage(cv::Rect(0,0,this->initGuess.cols, this->initGuess.rows));
+    this->resultLabel = cv::Mat(this->rawImage.rows,this->rawImage.cols,CV_8UC3);
+
+    this->CLASS_NUMBER = 2;
+
+    if(this->checkUserMarkValid(this->initGuess) == false){
+        std::cout << "checkUserMarkValid false!" <<std::endl;
+        exit(1);
+    }else{
+        std::cout << "checkUserMarkValid true!" <<std::endl;
+    }
+
+    int num_pixels = this->rawImage.cols*this->rawImage.rows;
+
+    //this->generateGMMProbability();
+
+    // smoothness and data costs are set up one by one, individually
+    std::cout << "GridGraph_Individually start" << std::endl;
+    this->GridGraph_Individually(this->rawImage.cols,this->rawImage.rows,num_pixels,this->CLASS_NUMBER);
+
+    /*this->initGuessGray = this->resultLabelGray;
+    this->GridGraph_Individually(this->rawImage.cols,this->rawImage.rows,num_pixels,this->CLASS_NUMBER);*/
+
+    initGuess = this->resultLabel;
+    /*cv::imshow("resultLabelGray",this->resultLabel);
+    cv::imshow("initGuessGray",this->initGuess);
+    cv::imshow("rawImage",this->rawImage);
+    cv::imwrite("output.png",this->resultLabel);
+    cv::waitKey();*/
+}
 
 
 bool GraphCut::checkUserMarkValid(const cv::Mat& userMark){
@@ -219,13 +253,13 @@ bool GraphCut::checkUserMarkValid(const cv::Mat& userMark){
             if(it == this->label2Value.end()){
                 this->label2Value.push_back(currentMark);
                 std::cout << "Find new mark: " << static_cast<int>(currentMark[0]) <<" " << static_cast<int>(currentMark[1])<<  " "<< static_cast<int>(currentMark[2]) << std::endl;
-                if(this->label2Value.size() > this->CLASS_NUMBER){
+                if(this->label2Value.size() > static_cast<size_t>(this->CLASS_NUMBER)){
                     return false;
                 }
             }
         }
     }
-    if(this->label2Value.size() == this->CLASS_NUMBER){
+    if(this->label2Value.size() == static_cast<size_t>(this->CLASS_NUMBER)){
         return true;
     }else{
         return false;

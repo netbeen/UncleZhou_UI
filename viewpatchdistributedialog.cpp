@@ -21,7 +21,7 @@ void ViewPatchDistributeDialog::initData(){
 
     std::cout << patchCountX << " " << patchCountY << std::endl;
 
-    for(int i = 0; i <this->patchInfo.size(); i++){
+    for(size_t i = 0; i <this->patchInfo.size(); i++){
         float x,y;
         inputFile >> x >> y;
         PatchInfoNode patchInfoNode;
@@ -44,20 +44,20 @@ void ViewPatchDistributeDialog::initData(){
     float xMax = INT32_MIN;
     float yMax = INT32_MIN;
 
-    for(int i = 0; i < patchInfo.size(); i++){
+    for(size_t i = 0; i < patchInfo.size(); i++){
         xMin = std::min(xMin,this->patchInfo.at(i).x);
         xMax = std::max(xMax,this->patchInfo.at(i).x);
         yMin = std::min(yMin, this->patchInfo.at(i).y);
         yMax = std::max(yMax, this->patchInfo.at(i).y);
     }
     std::cout << xMax << " " << xMin << " " << yMax << " " << yMin << std::endl;
-    for(int i = 0; i < patchInfo.size(); i++){
+    for(size_t i = 0; i < patchInfo.size(); i++){
         patchInfo.at(i).x -= xMin;
         patchInfo.at(i).y -= yMin;
     }
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
-    for(int i = 0; i < patchInfo.size(); i++){
+    for(size_t i = 0; i < patchInfo.size(); i++){
         patchInfo.at(i).x /= xRange;
         patchInfo.at(i).y /= yRange;
     }

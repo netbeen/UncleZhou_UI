@@ -46,26 +46,26 @@ void DensityPeakCanvas::mouseReleaseEvent(QMouseEvent *e){
     std::cout <<"进入修改区"  << this->v_points.size()<< std::endl;
     std::vector<double> densityVector;
     std::vector<double> deltaVector;
-    for(int i = 0; i < this->v_points.size(); i++){
+    for(size_t i = 0; i < this->v_points.size(); i++){
         densityVector.push_back(v_points.at(i).density);
         deltaVector.push_back(v_points.at(i).dis2NNHD);
     }
     std::cout << "pass 1" << std::endl;
     double densityVectorMax;
     double deltaVectorMax;
-    for(int i = 0; i <this->v_points.size(); i++){
+    for(size_t i = 0; i <this->v_points.size(); i++){
         densityVectorMax = (densityVectorMax<densityVector.at(i))?densityVector.at(i):densityVectorMax;
         deltaVectorMax = (deltaVectorMax<deltaVector.at(i))?deltaVector.at(i):deltaVectorMax;
     }
     std::cout << "pass 2" << std::endl;
-    for(int i = 0; i <this->v_points.size(); i++){
+    for(size_t i = 0; i <this->v_points.size(); i++){
         densityVector.at(i) /= densityVectorMax;
         deltaVector.at(i) /= deltaVectorMax;
     }
     std::vector<double> densityMultiDelta;
     std::vector<double> densityMultiDeltaSort;
     std::cout << "pass 3" << std::endl;
-    for(int i = 0; i <this->v_points.size(); i++){
+    for(size_t i = 0; i <this->v_points.size(); i++){
         densityMultiDelta.push_back( densityVector.at(i) * deltaVector.at(i));
         densityMultiDeltaSort.push_back( densityVector.at(i) * deltaVector.at(i));
     }
@@ -75,7 +75,7 @@ void DensityPeakCanvas::mouseReleaseEvent(QMouseEvent *e){
         std::cout << elem << std::endl;
     }*/
     double threshold = densityMultiDeltaSort.at(3);/////////////////////////////////////////在此处设置需要输出多少个聚类中心
-    for(int i = 0; i < this->v_points.size(); i++){
+    for(size_t i = 0; i < this->v_points.size(); i++){
         if(densityMultiDelta.at(i)>threshold){
             selectPointIndex.push_back(i);
         }
@@ -119,7 +119,7 @@ void DensityPeakCanvas::init(const std::vector<ClusteringPoints>& v_points){
     this->v_points = v_points;
     double secondDelta = v_points.at(0).dis2NNHD;
     int maxDeltaIndex = -1;
-    for(int i = 0; i < v_points.size(); i++){
+    for(size_t i = 0; i < v_points.size(); i++){
         if(this->densityMax < v_points.at(i).density){
             this->densityMax = v_points.at(i).density;
             this->maxDensityIndex = i;

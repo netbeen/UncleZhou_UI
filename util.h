@@ -56,7 +56,7 @@ public:
 
     static void replaceColorBlockDFS(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint,const cv::Vec3b newColor);
     static void clearFragment(cv::Mat_<cv::Vec3b>& image);
-    static void calcFramentSize(cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint);
+    static void calcFramentSize(const cv::Mat_<cv::Vec3b>& image,const cv::Point startPoint);
     static int framentSizeCount;
     static cv::Mat imageCopy;
     static double PI;
