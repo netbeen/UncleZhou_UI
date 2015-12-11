@@ -11,7 +11,7 @@ public:
     ReadSuperPixelDat();
 
     void segmentSourceImage();
-    void analyseLabelFile(float THRESHOLD = 0.5);
+    void analyseLabelFile(const QString maskFilename,float THRESHOLD = 0.5);
 
     void main();
     void main(QString filename, int superPixelCount, float threshold);

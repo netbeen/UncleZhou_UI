@@ -218,12 +218,12 @@ void GraphCut::main(cv::Mat& sourceImage, cv::Mat& initGuess){
 
     this->CLASS_NUMBER = 2;
 
-    if(this->checkUserMarkValid(this->initGuess) == false){
+    /*if(this->checkUserMarkValid(this->initGuess) == false){
         std::cout << "checkUserMarkValid false!" <<std::endl;
         exit(1);
     }else{
         std::cout << "checkUserMarkValid true!" <<std::endl;
-    }
+    }*/
 
     int num_pixels = this->rawImage.cols*this->rawImage.rows;
 

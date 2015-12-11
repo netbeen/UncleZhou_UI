@@ -5,6 +5,7 @@
 #include <fstream>
 
 using namespace std; 
+
 void Label2BGR(int label, cv::Vec3b &pColor);
 int BGR2Label(const cv::Vec3b &pColor);
 
@@ -19,10 +20,7 @@ public:
 	void OutputLabel(std::string filepath, std::vector<int> &v_label);
 	void GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, int patchSize, int numBinsPerChannel, bool flag_Normalize = false);
 	void GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &trainlabel, cv::Mat &allFeat, std::vector<int> &v_label);
-	void ColorImg2Label(std::vector<int> &label, cv::Mat &img);
-	void Label2ColorImage(std::vector<int> &label, cv::Mat &img);
-	void LabelConvertforBinaryClassification(std::vector<int> &label, int BK_Label, int Cur_Label);
-	void LabelConvertforOutputBinaryClass(std::vector<int> &label, int BK_Label, int Cur_Label);
+
 
 	//processing the super pixels
 	//void ReadSuperPixelDat(std::string filepath, cv::Mat &features);

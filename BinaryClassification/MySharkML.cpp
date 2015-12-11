@@ -102,10 +102,10 @@ void CMySharkML::GetPredictionLabelandConfidence(std::vector<int> &predictLable,
 		float maxP = *iter_p;
 		int L = 0;	
 		std::size_t numInputs = predictions.element(k).size(); //Predict.size();
-		if(numInputs != 2) {
-			cout<<"NOTE: error in final predict vector dimension!"<<endl;
-			return;
-		}
+// 		if(numInputs != 2) {
+// 			cout<<"NOTE: error in final predict vector dimension!"<<endl;
+// 			return;
+// 		}
 
 		for(int i=1; i<numInputs; ++i){
 			iter_p++;

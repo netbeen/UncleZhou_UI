@@ -6,7 +6,7 @@
 #include <QSpinBox>
 #include <QDebug>
 #include <QPushButton>
-#include "BinaryClassification/MyBinaryClassification.h"
+#include "BinaryClassification/MyClassification.h"
 #include "graphcut/graphcut.h"
 
 
@@ -30,6 +30,7 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
     this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
     this->testFunctionMenu->addAction(this->binaryClassificationAction);
+    this->testFunctionMenu->addAction(this->multiLabelClassificationAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
@@ -117,6 +118,39 @@ void ImageEditWindow::viewPatchDistributeSlot(){
     }
 }
 
+// multi label
+void ImageEditWindow::multiLabelClassificationSlot(){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    cv::Mat_<cv::Vec3b> cvImage;
+    Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
+    Util::clearFragment(cvImage);
+    cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
+
+    //利用mask图像，生成analyse文件
+    this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
+
+    // Read Source Image
+    cv::Mat img = cv::imread("sourceImage.png");
+
+    // Run RFBinaryClassification
+    cv::Mat_<cv::Vec3b> outputImg;
+    CMyClassification myTest;
+    myTest.SetParametes(8, 8);
+    myTest.RandomForest_SuperPixel(img,outputImg,"analyseResult.txt");
+    //cv::imshow("outputImg",outputImg);
+
+    //Util::dilateAndErode(outputImg);
+
+    //GraphCut* graphcut = new GraphCut();
+    //graphcut->main(img,outputImg);
+
+    Util::meldTwoCVMat(cvImage,outputImg);
+
+    Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
+
+    this->canvas->update();
+}
+
 void ImageEditWindow::binaryClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
     cv::Mat_<cv::Vec3b> cvImage;
@@ -132,10 +166,13 @@ void ImageEditWindow::binaryClassificationSlot(){
     cv::Vec3b BK_Color(uchar(255), uchar(255), uchar(255)); //whilte
     cv::Vec3b Cur_Color = this->classificationColor;
 
+    cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
+    cv::Mat twoLabelMask;
+    Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
+    cv::imwrite("twoLabelMask.png",twoLabelMask);
+
     //利用mask图像，生成analyse文件
-    std::cout << "this->readSuperPixelDat->analyseLabelFile(); start." << std::endl;
-    this->readSuperPixelDat->analyseLabelFile();
-    std::cout << "this->readSuperPixelDat->analyseLabelFile(); end." << std::endl;
+    this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
 
     // Read Source Image
     cv::Mat img = cv::imread("sourceImage.png");
@@ -145,24 +182,22 @@ void ImageEditWindow::binaryClassificationSlot(){
 
     // Run RFBinaryClassification
     cv::Mat_<cv::Vec3b> outputImg;
-    CMyBinaryClassification myTest;
+    CMyClassification myTest;
     myTest.SetParametes(8, 8);
     //myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
+    //myTest.RandomForestBinaryClassification(img,outputImg,BK_Color,Cur_Color,"analyseResult.txt");
+    myTest.RandomForest_SuperPixel(img,outputImg,"analyseResult.txt");
+    //cv::imshow("outputImg",outputImg);
 
-    std::cout << "myTest.RandomForestBinaryClassification start." << std::endl;
-    myTest.RandomForestBinaryClassification(img,outputImg,BK_Color,Cur_Color,"analyseResult.txt");
-    std::cout << "myTest.RandomForestBinaryClassification end." << std::endl;
+    cv::Mat oneLabelMask;
+    Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
 
     //Util::dilateAndErode(outputImg);
-    cv::imwrite("afterDilateAndErode.png",outputImg);
 
-    cv::imshow("before",outputImg);
     GraphCut* graphcut = new GraphCut();
     graphcut->main(img,outputImg);
-    cv::imshow("after",outputImg);
 
-
-    Util::meldTwoCVMat(cvImage,outputImg);
+    Util::meldTwoCVMat(cvImage,oneLabelMask);
 
     Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
 
@@ -209,6 +244,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->binaryClassificationAction = new QAction(QIcon(":image/open.png"),"&Binary Classification",this);
     this->binaryClassificationAction->setShortcut(Qt::Key_B);
     QObject::connect(this->binaryClassificationAction,&QAction::triggered, this, &ImageEditWindow::binaryClassificationSlot);
+    this->multiLabelClassificationAction = new QAction(QIcon(":image/open.png"),"&Multi Label Classification",this);
+    QObject::connect(this->multiLabelClassificationAction,&QAction::triggered, this, &ImageEditWindow::multiLabelClassificationSlot);
 
 
 

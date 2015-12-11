@@ -54,7 +54,6 @@ void BinaryClassificationDialog::initDialogLayout(){
         radioLayout->addWidget(radio);
         this->radioButtonVector.push_back(radio);
     }
-
 }
 
 void BinaryClassificationDialog::findTheToggledButton(){

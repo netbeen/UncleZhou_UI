@@ -73,7 +73,7 @@ void ReadSuperPixelDat::main(){
     labelsFile.close();
 
     //输出分析文件
-    this->analyseLabelFile();
+    this->analyseLabelFile("twoLabelMask.png");
 
     std::cout << "Done!" << std::endl;
 }
@@ -106,7 +106,7 @@ void ReadSuperPixelDat::main(QString filename, int superPixelCount, float thresh
     }
     labelsFile.close();
 
-    this->analyseLabelFile(threshold);
+    this->analyseLabelFile("twoLabelMask.png",threshold);
 
     std::cout << "Done!" << std::endl;
 }
@@ -173,7 +173,7 @@ void ReadSuperPixelDat::authorRead(){
 }
 
 
-void ReadSuperPixelDat::analyseLabelFile(float THRESHOLD){
+void ReadSuperPixelDat::analyseLabelFile(const QString maskFilename, float THRESHOLD){
     std::ifstream labelFile("labels.txt");
     std::vector<int> labels;
     int minLabel = INT32_MAX;
@@ -204,7 +204,7 @@ void ReadSuperPixelDat::analyseLabelFile(float THRESHOLD){
         label2Coodinates.at(labels.at(i)).push_back(std::pair<int,int>(y_offset,x_offset));     //CHECKED
     }
 
-    this->mask = cv::imread("sourceGuidanceLabelChannel.png");
+    this->mask = cv::imread(maskFilename.toUtf8().data());
 
     this->maskID2Coodinates = std::vector<std::vector< std::pair<int,int> > >(0);
     this->maskDFS = mask.clone();

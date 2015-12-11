@@ -706,6 +706,42 @@ int Util::cmp(const std::pair<int, double> &x, const std::pair<int, double> &y )
     return x.second > y.second;
 }
 
+void Util::convertMultiLabelMaskToTwoLabelMask(const cv::Mat& multiLabelInput, cv::Mat& twoLabelOutput, const cv::Vec3b currentColor){
+    assert(multiLabelInput.type() == CV_8UC3);
+    const cv::Vec3b white = cv::Vec3b(255,255,255);
+    const cv::Vec3b gray192 = cv::Vec3b(192,192,192);
+    twoLabelOutput = cv::Mat(multiLabelInput.size(), multiLabelInput.type());
+    for(int y_offset = 0; y_offset < multiLabelInput.rows; y_offset++){
+        for(int x_offset = 0; x_offset < multiLabelInput.cols; x_offset++){
+            const cv::Vec3b color = multiLabelInput.at<cv::Vec3b>(y_offset,x_offset);
+            if(color == currentColor){
+                twoLabelOutput.at<cv::Vec3b>(y_offset,x_offset) = color;
+            }else if(color == white){
+                twoLabelOutput.at<cv::Vec3b>(y_offset,x_offset) = white;
+            }else{
+                twoLabelOutput.at<cv::Vec3b>(y_offset,x_offset) = gray192;
+            }
+        }
+    }
+}
+
+void Util::convertTwoLabelMaskToOneLabelMask(const cv::Mat& twoLabelInput, cv::Mat& oneLabelOutput, const cv::Vec3b currentColor){
+    assert(twoLabelInput.type() == CV_8UC3);
+    const cv::Vec3b white = cv::Vec3b(255,255,255);
+    oneLabelOutput = cv::Mat(twoLabelInput.size(), twoLabelInput.type());
+    for(int y_offset = 0; y_offset < twoLabelInput.rows; y_offset++){
+        for(int x_offset = 0; x_offset < twoLabelInput.cols; x_offset++){
+            const cv::Vec3b color = twoLabelInput.at<cv::Vec3b>(y_offset,x_offset);
+            if(color != currentColor){
+                oneLabelOutput.at<cv::Vec3b>(y_offset,x_offset) = white;
+            }else{
+                oneLabelOutput.at<cv::Vec3b>(y_offset,x_offset) = currentColor;
+            }
+        }
+    }
+
+}
+
 
 double Util::GetSearchRadius(cv::flann::Index &myKdTree, const cv::Mat &features, int nMaxSearch, float percent = 0.02f)
 {

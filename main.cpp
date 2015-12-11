@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "BinaryClassification/MyBinaryClassification.h"
+#include "BinaryClassification/MyClassification.h"
 #include "util.h"
 
 #include "graphcut/graphcut.h"

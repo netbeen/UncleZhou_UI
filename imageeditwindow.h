@@ -104,6 +104,9 @@ private:
     void getClassificationColor(cv::Vec3b newColor);
     cv::Vec3b classificationColor;
 
+    QAction* multiLabelClassificationAction;     //二分分类算法的action和slot
+    void multiLabelClassificationSlot();
+
 
     ReadSuperPixelDat* readSuperPixelDat;
 

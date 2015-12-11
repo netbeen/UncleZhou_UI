@@ -1,5 +1,26 @@
 #include "GetImageFeatures.h"
 
+int BGR2Label(const cv::Vec3b &pColor)
+{
+	// NOTE: OpenCV is bgr
+	float r = (float) pColor[2];
+	float g = (float) pColor[1];
+	float b = (float) pColor[0];
+	return int(r /127.0 + 0.5)*9 + int(g/127.0 + 0.5)*3 + int(b/127.0 + 0.5);
+}
+
+void Label2BGR(int label, cv::Vec3b &pColor)
+{
+	// NOTE: opencv is bgr
+	cv::Vec3b &bgr = pColor;
+	bgr[2] = uchar ( (int) ( int(label/9.0) * 127.5 ));
+	label = label - int(label/9.0)*9;
+	bgr[1] = uchar ( (int) ( int(label/3.0)*127.5 ));
+	label = label - int(label/3.0)*3;
+	bgr[0]  = uchar ( (int) ( label*127.5 ));
+}
+
+
 CGetImageFeatures::CGetImageFeatures(void)
 {
 	m_patchSize = 16;
@@ -113,100 +134,6 @@ void CGetImageFeatures::GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &
 	}
 }
 
-void CGetImageFeatures::LabelConvertforBinaryClassification(std::vector<int> &label, int BK_Label, int Cur_Label)
-{
-	for(int i=0; i<label.size(); i++) {
-		if(label[i] == BK_Label)
-			label[i] = 9999;
-		else if(label[i] ==Cur_Label)
-			label[i] = 1;
-		else
-			label[i] = 0;
-	}
-}
-
-void CGetImageFeatures::LabelConvertforOutputBinaryClass(std::vector<int> &label, int BK_Label, int Cur_Label)
-{
-	for(int i=0; i<label.size(); i++) {
-		if(label[i] == 0)
-			label[i] = BK_Label;
-		else
-			label[i] = Cur_Label;
-	}
-}
-
-void CGetImageFeatures::LabelConvert(std::vector<int> &label, int n, int *L1, int *L2)
-{
-	//int L1[5] = {0, 2, 6, 20, 24}; // convert [2, 6, 20, 24] to [1, 2, 3, 4]
-	//int L2[5] = {-1, 0, 1, 2, 3};
-	std::vector<int>::iterator iter_l = label.begin();
-	for(int i=0; i<label.size(); i++, iter_l++) {
-		for(int j=0; j<n; j++) {
-			if(*iter_l == L1[j])
-				*iter_l = L2[j];
-		}
-	}
-}
-
-void CGetImageFeatures::Label2Class(std::vector<int> &label, std::vector<int> &v_class)
-{
-	std::vector<int> sortL(label);
-	sort(sortL.begin(), sortL.end());
-
-	std::vector<int>::iterator iter = unique(sortL.begin(), sortL.end());
-	v_class.assign(sortL.begin(), iter);
-}
-
-void CGetImageFeatures::ColorImg2Label(std::vector<int> &label, cv::Mat &img)
-{
-	label.clear();
-	int numpoints = img.rows*img.cols;
-	int nChannels = img.channels();
-	if(nChannels != 3) {
-		cout<<"ERROR: not a colorful image!"<<endl;
-		return;
-	}
-
-	cv::Mat testimg(img.rows, img.cols, CV_8U);
-	memset(testimg.data, 0, img.rows*img.cols);
-
-	for(int i=0; i<img.rows; i++) {
-		for(int j=0; j<img.cols; j++) {	
-			label.push_back(BGR2Label(img.at<cv::Vec3b>(i, j)));
-		}
-	}
-}
-
-void CGetImageFeatures::Label2ColorImage(std::vector<int> &label, cv::Mat &img)
-{
-	int nChannels = img.channels();
-	std::vector<int>::iterator iter_l = label.begin();
-	for(int i=0; i<img.rows; i++) {
-		for(int j=0; j<img.cols; j++, iter_l++) {
-			 Label2BGR(*iter_l, img.at<cv::Vec3b>(i, j));
-		}
-	}
-}
-
-int BGR2Label(const cv::Vec3b &pColor)
-{
-	// NOTE: OpenCV is bgr
-	float r = (float) pColor[2];
-	float g = (float) pColor[1];
-	float b = (float) pColor[0];
-	return int(r /127.0 + 0.5)*9 + int(g/127.0 + 0.5)*3 + int(b/127.0 + 0.5);
-}
-
-void Label2BGR(int label, cv::Vec3b &pColor)
-{
-	// NOTE: opencv is bgr
-	cv::Vec3b &bgr = pColor;
-	bgr[2] = uchar ( (int) ( int(label/9.0) * 127.5 ));
-	label = label - int(label/9.0)*9;
-	bgr[1] = uchar ( (int) ( int(label/3.0)*127.5 ));
-	label = label - int(label/3.0)*3;
-	bgr[0]  = uchar ( (int) ( label*127.5 ));
-}
 
 void CGetImageFeatures::GetSuperPixelFeat(cv::Mat img, int numBinsPerChannel, cv::Mat &testFeat, cv::Mat &trainFeat, vector<int> &allLabel, int BK_Label, string dirSuperPixelDat)
 {

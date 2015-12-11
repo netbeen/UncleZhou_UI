@@ -39,7 +39,6 @@ SOURCES += main.cpp\
     viewpatchdistributecavvas.cpp \
     binaryclassificationdialog.cpp \
     BinaryClassification/GetImageFeatures.cpp \
-    BinaryClassification/MyBinaryClassification.cpp \
     BinaryClassification/MySharkML.cpp \
     graphcut/graphcut.cpp \
     graphcut/gmm.cpp \
@@ -48,7 +47,8 @@ SOURCES += main.cpp\
     graphcut/gco-v3.0/LinkedBlockList.cpp \
     graphcut/gco-v3.0/maxflow.cpp \
     SuperPixel/readsuperpixeldat.cpp \
-    SuperPixel/SLICSuperpixels/SLIC.cpp
+    SuperPixel/SLICSuperpixels/SLIC.cpp \
+    BinaryClassification/MyClassification.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -73,7 +73,6 @@ HEADERS  += mainwindow.h \
     viewpatchdistributecavvas.h \
     binaryclassificationdialog.h \
     BinaryClassification/GetImageFeatures.h \
-    BinaryClassification/MyBinaryClassification.h \
     BinaryClassification/MySharkML.h \
     graphcut/graphcut.h \
     graphcut/gmm.h \
@@ -83,7 +82,8 @@ HEADERS  += mainwindow.h \
     graphcut/gco-v3.0/graph.h \
     graphcut/gco-v3.0/LinkedBlockList.h \
     SuperPixel/readsuperpixeldat.h \
-    SuperPixel/SLICSuperpixels/SLIC.h
+    SuperPixel/SLICSuperpixels/SLIC.h \
+    BinaryClassification/MyClassification.h
 
 
 FORMS    +=
