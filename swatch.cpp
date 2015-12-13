@@ -45,12 +45,12 @@ void Swatch::paintEvent(QPaintEvent* event)
  */
 void Swatch::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
+    /*if (event->button() == Qt::LeftButton)
     {
         currentColor = QColorDialog::getColor();
         this->update();     //更新自身绘制
         emit(this->colorSelected(this->currentColor));
-    }
+    }*/
 }
 
 
