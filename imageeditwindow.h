@@ -22,6 +22,7 @@
 #include "palettedock.h"
 #include "densitypeakdialog.h"
 #include "viewpatchdistributedialog.h"
+#include "multilabelpreivewdock.h"
 
 #include "SuperPixel/readsuperpixeldat.h"
 #include <QKeyEvent>
@@ -85,6 +86,7 @@ private:
     PaletteDock* paletteDock;
     Canvas* canvas;
     QScrollArea* scrollArea;
+    MultiLabelPreivewDock* multiLabelPreivewDock;
 
     QLabel* magnificationValueLabel;    //
 
@@ -109,7 +111,7 @@ private:
 
 
     ReadSuperPixelDat* readSuperPixelDat;
-    void doMultiLabelClassificationAndSave(const cv::Mat inputImage, const std::string analyseFileName);
+    void doMultiLabelClassificationAndSave(const cv::Mat inputImage);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;

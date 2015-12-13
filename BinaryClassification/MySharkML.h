@@ -19,13 +19,14 @@ public:
 	~CMySharkML(void);
 
 	void RFClassification(cv::Mat &trainingFeat, std::vector<int> &trainingLabel, 
-		cv::Mat &TestFeat, std::vector<int> &OutputLabel, std::vector<float> &OutputConf);
+		cv::Mat &TestFeat, std::vector<int> &OutputLabel, cv::Mat &OutputConf);
 
 protected:
 	void Features2SharkData(LabeledData<RealVector, unsigned int> &dataset,	cv::Mat &features, std::vector<int> &v_label);
-	void GetPredictionLabelandConfidence(std::vector<int> &predictLable, std::vector<float> &predictConf, Data<RealVector> &predictions);
+	void GetPredictionLabelandConfidence(std::vector<int> &predictLable, cv::Mat &predictConf, Data<RealVector> &predictions);
 
 private:
 	int m_numTrees;
+	int m_numLabels;
 };
 

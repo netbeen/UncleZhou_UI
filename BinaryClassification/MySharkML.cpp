@@ -6,26 +6,34 @@
 
 CMySharkML::CMySharkML(void)
 {
+	m_numLabels = 0;
 }
 
 CMySharkML::CMySharkML(int numTree)
 {
 	m_numTrees = numTree;
+	m_numLabels = 0;
 }
 
 CMySharkML::~CMySharkML(void)
 {
 }
 
-void CMySharkML::RFClassification(cv::Mat &trainingFeat, std::vector<int> &trainingLabel, cv::Mat &TestFeat, std::vector<int> &OutputLabel, std::vector<float> &OutputConf)
+void CMySharkML::RFClassification(cv::Mat &trainingFeat, std::vector<int> &trainingLabel, cv::Mat &TestFeat, std::vector<int> &OutputLabel, cv::Mat &OutputConf)
 {
 	ClassificationDataset data, dataTest;
 	Features2SharkData(data, trainingFeat, trainingLabel); //Training set
 	std::vector<int> testLabel(TestFeat.rows, 0);
 	Features2SharkData(dataTest, TestFeat, testLabel); //Test Set
 
+	m_numLabels = numberOfClasses(data);
+	if(m_numLabels < 2) {
+		cout<<"ERROR in training Labels"<<endl;
+		return;
+	}
+
 	cout << "Training set - number of data points: " << data.numberOfElements()
-		<< " number of classes: " << numberOfClasses(data)
+		<< " number of classes: " << m_numLabels
 		<< " input dimension: " << inputDimension(data) << endl;
 
 	cout << "Test set - number of data points: " << dataTest.numberOfElements()
@@ -52,8 +60,6 @@ void CMySharkML::RFClassification(cv::Mat &trainingFeat, std::vector<int> &train
 	cout<< "Random Forest running time is: "<<static_cast<double>(end_time_RF-start_time_RF)/CLOCKS_PER_SEC<<"ms"<<endl;
 
 	// output
-	OutputLabel.clear();
-	OutputConf.clear();
 	GetPredictionLabelandConfidence(OutputLabel, OutputConf, prediction);
 }
 
@@ -84,15 +90,16 @@ void CMySharkML::Features2SharkData(LabeledData<RealVector, unsigned int> &datas
 
 }
 
-void CMySharkML::GetPredictionLabelandConfidence(std::vector<int> &predictLable, std::vector<float> &predictConf, Data<RealVector> &predictions)
+void CMySharkML::GetPredictionLabelandConfidence(std::vector<int> &predictLable, cv::Mat &predictConf, Data<RealVector> &predictions)
 {
 	predictLable.clear();
-	predictConf.clear();
+	predictConf.release();
 
 	std::size_t numElements = predictions.numberOfElements();
 
 	predictLable.assign(numElements, 0);
-	predictConf.assign(numElements, 0.0);
+	predictConf = cv::Mat(numElements, m_numLabels, CV_32F);
+	memset(predictConf.data, 0, sizeof(float)*numElements*m_numLabels);
 
 	for(int k = 0; k < numElements; ++k) {
 
@@ -100,15 +107,14 @@ void CMySharkML::GetPredictionLabelandConfidence(std::vector<int> &predictLable,
 
 		RealVector::iterator iter_p = predictions.element(k).begin(); //Predict.begin();
 		float maxP = *iter_p;
-		int L = 0;	
-		std::size_t numInputs = predictions.element(k).size(); //Predict.size();
-// 		if(numInputs != 2) {
-// 			cout<<"NOTE: error in final predict vector dimension!"<<endl;
-// 			return;
-// 		}
+		int L = 0;
+		predictConf.at<float>(k, 0) = *iter_p;
 
+		std::size_t numInputs = predictions.element(k).size(); //Predict.size();
 		for(int i=1; i<numInputs; ++i){
 			iter_p++;
+
+			predictConf.at<float>(k, i) = *iter_p;
 			if(*iter_p > maxP) {
 				maxP = *iter_p;
 				L = i;
@@ -116,6 +122,5 @@ void CMySharkML::GetPredictionLabelandConfidence(std::vector<int> &predictLable,
 		}
 
 		predictLable[k] = L;
-		predictConf[k] = maxP;
 	}
 }

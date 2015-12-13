@@ -48,7 +48,8 @@ SOURCES += main.cpp\
     graphcut/gco-v3.0/maxflow.cpp \
     SuperPixel/readsuperpixeldat.cpp \
     SuperPixel/SLICSuperpixels/SLIC.cpp \
-    BinaryClassification/MyClassification.cpp
+    BinaryClassification/MyClassification.cpp \
+    multilabelpreivewdock.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -83,7 +84,8 @@ HEADERS  += mainwindow.h \
     graphcut/gco-v3.0/LinkedBlockList.h \
     SuperPixel/readsuperpixeldat.h \
     SuperPixel/SLICSuperpixels/SLIC.h \
-    BinaryClassification/MyClassification.h
+    BinaryClassification/MyClassification.h \
+    multilabelpreivewdock.h
 
 
 FORMS    +=

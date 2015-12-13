@@ -1,29 +1,20 @@
-#include "navigatordock.h"
-
+#include "multilabelpreivewdock.h"
 #include <QVBoxLayout>
 
-
-NavigatorDock::NavigatorDock(QWidget* parent) : QDockWidget(parent)
-{
+MultiLabelPreivewDock::MultiLabelPreivewDock(QWidget* parent):QDockWidget(parent){
     this->setMinimumSize(300, 100);
     this->setStyleSheet("background-color: #696969; padding: 0px;");
     this->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);
     this->setContentsMargins(0, 0, 0, 0);
 
-    this->layerManager = LayerManager::getInstance();
-
 
     QWidget* mainWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(mainWidget);
 
-    this->navigatorCanvas = new NavigatorCanvas(this);
-    layout->addWidget(navigatorCanvas);
+    this->multiLabelCanvas = new ReadonlyCanvas("multiLabelClassificationResult.png",this);
+    layout->addWidget(this->multiLabelCanvas);
 
     mainWidget->setLayout(layout);
     this->setWidget(mainWidget);
-
 }
 
-void NavigatorDock::navigatorUpdate(){
-    this->navigatorCanvas->update();
-}

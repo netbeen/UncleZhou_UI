@@ -25,7 +25,6 @@ CGetImageFeatures::CGetImageFeatures(void)
 {
 	m_patchSize = 16;
 	m_numBins = 16;
-    this->superPixelDat = std::vector<std::vector<cv::Point> >();
 }
 
 CGetImageFeatures::CGetImageFeatures(int patchSize, int numBins)
@@ -61,31 +60,31 @@ void CGetImageFeatures::OutputLabel(std::string filepath, std::vector<int> &v_la
 }
 
 
-void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, int patchSize, int numBinsPerChannel, bool flag_Normalize)
+void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, bool flag_Normalize)
 {
-	int imgW = img.cols - patchSize + 1;
-	int imgH = img.rows - patchSize + 1;
+	int imgW = img.cols - m_patchSize + 1;
+	int imgH = img.rows - m_patchSize + 1;
 	int numPts = imgW*imgH;
 	int nChannels = img.channels();
-	int DIMENSION = nChannels*numBinsPerChannel;
+	int DIMENSION = nChannels*m_numBins;
 
 	cv::Mat feat = cv::Mat(numPts, DIMENSION, CV_32F);
 	memset(feat.data, 0, sizeof(float)*numPts*DIMENSION);
 
-	int BinWidth = 256 / numBinsPerChannel;
+	int BinWidth = 256 / m_numBins;
 
 	int pf = 0;
 	for(int i=0; i<imgH; i++) {
 		for(int j=0; j<imgW; j++, pf++) {
 
-			for(int y = 0; y<patchSize; y++) {
-				for(int x = 0; x<patchSize; x++) {
+			for(int y = 0; y<m_patchSize; y++) {
+				for(int x = 0; x<m_patchSize; x++) {
 					cv::Vec3b &pp = img.at<cv::Vec3b>(i+y, j+x);
 					for(int k=0; k<nChannels; k++) {
 						int intensity = (int) pp[nChannels-1-k]; //data[((i+y)*img.cols+(j+x))*nChannels + k];
-						int BinID = intensity*(numBinsPerChannel-1) / 255.0 + 0.5;
+						int BinID = intensity*(m_numBins-1) / 255.0 + 0.5;
 						//						int BinID = int(intensity / BinWidth + 0.5);	
-						feat.at<float>(pf, k*numBinsPerChannel + BinID) += 1.0; 
+						feat.at<float>(pf, k*m_numBins + BinID) += 1.0; 
 					}
 				}
 			}
@@ -93,7 +92,7 @@ void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::M
 			//Normalize
 			if(!flag_Normalize)
 				continue;
-			int numPatchPixels =  patchSize*patchSize;
+			int numPatchPixels =  m_patchSize*m_patchSize;
 			for(int k=0; k<DIMENSION; k++) 
 				feat.at<float>(pf, k) /= (float) numPatchPixels;
 		}
@@ -135,8 +134,35 @@ void CGetImageFeatures::GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &
 }
 
 
-void CGetImageFeatures::GetSuperPixelFeat(cv::Mat img, int numBinsPerChannel, cv::Mat &testFeat, cv::Mat &trainFeat, vector<int> &allLabel, int BK_Label, string dirSuperPixelDat)
+void CGetImageFeatures::GetSuperPixelFeat(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point2d> > &superPixelDat)
 {
+	int DIMENSION = m_numBins*3;
+	int numSuperPixels = superPixelDat.size();
+	features = cv::Mat(numSuperPixels, DIMENSION, CV_32F);
+	memset(features.data, 0, sizeof(float)*numSuperPixels*DIMENSION);
+	
+	int pf=0;
+	int nChannels = img.channels();
+	std::vector<std::vector<cv::Point2d> >::iterator iter= superPixelDat.begin();
+	for(; iter != superPixelDat.end(); iter++, pf++){
+
+		std::vector<cv::Point2d >::iterator iiter=iter->begin();
+		for(; iiter!=iter->end(); iiter++){
+			cv::Vec3b pp = img.at<cv::Vec3b>( iiter->y, iiter->x);
+			for(int k=0; k<nChannels; k++) {
+				int intensity = (int) pp[nChannels-1-k];
+				int BinID = intensity*(m_numBins-1) / 255.0 + 0.5;
+				features.at<float>(pf, k*m_numBins + BinID) += 1.0;
+			}
+		}
+
+		for(int k=0; k<DIMENSION; k++) 
+			features.at<float>(pf, k) /= (float) iter->size();
+	}
+}
+
+
+/*
 	//my test about super pixels
 	vector<cv::Point> spRowsDat; //each row in super pixel data
 	vector<vector<int> > maskDat; //mask data
@@ -196,59 +222,4 @@ void CGetImageFeatures::GetSuperPixelFeat(cv::Mat img, int numBinsPerChannel, cv
 		}
 	}
     readDat.close();
-	int DIMENSION = numBinsPerChannel*3;
-	testFeat = cv::Mat(numSuperPixels, DIMENSION, CV_32F);
-	memset(testFeat.data, 0, sizeof(float)*numSuperPixels*DIMENSION);
-
-	trainFeat = cv::Mat(numMaskSuperPixels, DIMENSION, CV_32F);
-	memset(trainFeat.data, 0, sizeof(float)*numMaskSuperPixels*DIMENSION);
-
-	vector<int> testLabel(numSuperPixels, BK_Label);
-
-	int pf=0;
-	int nChannels = img.channels();
-	for(vector<vector<cv::Point> >::iterator iter=this->superPixelDat.begin();iter!=this->superPixelDat.end();iter++, pf++){
-		vector<cv::Point > pixelLoc = *iter;
-
-		for(vector<cv::Point >::iterator iiter=pixelLoc.begin();iiter!=pixelLoc.end();iiter++){
-			cv::Point pixel = *iiter;
-			cv::Vec3b pp = img.at<cv::Vec3b>( pixel.y, pixel.x);
-			for(int k=0; k<nChannels; k++) {
-				int intensity = (int) pp[nChannels-1-k];
-				int BinID = intensity*(numBinsPerChannel-1) / 255.0 + 0.5;
-				testFeat.at<float>(pf, k*numBinsPerChannel + BinID) += 1.0;
-			}
-		}
-	}
-
-	//corresponding to mask, the train data
-	pf=0;
-	int pnum = 0;
-	vector<vector<int> > superPixelColorHist;
-	for(vector<vector<int> >::iterator iter=maskDat.begin();iter!=maskDat.end();iter++, pf++){
-		vector<int> superPixelId = *iter;
-		color = maskColor[pf];
-		for(vector<int>::iterator iiter=superPixelId.begin();iiter!=superPixelId.end();iiter++){
-
-			trainFeat.row(pnum++) = testFeat.row(*iiter);
-			testLabel[*iiter] = color;
-		}
-	}
-	allLabel = testLabel;
-}
-
-
-void CGetImageFeatures::Label2ColorSuperPixelImage(std::vector<int> &label, cv::Mat &img)
-{
-	int nChannels = img.channels();
-	int superPixelId = 0;
-	for(vector<vector<cv::Point> >::iterator iter=this->superPixelDat.begin();iter!=this->superPixelDat.end();iter++, superPixelId++){
-		vector<cv::Point > pixelLoc = *iter;
-
-		for(vector<cv::Point >::iterator iiter=pixelLoc.begin();iiter!=pixelLoc.end();iiter++){
-			cv::Point pixel = *iiter;
-			Label2BGR(label[superPixelId], img.at<cv::Vec3b>(pixel.y, pixel.x));
-		}
-
-	}
-}
+	*/

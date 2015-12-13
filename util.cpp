@@ -709,7 +709,7 @@ int Util::cmp(const std::pair<int, double> &x, const std::pair<int, double> &y )
 void Util::convertMultiLabelMaskToTwoLabelMask(const cv::Mat& multiLabelInput, cv::Mat& twoLabelOutput, const cv::Vec3b currentColor){
     assert(multiLabelInput.type() == CV_8UC3);
     const cv::Vec3b white = cv::Vec3b(255,255,255);
-    const cv::Vec3b gray192 = cv::Vec3b(192,192,192);
+    const cv::Vec3b gray192 = cv::Vec3b(0,0,0);
     twoLabelOutput = cv::Mat(multiLabelInput.size(), multiLabelInput.type());
     for(int y_offset = 0; y_offset < multiLabelInput.rows; y_offset++){
         for(int x_offset = 0; x_offset < multiLabelInput.cols; x_offset++){

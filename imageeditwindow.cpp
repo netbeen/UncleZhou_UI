@@ -63,6 +63,11 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->addDockWidget(Qt::RightDockWidgetArea, this->navigatorDock);
     QObject::connect(this->canvas, &Canvas::canvasUpdatedSignal, this->navigatorDock, &NavigatorDock::navigatorUpdate);
 
+    this->multiLabelPreivewDock = new MultiLabelPreivewDock(this);
+    this->multiLabelPreivewDock->setWindowTitle("Classification Preview");
+    this->multiLabelPreivewDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->multiLabelPreivewDock);
+
     this->toolOptionDock = new ToolOptionDock(this);
     this->toolOptionDock->setWindowTitle("Tool Option");
     this->toolOptionDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -118,13 +123,16 @@ void ImageEditWindow::viewPatchDistributeSlot(){
     }
 }
 
-void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage, const std::string analyseFileName){
+void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage){
     cv::Mat img = inputImage;
 
     cv::Mat_<cv::Vec3b> outputImg;
     CMyClassification myTest;
     myTest.SetParametes(8, 8);
-    myTest.RandomForest_SuperPixel(img,outputImg,analyseFileName);
+
+    cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
+
+    myTest.RandomForest_SuperPixel(img,mask,outputImg,"output.dat");
 
     cv::imwrite("multiLabelClassificationResult.png",outputImg);
 }
@@ -132,23 +140,18 @@ void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage
 // multi label
 void ImageEditWindow::multiLabelClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
-    cv::Mat_<cv::Vec3b> cvImage;
-    Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
-    Util::clearFragment(cvImage);
-    cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
+    cv::Mat_<cv::Vec3b> currentMask;
+    Util::convertQImageToMat(currentDisplayLayerItem->image,currentMask);
+    Util::clearFragment(currentMask);   //使用DFS清除细碎色块
+    cv::imwrite("sourceGuidanceLabelChannel.png",currentMask);
 
-    //利用mask图像，生成analyse文件
-    this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
-
-    cv::Mat sourceImage = cv::imread("sourceImage.png");
-
-    this->doMultiLabelClassificationAndSave(sourceImage,"analyseResult.txt");   //进行MultiLabel的分类
+    this->doMultiLabelClassificationAndSave(currentMask);   //进行MultiLabel的分类
 
     cv::Mat multiLabelClassificationResult = cv::imread("multiLabelClassificationResult.png");  //读取MultiLabel的结果
 
-    Util::meldTwoCVMat(cvImage,multiLabelClassificationResult);
+    Util::meldTwoCVMat(currentMask,multiLabelClassificationResult);
 
-    Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
+    Util::convertMattoQImage(currentMask,currentDisplayLayerItem->image);
 
     this->canvas->update();
 }
@@ -182,7 +185,7 @@ void ImageEditWindow::binaryClassificationSlot(){
     cv::Mat_<cv::Vec3b> outputImg;
     CMyClassification myTest;
     myTest.SetParametes(8, 8);
-    myTest.RandomForest_SuperPixel(img,outputImg,"analyseResult.txt");
+    myTest.RandomForest_SuperPixel(img,twoLabelMask,outputImg,"output.dat");
 
     cv::Mat oneLabelMask;
     Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
@@ -190,7 +193,7 @@ void ImageEditWindow::binaryClassificationSlot(){
     //Util::dilateAndErode(outputImg);
 
     GraphCut* graphcut = new GraphCut();    //进行graph cut
-    graphcut->main(img,outputImg);
+    graphcut->main(img,oneLabelMask);
     delete graphcut;
 
     Util::meldTwoCVMat(cvImage,oneLabelMask);
@@ -198,6 +201,11 @@ void ImageEditWindow::binaryClassificationSlot(){
     Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
 
     this->canvas->update();
+
+    //更新MultiLabel
+    this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
+    this->doMultiLabelClassificationAndSave(cvImage);
+    this->multiLabelPreivewDock->multiLabelCanvas->update();
 }
 
 void ImageEditWindow::getClassificationColor(cv::Vec3b newColor){

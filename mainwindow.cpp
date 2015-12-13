@@ -115,6 +115,7 @@ void MainWindow::loadSourceImage(){
         for(QString elem : Util::guidanceChannel){
             this->sourceGuidance->save("./sourceGuidance"+elem+".png");
         }
+        this->sourceGuidance->save("./multiLabelClassificationResult.png");
         this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
 
         this->sourceImageWidgetStackedLayout->setCurrentIndex(1);
