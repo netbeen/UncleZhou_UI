@@ -109,6 +109,7 @@ private:
 
 
     ReadSuperPixelDat* readSuperPixelDat;
+    void doMultiLabelClassificationAndSave(const cv::Mat inputImage, const std::string analyseFileName);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;

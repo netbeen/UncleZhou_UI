@@ -218,30 +218,22 @@ void GraphCut::main(cv::Mat& sourceImage, cv::Mat& initGuess){
 
     this->CLASS_NUMBER = 2;
 
-    /*if(this->checkUserMarkValid(this->initGuess) == false){
+    if(this->checkUserMarkValid(this->initGuess) == false){
         std::cout << "checkUserMarkValid false!" <<std::endl;
         exit(1);
     }else{
         std::cout << "checkUserMarkValid true!" <<std::endl;
-    }*/
+    }
 
     int num_pixels = this->rawImage.cols*this->rawImage.rows;
 
     //this->generateGMMProbability();
 
     // smoothness and data costs are set up one by one, individually
-    std::cout << "GridGraph_Individually start" << std::endl;
     this->GridGraph_Individually(this->rawImage.cols,this->rawImage.rows,num_pixels,this->CLASS_NUMBER);
 
-    /*this->initGuessGray = this->resultLabelGray;
-    this->GridGraph_Individually(this->rawImage.cols,this->rawImage.rows,num_pixels,this->CLASS_NUMBER);*/
 
     initGuess = this->resultLabel;
-    /*cv::imshow("resultLabelGray",this->resultLabel);
-    cv::imshow("initGuessGray",this->initGuess);
-    cv::imshow("rawImage",this->rawImage);
-    cv::imwrite("output.png",this->resultLabel);
-    cv::waitKey();*/
 }
 
 

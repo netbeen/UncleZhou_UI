@@ -118,6 +118,17 @@ void ImageEditWindow::viewPatchDistributeSlot(){
     }
 }
 
+void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage, const std::string analyseFileName){
+    cv::Mat img = inputImage;
+
+    cv::Mat_<cv::Vec3b> outputImg;
+    CMyClassification myTest;
+    myTest.SetParametes(8, 8);
+    myTest.RandomForest_SuperPixel(img,outputImg,analyseFileName);
+
+    cv::imwrite("multiLabelClassificationResult.png",outputImg);
+}
+
 // multi label
 void ImageEditWindow::multiLabelClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
@@ -129,22 +140,13 @@ void ImageEditWindow::multiLabelClassificationSlot(){
     //利用mask图像，生成analyse文件
     this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
 
-    // Read Source Image
-    cv::Mat img = cv::imread("sourceImage.png");
+    cv::Mat sourceImage = cv::imread("sourceImage.png");
 
-    // Run RFBinaryClassification
-    cv::Mat_<cv::Vec3b> outputImg;
-    CMyClassification myTest;
-    myTest.SetParametes(8, 8);
-    myTest.RandomForest_SuperPixel(img,outputImg,"analyseResult.txt");
-    //cv::imshow("outputImg",outputImg);
+    this->doMultiLabelClassificationAndSave(sourceImage,"analyseResult.txt");   //进行MultiLabel的分类
 
-    //Util::dilateAndErode(outputImg);
+    cv::Mat multiLabelClassificationResult = cv::imread("multiLabelClassificationResult.png");  //读取MultiLabel的结果
 
-    //GraphCut* graphcut = new GraphCut();
-    //graphcut->main(img,outputImg);
-
-    Util::meldTwoCVMat(cvImage,outputImg);
+    Util::meldTwoCVMat(cvImage,multiLabelClassificationResult);
 
     Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
 
@@ -163,7 +165,6 @@ void ImageEditWindow::binaryClassificationSlot(){
     QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::getClassificationColor);
     binaryClassificationDialog->exec();
 
-    cv::Vec3b BK_Color(uchar(255), uchar(255), uchar(255)); //whilte
     cv::Vec3b Cur_Color = this->classificationColor;
 
     cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
@@ -177,25 +178,20 @@ void ImageEditWindow::binaryClassificationSlot(){
     // Read Source Image
     cv::Mat img = cv::imread("sourceImage.png");
 
-    // Read Mask
-    cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
-
     // Run RFBinaryClassification
     cv::Mat_<cv::Vec3b> outputImg;
     CMyClassification myTest;
     myTest.SetParametes(8, 8);
-    //myTest.RandomForestBinaryClassification(img, mask, outputImg, BK_Color, Cur_Color);
-    //myTest.RandomForestBinaryClassification(img,outputImg,BK_Color,Cur_Color,"analyseResult.txt");
     myTest.RandomForest_SuperPixel(img,outputImg,"analyseResult.txt");
-    //cv::imshow("outputImg",outputImg);
 
     cv::Mat oneLabelMask;
     Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
 
     //Util::dilateAndErode(outputImg);
 
-    GraphCut* graphcut = new GraphCut();
+    GraphCut* graphcut = new GraphCut();    //进行graph cut
     graphcut->main(img,outputImg);
+    delete graphcut;
 
     Util::meldTwoCVMat(cvImage,oneLabelMask);
 
