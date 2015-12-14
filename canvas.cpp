@@ -26,6 +26,8 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationTyp
 
     this->color = QColor(255,0,0);
 
+    this->undoStack = UndoStack::getInstance();
+
 }
 
 /**
@@ -107,28 +109,34 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::None:
                     return;
                 case config::Pencil:
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
                     break;
                 case config::Eraser:
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
                 case config::Bucket:
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->bucket(this->color);
                     break;
                 case config::Polygon:
                     this->polygon(this->mapToPixmap(e->pos()),this->color);
                     break;
                 case config::MagicEraser:
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->magicErase(this->mapToPixmap(e->pos()));
                     break;
                 default:
                     break;
             }
+
         }    //以上操作只有在画布内部才有效
     }else if(e->buttons() & Qt::RightButton){
         if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
             switch (this->operationType) {
                 case config::Eraser:    //右键状态下，橡皮擦变为魔术橡皮擦
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->magicErase(this->mapToPixmap(e->pos()));
                     break;
                 default:
@@ -137,6 +145,18 @@ void Canvas::mousePressEvent(QMouseEvent *e){
         }//以上操作只有在画布内部才有效
     }
 }
+
+void Canvas::mouseReleaseEvent(QMouseEvent *e){
+    switch (this->operationType) {
+        case config::Pencil:
+            break;
+        case config::Eraser:
+            break;
+        default:
+            break;
+    }
+}
+
 
 /**
  * @brief Canvas::mouseMoveEvent
@@ -237,6 +257,7 @@ void Canvas::polygon(const QPoint center, const QColor color){  //多边形工�
     if(this->polygonStarted == false){
         //初始化
         this->polygonPointVector.clear();
+        this->undoStack->push(currentDisplayLayerItem->image);
         this->beforePolygonBackup = currentDisplayLayerItem->image;
         this->polygonStarted = true;
     }else{

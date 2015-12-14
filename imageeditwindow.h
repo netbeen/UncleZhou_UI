@@ -26,6 +26,7 @@
 
 #include "SuperPixel/readsuperpixeldat.h"
 #include <QKeyEvent>
+#include "undostack.h"
 
 class ImageEditWindow  : public QMainWindow
 {
@@ -112,6 +113,11 @@ private:
 
     ReadSuperPixelDat* readSuperPixelDat;
     void doMultiLabelClassificationAndSave(const cv::Mat inputImage);
+
+    UndoStack* undoStack;
+
+    QAction* undoAction;
+    void undoSlot();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;

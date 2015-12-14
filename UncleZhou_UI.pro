@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     SuperPixel/readsuperpixeldat.cpp \
     SuperPixel/SLICSuperpixels/SLIC.cpp \
     BinaryClassification/MyClassification.cpp \
-    multilabelpreivewdock.cpp
+    multilabelpreivewdock.cpp \
+    undostack.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -85,7 +86,8 @@ HEADERS  += mainwindow.h \
     SuperPixel/readsuperpixeldat.h \
     SuperPixel/SLICSuperpixels/SLIC.h \
     BinaryClassification/MyClassification.h \
-    multilabelpreivewdock.h
+    multilabelpreivewdock.h \
+    undostack.h
 
 
 FORMS    +=

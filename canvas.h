@@ -8,6 +8,7 @@
 
 #include "layermanager.h"
 #include "util.h"
+#include "undostack.h"
 
 class Canvas : public QWidget
 {
@@ -29,6 +30,7 @@ protected:
     virtual void paintEvent(QPaintEvent* e) override;
     virtual void mousePressEvent(QMouseEvent *e) override;
     virtual void mouseMoveEvent(QMouseEvent *e) override;
+    virtual void mouseReleaseEvent(QMouseEvent *e) override;
 
 private:
     QImage surfaceImage;
@@ -62,6 +64,8 @@ private:
     std::vector<QPoint> polygonPointVector;
     QPoint mapToPixmap(QPoint screenPoint);
     void setImageToTheCenter();
+
+    UndoStack* undoStack;
 
 signals:
     void canvasUpdatedSignal();

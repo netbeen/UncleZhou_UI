@@ -23,6 +23,9 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->layerManager = LayerManager::getInstance();   //
     this->layerManager->init(editPosition);                           //优先初始化图层管理器
 
+    this->undoStack = UndoStack::getInstance();
+    this->undoStack->init(this->layerManager->getDisplayLayerItem()->image);
+
     this->initWindowLayout(editLevel);
     this->initActions(editLevel);
 
@@ -31,6 +34,7 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
     this->testFunctionMenu->addAction(this->binaryClassificationAction);
     this->testFunctionMenu->addAction(this->multiLabelClassificationAction);
+    this->testFunctionMenu->addAction(this->undoAction);
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
@@ -140,6 +144,7 @@ void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage
 // multi label
 void ImageEditWindow::multiLabelClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    this->undoStack->push(currentDisplayLayerItem->image);
     cv::Mat_<cv::Vec3b> currentMask;
     Util::convertQImageToMat(currentDisplayLayerItem->image,currentMask);
     Util::clearFragment(currentMask);   //使用DFS清除细碎色块
@@ -158,6 +163,7 @@ void ImageEditWindow::multiLabelClassificationSlot(){
 
 void ImageEditWindow::binaryClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    this->undoStack->push(currentDisplayLayerItem->image);
     cv::Mat_<cv::Vec3b> cvImage;
     Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
     Util::clearFragment(cvImage);
@@ -166,46 +172,52 @@ void ImageEditWindow::binaryClassificationSlot(){
     //开启选颜色对话框
     BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
     QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::getClassificationColor);
-    binaryClassificationDialog->exec();
 
-    cv::Vec3b Cur_Color = this->classificationColor;
+    if(binaryClassificationDialog->exec() == QDialog::Accepted){
+        cv::Vec3b Cur_Color = this->classificationColor;
 
-    cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
-    cv::Mat twoLabelMask;
-    Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
-    cv::imwrite("twoLabelMask.png",twoLabelMask);
+        cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
+        cv::Mat twoLabelMask;
+        Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
+        cv::imwrite("twoLabelMask.png",twoLabelMask);
 
-    //利用mask图像，生成analyse文件
-    this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
+        //利用mask图像，生成analyse文件
+        this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
 
-    // Read Source Image
-    cv::Mat img = cv::imread("sourceImage.png");
+        // Read Source Image
+        cv::Mat img = cv::imread("sourceImage.png");
 
-    // Run RFBinaryClassification
-    cv::Mat_<cv::Vec3b> outputImg;
-    CMyClassification myTest;
-    myTest.SetParametes(8, 8);
-    myTest.RandomForest_SuperPixel(img,twoLabelMask,outputImg,"output.dat");
+        // Run RFBinaryClassification
+        cv::Mat_<cv::Vec3b> outputImg;
+        CMyClassification myTest;
+        myTest.SetParametes(8, 8);
+        myTest.RandomForest_SuperPixel(img,twoLabelMask,outputImg,"output.dat");
 
-    cv::Mat oneLabelMask;
-    Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
+        cv::Mat oneLabelMask;
+        Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
 
-    //Util::dilateAndErode(outputImg);
+        //Util::dilateAndErode(outputImg);
 
-    GraphCut* graphcut = new GraphCut();    //进行graph cut
-    graphcut->main(img,oneLabelMask);
-    delete graphcut;
+        GraphCut* graphcut = new GraphCut();    //进行graph cut
+        graphcut->main(img,oneLabelMask);
+        delete graphcut;
 
-    Util::meldTwoCVMat(cvImage,oneLabelMask);
+        Util::meldTwoCVMat(cvImage,oneLabelMask);
 
-    Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
+        Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
 
+        this->canvas->update();
+
+        //更新MultiLabel
+        this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
+        this->doMultiLabelClassificationAndSave(cvImage);
+        this->multiLabelPreivewDock->multiLabelCanvas->update();
+    }
+}
+
+void ImageEditWindow::undoSlot(){
+    this->layerManager->getDisplayLayerItem()->image =this->undoStack->pop();
     this->canvas->update();
-
-    //更新MultiLabel
-    this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
-    this->doMultiLabelClassificationAndSave(cvImage);
-    this->multiLabelPreivewDock->multiLabelCanvas->update();
 }
 
 void ImageEditWindow::getClassificationColor(cv::Vec3b newColor){
@@ -250,6 +262,9 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->binaryClassificationAction,&QAction::triggered, this, &ImageEditWindow::binaryClassificationSlot);
     this->multiLabelClassificationAction = new QAction(QIcon(":image/open.png"),"&Multi Label Classification",this);
     QObject::connect(this->multiLabelClassificationAction,&QAction::triggered, this, &ImageEditWindow::multiLabelClassificationSlot);
+    this->undoAction = new QAction(QIcon(":image/open.png"),"&Undo",this);
+    this->undoAction->setShortcut(QKeySequence::Undo);
+    QObject::connect(this->undoAction,&QAction::triggered, this, &ImageEditWindow::undoSlot);
 
 
 
