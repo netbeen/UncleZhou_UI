@@ -2,6 +2,7 @@
 #include "layermanager.h"
 #include <QRadioButton>
 #include <QVBoxLayout>
+#include <QPushButton>
 
 
 
@@ -48,22 +49,23 @@ void BinaryClassificationDialog::initDialogLayout(){
     }
 
     for(cv::Vec3b elem : this->colorVector){
-        QString radioName = QString::number(elem[0]) + " "+ QString::number(elem[1]) + " " + QString::number(elem[2]);
-        QRadioButton* radio = new QRadioButton(radioName);
-        QObject::connect(radio, &QRadioButton::clicked, this, &BinaryClassificationDialog::findTheToggledButton);
-        radioLayout->addWidget(radio);
-        this->radioButtonVector.push_back(radio);
+        QPushButton* pushButton = new QPushButton();
+        pushButton->setStyleSheet("background-color: rgb("+QString::number(elem[2])+","+QString::number(elem[1])+","+ QString::number(elem[0]) + ");");
+        QObject::connect(pushButton,&QPushButton::clicked,this,&BinaryClassificationDialog::findTheToggledButton);
+        this->pushButtonVector.push_back(pushButton);
+        radioLayout->addWidget(pushButton);
     }
+
+
 }
 
 void BinaryClassificationDialog::findTheToggledButton(){
-    size_t index = 0;
-    while(this->radioButtonVector.at(index)->isChecked() == false){
-        index++;
-        if(index == radioButtonVector.size()){
+    for(size_t i = 0; i < this->pushButtonVector.size(); i++){
+        if(this->pushButtonVector.at(i)->hasFocus() == true){
+            this->sendColor(this->colorVector.at(i));
+            this->accept();
             return;
         }
     }
-
-    this->sendColor(this->colorVector.at(index));
+    exit(2);
 }

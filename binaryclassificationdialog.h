@@ -17,7 +17,7 @@ private:
     LayerManager* layerManager;
 
     std::vector<cv::Vec3b> colorVector;
-    std::vector<QRadioButton*> radioButtonVector;
+    std::vector<QPushButton*> pushButtonVector;
 
 signals:
     void sendColor(cv::Vec3b color);
