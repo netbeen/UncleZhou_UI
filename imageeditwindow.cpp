@@ -166,7 +166,7 @@ void ImageEditWindow::binaryClassificationSlot(){
     this->undoStack->push(currentDisplayLayerItem->image);
     cv::Mat_<cv::Vec3b> cvImage;
     Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
-    Util::clearFragment(cvImage);
+    //Util::clearFragment(cvImage);
     cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
 
     //开启选颜色对话框
@@ -222,7 +222,7 @@ void ImageEditWindow::undoSlot(){
 
 void ImageEditWindow::getClassificationColor(cv::Vec3b newColor){
     this->classificationColor = newColor;
-    std::cout<< "分类色被设置为" << newColor << std::endl;
+    //std::cout<< "分类色被设置为" << newColor << std::endl;
 }
 
 /**

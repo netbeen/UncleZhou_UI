@@ -130,10 +130,10 @@ void GraphCut::GridGraph_Individually(int width,int height,int num_pixels,int nu
             }
         }
 
-        printf("\nBefore optimization energy is %d",static_cast<int>(gc->compute_energy()));
+        //printf("\nBefore optimization energy is %d",static_cast<int>(gc->compute_energy()));
         //gc->expansion(5);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
         gc->swap(5);
-        printf("\nAfter optimization energy is %d\n",static_cast<int>(gc->compute_energy()));
+        //printf("\nAfter optimization energy is %d\n",static_cast<int>(gc->compute_energy()));
 
         for ( int  i = 0; i < num_pixels; i++ ){
             result[i] = gc->whatLabel(i);
@@ -222,7 +222,7 @@ void GraphCut::main(cv::Mat& sourceImage, cv::Mat& initGuess){
         std::cout << "checkUserMarkValid false!" <<std::endl;
         exit(1);
     }else{
-        std::cout << "checkUserMarkValid true!" <<std::endl;
+        //std::cout << "checkUserMarkValid true!" <<std::endl;
     }
 
     int num_pixels = this->rawImage.cols*this->rawImage.rows;

@@ -100,7 +100,7 @@ void MainWindow::initAction(){
  * @return 没有返回值
  */
 void MainWindow::loadSourceImage(){
-    QFileDialog* fileDialog = new QFileDialog(this, tr("Open image File"), ".", tr("Image files(*.png)"));
+    QFileDialog* fileDialog = new QFileDialog(this, tr("Open image File"), ".", tr("Image files(*.png *.jpg *.JPG)"));
     fileDialog->setFileMode(QFileDialog::ExistingFiles);
     fileDialog->setViewMode(QFileDialog::Detail);
 

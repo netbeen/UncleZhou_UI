@@ -8,6 +8,8 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+QMAKE_CXXFLAGS += -Wl,--stack,4194304000
+
 TARGET = UncleZhou_UI
 TEMPLATE = app
 

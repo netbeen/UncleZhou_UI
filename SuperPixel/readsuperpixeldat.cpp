@@ -186,10 +186,7 @@ void ReadSuperPixelDat::analyseLabelFile(const QString maskFilename, float THRES
         maxLabel = std::max(maxLabel, tempLabel);
     }
     labelFile.close();
-    std::cout << minLabel << " " << maxLabel << std::endl;
-    //    for(int i = 0; i < this->size; i++){
-    //        std::cout << i <<" " << labels.at(i) << std::endl;
-    //    }
+    std::cout << "minLabel,maxLabel = " << minLabel << " " << maxLabel << std::endl;
 
     std::vector<std::vector< std::pair<int,int> > > label2Coodinates(maxLabel+1);
     std::vector<int> label2Count(maxLabel+1,0);
@@ -210,7 +207,6 @@ void ReadSuperPixelDat::analyseLabelFile(const QString maskFilename, float THRES
     this->maskDFS = mask.clone();
 
     this->colorCodeVector = std::vector<int>();
-    //this->searchUnblackArea();
     std::cout << "this->searchUnwhiteArea(); start" << std::endl;
     this->searchUnwhiteArea();
     std::cout << "this->searchUnwhiteArea(); end" << std::endl;
@@ -341,7 +337,6 @@ void ReadSuperPixelDat::searchUnwhiteArea(){
                 this->coordinates = std::vector< std::pair<int,int> >();
                 this->dfs(std::pair<int,int>(y_offset,x_offset));
                 this->maskID2Coodinates.push_back(this->coordinates);
-                //std::cout << "This area of mask has point count: " << this->coordinates.size() << std::endl;
             }
         }
     }
