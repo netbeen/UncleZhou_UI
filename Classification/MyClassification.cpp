@@ -1,6 +1,8 @@
 #include "MyClassification.h"
 #include "MySharkML.h"
 #include "GetImageFeatures.h"
+#include "SuperPixelGraph.h"
+
 #include <algorithm>
 
 CMyClassification::CMyClassification(void)
@@ -10,6 +12,7 @@ CMyClassification::CMyClassification(void)
 	m_numTrees = 100;
 
 	m_BK_Label = 26;
+	m_bCropped = false;
 }
 
 
@@ -29,63 +32,45 @@ void CMyClassification::SetBackgroundColor(cv::Vec3b BK_Color)
 	m_BK_Label = BGR2Label(BK_Color);
 }
 
-
 void CMyClassification::RandomForestClassification(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg)
 {
-	// Data Structure
-	cv::Mat trainingFeat, TestFeat; //features
-	std::vector<int> allabels, trainingLabel; //labels
+	//GetLabels
+	m_ImgRows = inputImg.rows;
+	m_ImgCols = inputImg.cols;
+	cv::Mat mask_crop = colorMask(cv::Range(0, m_ImgRows-m_patchSize+1), cv::Range(0, m_ImgCols-m_patchSize+1));
+	std::vector<int> allabels;
+	ColorImg2Label(allabels, mask_crop);
+	m_bCropped = true; //the output has been cropped;
 
-	//GetFeatures
+	// GetFeatures
+	cv::Mat TestFeat; //features
 	CGetImageFeatures myfeat(m_patchSize, m_numBins);
 	myfeat.GetFeatures_ColorHist_3Channels(TestFeat, inputImg);
 
-	//GetLabels
-	int rows = colorMask.rows;
-	int cols = colorMask.cols;
-	cv::Mat mask_crop = colorMask(cv::Range(0, rows-m_patchSize+1), cv::Range(0, cols-m_patchSize+1));
-	ColorImg2Label(allabels, mask_crop);
+	// Run Classification
+	RunRandomForest(allabels, TestFeat, outputImg);
+}
 
-
-	//////////////////////////////////////////////////////////////////////////
-	LabelConvertforClassification(allabels);
-
-	//Select Training Set
-	myfeat.GetTrainingSet(trainingFeat, trainingLabel, TestFeat, allabels);
-	if(trainingFeat.rows < 1){
-		cout<<"training feature's dimension is illegal !"<<endl;
-		return ;
+void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<std::string> moreFeatImgs, 
+												cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
+{
+	if(moreFeatImgs.size() < 1) {
+		RandomForest_SuperPixel(inputImg, colorMask, outputImg, dirSuperPixelDat);
+		return;
 	}
-
-	//Run Random Forest
-	CMySharkML myshark(m_numTrees);
-	myshark.RFClassification(trainingFeat, trainingLabel, TestFeat, m_predictLabel, m_predictConf);
-
-	//Output
-	LabelConvertforOutput(m_predictLabel);
-	//////////////////////////////////////////////////////////////////////////
-
-
-	cv::Mat predictImg(inputImg.rows-m_patchSize+1, inputImg.cols-m_patchSize+1, CV_8UC3);
-	Label2ColorImage(m_predictLabel, predictImg);
-
-	outputImg = cv::Mat(inputImg.rows, inputImg.cols, CV_8UC3);
-	for(int i=0; i<outputImg.rows; i++) {
-		for(int j=0; j<outputImg.cols; j++) {
-			if(i<predictImg.rows && j<predictImg.cols)
-				outputImg.at<cv::Vec3b>(i, j) = predictImg.at<cv::Vec3b>(i, j);
-			else
-				Label2BGR(m_BK_Label, outputImg.at<cv::Vec3b>(i, j) );
+	else {
+		std::vector<cv::Mat> otherfeatImgs;
+		for(int i=0; i<moreFeatImgs.size(); i++) {
+			cv::Mat featimg = cv::imread(moreFeatImgs[i], CV_8UC1);
+			otherfeatImgs.push_back(featimg);
 		}
+		RandomForest_SuperPixel(inputImg, otherfeatImgs, colorMask, outputImg, dirSuperPixelDat);
 	}
 }
 
-void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
+void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<cv::Mat> moreFeatImgs, 
+	cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
 {
-	// Data Structure
-	cv::Mat trainingFeat, TestFeat; //features
-	std::vector<int> allLabel, trainingLabel; //labels
-
 	//Read superpixels file
 	m_ImgRows = inputImg.rows;
 	m_ImgCols = inputImg.cols;
@@ -93,36 +78,111 @@ void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colo
 		cout<<"ERROR in read Superpixel ID file";
 		return;
 	}
-	
-	//GetFeatures - super pixels features
-	CGetImageFeatures myfeat(m_patchSize, m_numBins);
-	myfeat.GetSuperPixelFeat(TestFeat, inputImg, m_superpixelCoords);
 
 	//Get Labels
+	std::vector<int> allLabel; //labels
 	ColorImg2Label_superpixel(allLabel, colorMask);
 
 
+	//GetFeatures - super pixels features
+	CGetImageFeatures myfeat(m_patchSize, m_numBins);
+	std::vector<cv::Mat> allFeatImgs;
+	allFeatImgs.push_back(inputImg);
+	if(moreFeatImgs.size()) {
+		for(int i=0; i<moreFeatImgs.size(); i++)
+			allFeatImgs.push_back(moreFeatImgs[i]);
+	}
+	cv::Mat TestFeat; //features		
+	myfeat.GetImageFeatures_Histograms_SuperPixel(TestFeat, allFeatImgs, m_superpixelCoords);
+
+	
+	// Run Classification
+	RunRandomForest(allLabel, TestFeat, outputImg);
+}
+
+void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
+{
+	//Read superpixels file
+	m_ImgRows = inputImg.rows;
+	m_ImgCols = inputImg.cols;
+	if(!ReadInSuperPixelLabel(dirSuperPixelDat)) {
+		cout<<"ERROR in read Superpixel ID file";
+		return;
+	}
+
+	//Get Labels
+	std::vector<int> allLabel; //labels
+	ColorImg2Label_superpixel(allLabel, colorMask);
+
+	
+	//GetFeatures - super pixels features
+	cv::Mat TestFeat; //features
+	CGetImageFeatures myfeat(m_patchSize, m_numBins);
+	myfeat.GetFeat_ColorHist_SuperPixel(TestFeat, inputImg, m_superpixelCoords);
+
+	
+	// Run Classification
+	RunRandomForest(allLabel, TestFeat, outputImg);
+}
+
+
+void CMyClassification::RunRandomForest(std::vector<int> allabels, cv::Mat &TestFeat, cv::Mat &outputImg)
+{
 	//////////////////////////////////////////////////////////////////////////
-	LabelConvertforClassification(allLabel);
+	LabelConvertforClassification(allabels);
 
 	//Select Training Set
-	myfeat.GetTrainingSet(trainingFeat, trainingLabel, TestFeat, allLabel);
+	cv::Mat trainingFeat;
+	std::vector<int> trainingLabel;
+	CGetImageFeatures myfeat;
+	myfeat.GetTrainingSet(trainingFeat, trainingLabel, TestFeat, allabels);
+
 	if(trainingFeat.rows < 1){
 		cout<<"training feature's dimension is illegal !"<<endl;
 		return ;
 	}
+
 	//Run Random Forest
 	CMySharkML myshark(m_numTrees);
 	myshark.RFClassification(trainingFeat, trainingLabel, TestFeat, m_predictLabel, m_predictConf);
 
-	//Output
+	//Output Label
 	LabelConvertforOutput(m_predictLabel);
 	//////////////////////////////////////////////////////////////////////////
 
 
-	outputImg = cv::Mat(inputImg.rows, inputImg.cols, CV_8UC3);
+	// Output Image
+	outputImg = cv::Mat(m_ImgRows, m_ImgCols, CV_8UC3);
+	if(m_bCropped) {
+		cv::Mat predictImg(m_ImgRows-m_patchSize+1, m_ImgCols-m_patchSize+1, CV_8UC3);
+		Label2ColorImage(m_predictLabel, predictImg);
 
-	Label2ColorImg_SuperPixel(m_predictLabel, outputImg);
+		outputImg = cv::Mat(m_ImgRows, m_ImgCols, CV_8UC3);
+		for(int i=0; i<outputImg.rows; i++) {
+			for(int j=0; j<outputImg.cols; j++) {
+				if(i<predictImg.rows && j<predictImg.cols)
+					outputImg.at<cv::Vec3b>(i, j) = predictImg.at<cv::Vec3b>(i, j);
+				else
+					Label2BGR(m_BK_Label, outputImg.at<cv::Vec3b>(i, j) );
+			}
+		}
+	}
+	else
+		Label2ColorImg_SuperPixel(m_predictLabel, outputImg);
+}
+
+void CMyClassification::RunGraphCut(cv::Mat &resultImg, double smoothRatio)
+{
+	SuperPixelGraph spGraph(m_superpixelCoords, m_superpixelID, m_predictConf, m_numClasses);
+	spGraph.buildGraph();
+
+	//spGraph.outputGraph();
+	spGraph.GeneralGraph_DArraySArraySpatVarying(smoothRatio);
+	//spGraph.PrintGraphResult();
+	resultImg = Mat(m_ImgRows, m_ImgCols, CV_8UC3, Scalar(0));
+	LabelConvertforOutput(spGraph.resultLabel);
+	Label2ColorImg_SuperPixel(spGraph.resultLabel, resultImg);
+	//imshow("the image after GC", resultImg);
 }
 
 
@@ -132,7 +192,8 @@ void CMyClassification::LabelConvertforClassification(std::vector<int> &label)
 	Label2Class(label, m_classes_input);
 	
 	m_classes_converted.clear();
-	for(int i=0, j=0; i<m_classes_input.size(); i++) {
+	int j = 0;
+	for(int i=0; i<m_classes_input.size(); i++) {
 		if(m_classes_input[i] == m_BK_Label)
 			m_classes_converted.push_back(9999);
 		else {
@@ -140,6 +201,8 @@ void CMyClassification::LabelConvertforClassification(std::vector<int> &label)
 			j++;
 		}
 	}
+	
+	m_numClasses = j;
 
 	LabelConvert(label, m_classes_input, m_classes_converted);
 }
@@ -209,6 +272,9 @@ void CMyClassification::Label2ColorImage(std::vector<int> &label, cv::Mat &img)
 bool CMyClassification::ReadInSuperPixelLabel(std::string dirSuperPixelDat)
 {
 	FILE* pf = fopen(dirSuperPixelDat.c_str(), "r");
+	if(pf==nullptr)
+		return false;
+
 	int sz = m_ImgRows*m_ImgCols;
 	int* vals = new int[sz];
 	int elread = fread((char*)vals, sizeof(int), sz, pf);
@@ -236,7 +302,7 @@ void CMyClassification::GetPointsofSuperPixels()
 			if(curlabel == BKLabel)
 				continue;
 
-			std::vector<cv::Point2d> v_pixels;
+			std::vector<cv::Point> v_pixels;
 			DFTraverse(temLabel, i, j, curlabel, BKLabel, v_pixels);
 
 			m_superpixelCoords.push_back(v_pixels);
@@ -244,16 +310,16 @@ void CMyClassification::GetPointsofSuperPixels()
 	}
 
 	// ensure the superpixelID is compatible with the index in coods vector
-	std::vector< std::vector<cv::Point2d> >::iterator iter_spCoords = m_superpixelCoords.begin();
+	std::vector< std::vector<cv::Point> >::iterator iter_spCoords = m_superpixelCoords.begin();
 	for(int i=0; i<m_superpixelCoords.size(); i++, iter_spCoords++) {
-		std::vector<cv::Point2d>::iterator iter_pts = iter_spCoords->begin();
+		std::vector<cv::Point>::iterator iter_pts = iter_spCoords->begin();
 		for(int j=0; j<iter_spCoords->size(); j++, iter_pts++) {
 			m_superpixelID.at<int>(iter_pts->y, iter_pts->x) = i;
 		}
 	}
 }
 
-void CMyClassification::DFTraverse(cv::Mat &labelmap, int i, int j, const int curlabel, const int BKLabel, std::vector<cv::Point2d> &pixels)
+void CMyClassification::DFTraverse(cv::Mat &labelmap, int i, int j, const int curlabel, const int BKLabel, std::vector<cv::Point> &pixels)
 {
 	if(i>=labelmap.rows || i<0 || j<0 || j>=labelmap.cols)
 		return;
@@ -261,7 +327,7 @@ void CMyClassification::DFTraverse(cv::Mat &labelmap, int i, int j, const int cu
 	int l = labelmap.at<int>(i, j);
 	if(l==curlabel) {
 		labelmap.at<int>(i, j) = BKLabel;
-		cv::Point2d pt(j, i); //x, y
+		cv::Point pt(j, i); //x, y
 		pixels.push_back(pt);
 
 		DFTraverse(labelmap, i, j+1, curlabel, BKLabel, pixels);
@@ -286,10 +352,10 @@ void CMyClassification::ColorImg2Label_superpixel(std::vector<int> &allLabels, c
 	int numlabels = m_classes_input.size();
 	int *numpixels = new int[numlabels];
 
-	std::vector< std::vector<cv::Point2d> >::iterator iter_spCoords = m_superpixelCoords.begin();
+	std::vector< std::vector<cv::Point> >::iterator iter_spCoords = m_superpixelCoords.begin();
 	for(int i=0; i<m_superpixelCoords.size(); i++, iter_spCoords++) {
 		memset(numpixels, 0, sizeof(int)*numlabels);
-		std::vector<cv::Point2d>::iterator iter_pts = iter_spCoords->begin();
+		std::vector<cv::Point>::iterator iter_pts = iter_spCoords->begin();
 		for(int j=0; j<iter_spCoords->size(); j++, iter_pts++) {
 			int l = BGR2Label(mask.at<cv::Vec3b>(iter_pts->y, iter_pts->x));
 			for(int k=0; k<numlabels; k++) {
@@ -317,9 +383,9 @@ void CMyClassification::Label2ColorImg_SuperPixel(std::vector<int> &label, cv::M
 {
 	 int nChannels = img.channels();
 	 int superPixelId = 0;
-	 std::vector< std::vector<cv::Point2d> >::iterator iter = m_superpixelCoords.begin();
+	 std::vector< std::vector<cv::Point> >::iterator iter = m_superpixelCoords.begin();
 	 for(; iter != m_superpixelCoords.end(); iter++, superPixelId++) {
-	 	std::vector<cv::Point2d >::iterator iiter = iter->begin();
+	 	std::vector<cv::Point >::iterator iiter = iter->begin();
 	 	for(; iiter!=iter->end(); iiter++)
 	 		Label2BGR(label[superPixelId], img.at<cv::Vec3b>(iiter->y, iiter->x));
 	 }

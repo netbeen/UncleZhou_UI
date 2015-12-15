@@ -1,5 +1,7 @@
 #include "GetImageFeatures.h"
 
+#include "Saliency.h"
+
 int BGR2Label(const cv::Vec3b &pColor)
 {
 	// NOTE: OpenCV is bgr
@@ -133,22 +135,73 @@ void CGetImageFeatures::GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &
 	}
 }
 
-
-void CGetImageFeatures::GetSuperPixelFeat(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point2d> > &superPixelDat)
+void CGetImageFeatures::GetImageFeatures_Histograms_SuperPixel(cv::Mat &features, std::vector<cv::Mat> v_featureImgs, std::vector< std::vector<cv::Point> > &superPixelDat)
 {
-	int DIMENSION = m_numBins*3;
+	int icount = v_featureImgs.size();
+	std::vector<cv::Mat> feat;
+	int totalChannel = 0;
+	for(int i=0; i<icount; i++) {
+		if(v_featureImgs[i].rows < 1)
+			continue;
+
+		int channel_i = v_featureImgs[i].channels();
+		totalChannel += channel_i;
+		cv::Mat feat_i;
+		GetFeat_ColorHist_SuperPixel(feat_i, v_featureImgs[i], superPixelDat);
+		feat.push_back(feat_i);
+	}
+
+	features = Cat(feat);
+}
+
+cv::Mat CGetImageFeatures::Cat(std::vector<cv::Mat> &feats)
+{
+	int numSuperPixels = feats[0].rows;
+	if(numSuperPixels < 1)
+		return cv::Mat();
+
+	int totalCols = 0;
+	for(int i=0; i<feats.size(); i++) {
+		totalCols += feats[i].cols;
+		assert(feats[i].rows == numSuperPixels);
+	}
+
+	cv::Mat features = cv::Mat(numSuperPixels, totalCols, CV_32F);
+	float* pf_all = (float*)features.data;
+
+	for(int j=0; j<numSuperPixels; j++) {
+		for(int i=0; i<feats.size();  i++) {
+			int cols_i= feats[i].cols;
+
+			float *pf_i = (float *) feats[i].data + j*cols_i;
+			memcpy(pf_all, pf_i, sizeof(float)*cols_i); //Copy a line
+
+			pf_all += cols_i;
+		}
+	}
+
+	return features;
+}
+
+void CGetImageFeatures::GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat)
+{
+	int nChannels = img.channels();
+	int DIMENSION = m_numBins*nChannels;
 	int numSuperPixels = superPixelDat.size();
 	features = cv::Mat(numSuperPixels, DIMENSION, CV_32F);
 	memset(features.data, 0, sizeof(float)*numSuperPixels*DIMENSION);
 	
 	int pf=0;
-	int nChannels = img.channels();
-	std::vector<std::vector<cv::Point2d> >::iterator iter= superPixelDat.begin();
+	std::vector<std::vector<cv::Point> >::iterator iter= superPixelDat.begin();
 	for(; iter != superPixelDat.end(); iter++, pf++){
 
-		std::vector<cv::Point2d >::iterator iiter=iter->begin();
+		std::vector<cv::Point >::iterator iiter=iter->begin();
 		for(; iiter!=iter->end(); iiter++){
-			cv::Vec3b pp = img.at<cv::Vec3b>( iiter->y, iiter->x);
+			uchar *pp = nullptr;
+			if(nChannels == 3)
+				pp = &img.at<cv::Vec3b>( iiter->y, iiter->x)[0];
+			else if(nChannels == 1)
+				pp = &img.at<uchar>( iiter->y, iiter->x);
 			for(int k=0; k<nChannels; k++) {
 				int intensity = (int) pp[nChannels-1-k];
 				int BinID = intensity*(m_numBins-1) / 255.0 + 0.5;
@@ -160,66 +213,3 @@ void CGetImageFeatures::GetSuperPixelFeat(cv::Mat &features, cv::Mat &img, std::
 			features.at<float>(pf, k) /= (float) iter->size();
 	}
 }
-
-
-/*
-	//my test about super pixels
-	vector<cv::Point> spRowsDat; //each row in super pixel data
-	vector<vector<int> > maskDat; //mask data
-	vector<int> maskIdDat; //each row id data
-	int id, numRowsDat, x,y,numSuperPixels;
-	ifstream readDat(dirSuperPixelDat);
-	if(!readDat.good()){
-		cout<<"error! open the super pixels data fail."<<endl;
-		return;
-	}
-	string line;
-	getline(readDat, line);
-	if( line == "#labels" ){
-		getline(readDat, line);
-		istringstream ss(line);
-		ss>>numSuperPixels;
-		cout<<numSuperPixels<<endl;
-		for(int i = 0; i<numSuperPixels; i++){
-			getline(readDat, line);
-			istringstream ss(line);
-			ss>>id>>numRowsDat;
-			for(int j=0;j<numRowsDat;j++){
-				ss>>y>>x;
-				spRowsDat.push_back(cv::Point(x,y));
-			}
-			this->superPixelDat.push_back(spRowsDat);
-            {
-                vector<cv::Point> swapVector;
-                spRowsDat.swap(swapVector);
-            }
-		}
-	}
-
-	int numMask, spId, color, numMaskSuperPixels = 0;
-	vector<int> maskColor;
-	getline(readDat, line);
-	if( line == "#masks" ){
-		getline(readDat, line);
-		istringstream ss(line);
-		ss>>numMask;
-		cout<<numMask<<endl;
-		for(int i = 0; i<numMask; i++){
-			getline(readDat, line);
-			istringstream ss(line);
-			ss>>id>>color>>numRowsDat;
-			maskColor.push_back(color);
-			for(int j=0;j<numRowsDat;j++, numMaskSuperPixels++){
-				ss>>spId;
-				maskIdDat.push_back(spId);
-			}
-			maskDat.push_back(maskIdDat);
-            {
-                vector<int> swapVector;
-                maskIdDat.swap(swapVector);
-            }
-
-		}
-	}
-    readDat.close();
-	*/

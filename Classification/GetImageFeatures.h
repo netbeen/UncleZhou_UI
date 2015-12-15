@@ -23,8 +23,13 @@ public:
 
 
 	//processing the super pixels
-	void GetSuperPixelFeat(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point2d> > &superPixelDat);
+	void GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat);
 	
+	void GetImageFeatures_Histograms_SuperPixel(cv::Mat &features, std::vector<cv::Mat> v_featureImgs,
+		std::vector< std::vector<cv::Point> > &superPixelDat);
+	
+	cv::Mat Cat(std::vector<cv::Mat> &feats);
+
 private:
 	int m_numBins;
 	int m_patchSize;

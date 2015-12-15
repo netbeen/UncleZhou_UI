@@ -6,8 +6,10 @@
 #include <QSpinBox>
 #include <QDebug>
 #include <QPushButton>
-#include "BinaryClassification/MyClassification.h"
+#include "Classification/MyClassification.h"
 #include "graphcut/graphcut.h"
+
+#include "Classification/MyImageProc.h"
 
 
 /**
@@ -41,6 +43,13 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     //处理SuperPixel的类
     this->readSuperPixelDat = new ReadSuperPixelDat();
     readSuperPixelDat->segmentSourceImage();
+
+    CMyImageProc ttImgProc;
+    cv::Mat srcImg = cv::imread("sourceImage.png");
+    cv::Mat textonImg = ttImgProc.GenTextonMap(srcImg);
+    cv::imwrite("src_texton.png", textonImg);
+    cv::Mat sailImg = ttImgProc.GenSaliencyMap(srcImg);
+    cv::imwrite("src_saliency.png", sailImg);
 }
 
 
@@ -136,7 +145,12 @@ void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage
 
     cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
 
-    myTest.RandomForest_SuperPixel(img,mask,outputImg,"output.dat");
+    std::vector<std::string> morefeatImgs;
+    std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
+    std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
+    std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
+    myTest.RandomForest_SuperPixel(img,morefeatImgs,mask,outputImg,"output.dat");
+    myTest.RunGraphCut(outputImg);
 
     cv::imwrite("multiLabelClassificationResult.png",outputImg);
 }
@@ -187,20 +201,19 @@ void ImageEditWindow::binaryClassificationSlot(){
         // Read Source Image
         cv::Mat img = cv::imread("sourceImage.png");
 
-        // Run RFBinaryClassification
+        // Run RFBinaryClassification2
         cv::Mat_<cv::Vec3b> outputImg;
         CMyClassification myTest;
-        myTest.SetParametes(8, 8);
-        myTest.RandomForest_SuperPixel(img,twoLabelMask,outputImg,"output.dat");
+        //myTest.SetParametes(8, 8);
+        std::vector<std::string> morefeatImgs;
+        std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
+        std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
+        std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
+        myTest.RandomForest_SuperPixel(img,morefeatImgs,twoLabelMask,outputImg,"output.dat");
+        myTest.RunGraphCut(outputImg);
 
         cv::Mat oneLabelMask;
         Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
-
-        //Util::dilateAndErode(outputImg);
-
-        GraphCut* graphcut = new GraphCut();    //进行graph cut
-        graphcut->main(img,oneLabelMask);
-        delete graphcut;
 
         Util::meldTwoCVMat(cvImage,oneLabelMask);
 
@@ -209,7 +222,7 @@ void ImageEditWindow::binaryClassificationSlot(){
         this->canvas->update();
 
         //更新MultiLabel
-        this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
+        //this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
         this->doMultiLabelClassificationAndSave(cvImage);
         this->multiLabelPreivewDock->multiLabelCanvas->update();
     }

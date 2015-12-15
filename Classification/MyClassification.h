@@ -9,15 +9,25 @@ public:
 	CMyClassification(void);
 	~CMyClassification(void);
 
+	void RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<std::string> moreFeatImgs, 
+		cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
+
+
 	void RandomForestClassification(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg);
 	void RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
+	void RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<cv::Mat> moreFeatImgs, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
+	
 	void SetParametes(int patchSize, int numBins, int m_numTrees = 100);
 	void SetBackgroundColor(cv::Vec3b  BK_Color);
+
+	void RunRandomForest(std::vector<int> allabels, cv::Mat &TestFeat, cv::Mat &outpuImg);
+
+	void RunGraphCut(cv::Mat &resultImg, double smoothRatio = 0.325f);
 
 
 public:
 	cv::Mat m_superpixelID;
-	std::vector< std::vector<cv::Point2d> > m_superpixelCoords;
+	std::vector< std::vector<cv::Point> > m_superpixelCoords;
 	std::vector<int> m_predictLabel;
 	cv::Mat m_predictConf;
 
@@ -37,7 +47,8 @@ private:
 	void LabelConvert(std::vector<int> &label, std::vector<int> L1, std::vector<int> L2);
 
 
-	int m_patchSize, m_numBins, m_numTrees;
+	int m_patchSize, m_numBins, m_numTrees, m_numClasses;
+	bool m_bCropped;
 
 	int m_ImgRows, m_ImgCols;
 	int m_BK_Label;
@@ -48,6 +59,6 @@ private:
 
 	void GetPointsofSuperPixels();
 	bool ReadInSuperPixelLabel(std::string dirSuperPixelDat);
-	void DFTraverse(cv::Mat &labelmap, int i, int j, const int curlabel, const int BKLabel, std::vector<cv::Point2d> &pixels);
+	void DFTraverse(cv::Mat &labelmap, int i, int j, const int curlabel, const int BKLabel, std::vector<cv::Point> &pixels);
 };
 
