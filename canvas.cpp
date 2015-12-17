@@ -154,6 +154,13 @@ void Canvas::mouseReleaseEvent(QMouseEvent *e){
             emit this->updateColorButtonLayoutSignal();
             break;
         case config::Eraser:
+            emit this->updateColorButtonLayoutSignal();
+            break;
+        case config::MagicEraser:
+            emit this->updateColorButtonLayoutSignal();
+            break;
+        case config::Polygon:
+            emit this->updateColorButtonLayoutSignal();
             break;
         default:
             break;

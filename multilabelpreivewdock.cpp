@@ -9,7 +9,7 @@
  * @brief 构造函数
  * @param parent
  */
-MultiLabelPreivewDock::MultiLabelPreivewDock(QWidget* parent):QDockWidget(parent){
+MultiLabelPreivewDock::MultiLabelPreivewDock(QWidget* parent):QDockWidget(parent),activeButtonIndex(-1),isMultiLabelChecked(false){
 
     this->colorVector = std::vector<cv::Vec3b>();
     this->colorButtonVector = std::vector<QPushButton*>();
@@ -20,48 +20,21 @@ MultiLabelPreivewDock::MultiLabelPreivewDock(QWidget* parent):QDockWidget(parent
 }
 
 /**
- * @brief MultiLabelPreivewDock::addColor
- * @brief 每当画笔画下任何颜色，都会调用
- * @param newColor
+ * @brief MultiLabelPreivewDock::buttonClickedSlot
  */
-void MultiLabelPreivewDock::addColor(cv::Vec3b newColor){
-    qDebug("In");
-    std::vector<cv::Vec3b>::iterator iterator;// = std::find(this->colorVector.begin(), this->colorVector.end(), newColor);
-    std::cout << "newColor:" << newColor << std::endl;
-    if(cv::Vec3b(255,0,0) == newColor){
-        ;
+void MultiLabelPreivewDock::buttonClickedSlot(){
+    QPushButton* focusedButton = nullptr;
+    for(size_t i = 0; i < this->colorButtonVector.size(); i++){
+        QPushButton* buttonElem = this->colorButtonVector.at(i);
+        if(buttonElem->hasFocus()){
+            focusedButton = buttonElem;
+            this->activeButtonIndex = i;
+        }
+        buttonElem->setChecked(false);
     }
-    qDebug("2");
-    bool existed = false;
-    std::cout << this->colorVector.size() << std::endl;
-    //this->colorVector.push_back(cv::Vec3b(0,123,124));
-    //std::cout << this->colorVector.size() << std::endl;
-    //std::cout << this->colorVector.front() << std::endl;
-    //for(cv::Vec3b colorElem : this->colorVector){
-        /*if(colorElem == newColor){
-            existed = true;
-            break;
-        }*/
-    //}
-
-    /*if(iterator == this->colorVector.end()){
-        qDebug("3");
-        this->colorVector.push_back(newColor);
-        this->updateColorButtonLayer();
-    }else{
-        qDebug("4");
-        return;
-    }*/
-
-    /*if(existed == false){
-        qDebug("5");
-        this->colorVector.push_back(newColor);
-        this->updateColorButtonLayer();
-    }else{
-        qDebug("6");
-        return;
-    }*/
+    focusedButton->setChecked(true);
 }
+
 
 /**
  * @brief MultiLabelPreivewDock::updateColorButtonLayout
@@ -77,10 +50,23 @@ void MultiLabelPreivewDock::updateColorButtonLayout(){
     for(cv::Vec3b colorElem : this->colorVector){
         QPushButton* button = new QPushButton(this);
         button->setCheckable(true);
-        button->setStyleSheet("background-color: rgb("+QString::number(colorElem[2],10) +","+ QString::number(colorElem[1],10)+","+ QString::number(colorElem[0],10)+");");
+        QObject::connect(button,&QPushButton::clicked, this, &MultiLabelPreivewDock::buttonClickedSlot);
+
+        if(this->isMultiLabelChecked == true){
+            button->setStyleSheet("background-color: rgb(192,192,192);");
+            button->setEnabled(false);
+        }else{
+            button->setStyleSheet("background-color: rgb("+QString::number(colorElem[2],10) +","+ QString::number(colorElem[1],10)+","+ QString::number(colorElem[0],10)+");");
+            button->setEnabled(true);
+        }
         this->colorButtonVector.push_back(button);
         this->colorButtonLayout->addWidget(button);
     }
+
+    if(this->activeButtonIndex < static_cast<int>(this->colorButtonVector.size()) && this->activeButtonIndex >= 0){
+        this->colorButtonVector.at(this->activeButtonIndex)->setChecked(true);
+    }
+    std::cout << activeButtonIndex << std::endl;
 }
 
 
@@ -120,6 +106,11 @@ void MultiLabelPreivewDock::receiveUpdateColorLayoutSlot(){
 
 }
 
+void MultiLabelPreivewDock::multiLabelCheckedSlot(bool flag){
+    this->isMultiLabelChecked = flag;
+    this->updateColorButtonLayout();
+}
+
 void MultiLabelPreivewDock::initDockLayout(){
     this->setMinimumSize(300, 300);
     this->setStyleSheet("background-color: #696969; padding: 0px;");
@@ -138,5 +129,7 @@ void MultiLabelPreivewDock::initDockLayout(){
     this->colorButtonLayout = new QHBoxLayout(mainWidget);
     layout->addLayout(this->colorButtonLayout);
 
-    layout->addWidget(new QCheckBox("Checkbox"));
+    QCheckBox* multiLabelCheckbox = new QCheckBox("Multi Label Editor",this);
+    layout->addWidget(multiLabelCheckbox);
+    QObject::connect(multiLabelCheckbox, &QCheckBox::toggled, this, &MultiLabelPreivewDock::multiLabelCheckedSlot);
 }

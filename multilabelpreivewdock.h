@@ -13,7 +13,6 @@ class MultiLabelPreivewDock : public QDockWidget
 public:
     MultiLabelPreivewDock(QWidget* parent);
     ReadonlyCanvas* multiLabelCanvas;
-    void addColor(cv::Vec3b newColor);
     void receiveUpdateColorLayoutSlot();
 
 private:
@@ -24,6 +23,11 @@ private:
 
     void initDockLayout();
     void updateColorButtonLayout();
+    void buttonClickedSlot();
+    void multiLabelCheckedSlot(bool flag);
+
+    bool isMultiLabelChecked;
+    int activeButtonIndex;
 };
 
 #endif // MULTILABELPREIVEWDOCK_H
