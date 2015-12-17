@@ -70,6 +70,7 @@ private:
 signals:
     void canvasUpdatedSignal();
     void scaleFactorChanged(float currentScaleFactor);
+    void updateColorButtonLayoutSignal();
 
 
 };

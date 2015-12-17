@@ -4,6 +4,7 @@
 #include <QPoint>
 #include <QDebug>
 #include <QSize>
+#include <imageeditwindow.h>
 
 #include <assert.h>
 
@@ -111,6 +112,7 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Pencil:
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
+                    //static_cast<ImageEditWindow*>(this->parentWidget())->getMultiLabelPreivewDock()->addColor(cv::Vec3b(this->color.blue(),this->color.green(),this->color.red()));
                     break;
                 case config::Eraser:
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
@@ -149,6 +151,7 @@ void Canvas::mousePressEvent(QMouseEvent *e){
 void Canvas::mouseReleaseEvent(QMouseEvent *e){
     switch (this->operationType) {
         case config::Pencil:
+            emit this->updateColorButtonLayoutSignal();
             break;
         case config::Eraser:
             break;

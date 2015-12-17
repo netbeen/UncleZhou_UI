@@ -33,6 +33,8 @@ class ImageEditWindow  : public QMainWindow
     Q_OBJECT
 public:
     ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent);
+    MultiLabelPreivewDock* getMultiLabelPreivewDock();
+
 
 private:
     QToolBar* toolbar;
@@ -88,6 +90,7 @@ private:
     Canvas* canvas;
     QScrollArea* scrollArea;
     MultiLabelPreivewDock* multiLabelPreivewDock;
+
 
     QLabel* magnificationValueLabel;    //
 

@@ -80,6 +80,7 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->multiLabelPreivewDock->setWindowTitle("Classification Preview");
     this->multiLabelPreivewDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->multiLabelPreivewDock);
+    QObject::connect(this->canvas, &Canvas::updateColorButtonLayoutSignal, this->multiLabelPreivewDock, &MultiLabelPreivewDock::receiveUpdateColorLayoutSlot);
 
     this->toolOptionDock = new ToolOptionDock(this);
     this->toolOptionDock->setWindowTitle("Tool Option");
@@ -114,6 +115,9 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     //this->menuBar()->setStyleSheet(" QMenuBar{background-color: #535353; padding-left: 5px;}QMenuBar::item {background-color: #535353; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 }
 
+MultiLabelPreivewDock* ImageEditWindow::getMultiLabelPreivewDock(){
+    return this->multiLabelPreivewDock;
+}
 
 void ImageEditWindow::keyPressEvent(QKeyEvent *e){
     /*if (e->key() == Qt::Key_B){

@@ -11,7 +11,7 @@
  */
 PaletteDock::PaletteDock(QWidget* parent) : QDockWidget(parent)
 {
-    this->setMinimumSize(300, 100);
+    this->setMinimumSize(300, 200);
     this->setStyleSheet("background-color: #696969; padding: 0px;");
     this->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);
     this->setContentsMargins(0, 0, 0, 0);
