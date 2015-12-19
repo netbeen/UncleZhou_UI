@@ -167,6 +167,9 @@ void Canvas::mouseReleaseEvent(QMouseEvent *e){
         case config::Polygon:
             emit this->updateColorButtonLayoutSignal();
             break;
+        case config::BrokenLine:
+            emit this->updateColorButtonLayoutSignal();
+            break;
         default:
             break;
     }
@@ -292,7 +295,7 @@ void Canvas::brokenLineEnd(const int radius, const QColor color){  //折线结�
             QPoint endPoint = this->brokenLinePointVector.at(i);
 
             float distance = Util::calcL2Distance(startPoint, endPoint);
-            float unitDensity = 0.5;
+            float unitDensity = 1;
 
             float deltaX = (endPoint.x() - startPoint.x())/unitDensity/distance;
             float deltaY = (endPoint.y() - startPoint.y())/unitDensity/distance;
@@ -472,6 +475,10 @@ void Canvas::setPencilRadius(int inputRadius){
  */
 void Canvas::setEraserRadius(int inputRadius){
     this->eraserRadius = inputRadius;
+}
+
+void Canvas::setBrokenLineRadius(int inputRadius){
+    this->brokenLineRadius = inputRadius;
 }
 
 /**

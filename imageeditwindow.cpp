@@ -423,7 +423,14 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
 
     this->polygonToolOptionFrame = new ToolOptionFrame("Polygon",this);
 
-    this->brokenLineToolOptionFrame = new ToolOptionFrame("Broken Line",this);
+    this->brokenLineToolOptionFrame = new ToolOptionFrame("Broken Line",this);  //折线工具选项卡配置
+    QLabel* brokenLineLabel = new QLabel("Broken Line radius: ",this->brokenLineToolOptionFrame);
+    this->brokenLineToolOptionFrame->mainLayout->addWidget(brokenLineLabel,1,0,1,1,Qt::AlignCenter);
+    QSpinBox* brokenLineRadiusSpinBox = new QSpinBox(this->brokenLineToolOptionFrame);
+    brokenLineRadiusSpinBox->setMinimumSize(QSize(75,30));
+    brokenLineRadiusSpinBox->setValue(10);
+    QObject::connect(brokenLineRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setBrokenLineRadius);
+    this->brokenLineToolOptionFrame->mainLayout->addWidget(brokenLineRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
 
     this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);       //缩放工具的选项卡配置（放大缩小共享同一张选项卡）
     QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);

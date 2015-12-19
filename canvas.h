@@ -21,6 +21,7 @@ public:
     void receiveShowBackground(bool isShow);   //slot，用于接受显示半透明背景的信号
     void setPencilRadius(int inputRadius);  //slot,用于接受参数设置铅笔半径
     void setEraserRadius(int inputRadius);  //slot ， 用于接受参数设置橡皮半径
+    void setBrokenLineRadius(int inputRadius);  //slot ， 用于接受参数设置折线半径
     void setColor(QColor inputColor);   //slot， 用于接受参数设置当前颜色
     void resetScale();
 
