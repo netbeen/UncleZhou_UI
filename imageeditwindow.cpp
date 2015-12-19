@@ -20,7 +20,7 @@
  * @param parent 父对象
  * @return 没有返回值
  */
-ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent)
+ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::editLevel editLevel, QWidget* parent) : QMainWindow(parent),isClassificationColorValid(false),isMultiLabelChecked(false)
 {
     this->layerManager = LayerManager::getInstance();   //
     this->layerManager->init(editPosition);                           //优先初始化图层管理器
@@ -37,6 +37,9 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu->addAction(this->binaryClassificationAction);
     this->testFunctionMenu->addAction(this->multiLabelClassificationAction);
     this->testFunctionMenu->addAction(this->undoAction);
+    this->testFunctionMenu->addAction(this->undoAction);
+    this->testFunctionMenu->addAction(this->classificationWithoutPopupAction);
+
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
@@ -76,11 +79,14 @@ void ImageEditWindow::initWindowLayout(config::editLevel editLevel){
     this->addDockWidget(Qt::RightDockWidgetArea, this->navigatorDock);
     QObject::connect(this->canvas, &Canvas::canvasUpdatedSignal, this->navigatorDock, &NavigatorDock::navigatorUpdate);
 
+    //分类预览窗口
     this->multiLabelPreivewDock = new MultiLabelPreivewDock(this);
     this->multiLabelPreivewDock->setWindowTitle("Classification Preview");
     this->multiLabelPreivewDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->addDockWidget(Qt::RightDockWidgetArea, this->multiLabelPreivewDock);
     QObject::connect(this->canvas, &Canvas::updateColorButtonLayoutSignal, this->multiLabelPreivewDock, &MultiLabelPreivewDock::receiveUpdateColorLayoutSlot);
+    QObject::connect(this->multiLabelPreivewDock, &MultiLabelPreivewDock::sendClassificationColor,this,&ImageEditWindow::setClassificationColor);
+    QObject::connect(this->multiLabelPreivewDock, &MultiLabelPreivewDock::multiLabelCheckedSinal, this, &ImageEditWindow::setIsMultiLabelChecked);
 
     this->toolOptionDock = new ToolOptionDock(this);
     this->toolOptionDock->setWindowTitle("Tool Option");
@@ -179,6 +185,63 @@ void ImageEditWindow::multiLabelClassificationSlot(){
     this->canvas->update();
 }
 
+void ImageEditWindow::setIsMultiLabelChecked(bool flag){
+    this->isMultiLabelChecked = flag;
+}
+
+
+
+void ImageEditWindow::classificationWithoutPopupSlot(){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    this->undoStack->push(currentDisplayLayerItem->image);
+    cv::Mat_<cv::Vec3b> currentMask;
+    Util::convertQImageToMat(currentDisplayLayerItem->image,currentMask);
+    //Util::clearFragment(cvImage);
+    cv::imwrite("sourceGuidanceLabelChannel.png",currentMask);
+
+    std::cout << "True, flag = " << true << ", " << this->isMultiLabelChecked << std::endl;
+    if(this->isMultiLabelChecked == true){
+        //do multi label classification.
+        this->doMultiLabelClassificationAndSave(currentMask);   //进行MultiLabel的分类
+        cv::Mat multiLabelClassificationResult = cv::imread("multiLabelClassificationResult.png");  //读取MultiLabel的结果
+        Util::meldTwoCVMat(currentMask,multiLabelClassificationResult);
+        Util::convertMattoQImage(currentMask,currentDisplayLayerItem->image);
+        this->canvas->update();
+    }else{
+        //do binary classification.
+        if(this->isClassificationColorValid == true){
+            cv::Vec3b Cur_Color = this->classificationColor;
+            cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
+            cv::Mat twoLabelMask;
+            Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
+            cv::imwrite("twoLabelMask.png",twoLabelMask);
+            //利用mask图像，生成analyse文件
+            this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
+            // Read Source Image
+            cv::Mat img = cv::imread("sourceImage.png");
+            // Run RFBinaryClassification2
+            cv::Mat_<cv::Vec3b> outputImg;
+            CMyClassification myTest;
+            //myTest.SetParametes(8, 8);
+            std::vector<std::string> morefeatImgs;
+            std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
+            std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
+            std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
+            myTest.RandomForest_SuperPixel(img,morefeatImgs,twoLabelMask,outputImg,"output.dat");
+            myTest.RunGraphCut(outputImg);
+            cv::Mat oneLabelMask;
+            Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
+            Util::meldTwoCVMat(currentMask,oneLabelMask);
+            Util::convertMattoQImage(currentMask,currentDisplayLayerItem->image);
+            this->canvas->update();
+            //更新MultiLabel
+            //this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
+            this->doMultiLabelClassificationAndSave(currentMask);
+            this->multiLabelPreivewDock->multiLabelCanvas->update();
+        }
+    }
+}
+
 void ImageEditWindow::binaryClassificationSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
     this->undoStack->push(currentDisplayLayerItem->image);
@@ -189,7 +252,7 @@ void ImageEditWindow::binaryClassificationSlot(){
 
     //开启选颜色对话框
     BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
-    QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::getClassificationColor);
+    QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::setClassificationColor);
 
     if(binaryClassificationDialog->exec() == QDialog::Accepted){
         cv::Vec3b Cur_Color = this->classificationColor;
@@ -237,8 +300,9 @@ void ImageEditWindow::undoSlot(){
     this->canvas->update();
 }
 
-void ImageEditWindow::getClassificationColor(cv::Vec3b newColor){
+void ImageEditWindow::setClassificationColor(cv::Vec3b newColor){
     this->classificationColor = newColor;
+    this->isClassificationColorValid = true;
     //std::cout<< "分类色被设置为" << newColor << std::endl;
 }
 
@@ -263,6 +327,10 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->polygonAction= new QAction(QIcon(":/image/polygon.png"),"&Polygon",this);
     this->polygonAction->setShortcut(Qt::Key_R);
     QObject::connect(this->polygonAction, &QAction::triggered, this, &ImageEditWindow::polygonToolSlot);
+
+    this->brokenLineAction= new QAction(QIcon(":/image/brokenLine.png"),"&Broken Line",this);
+    QObject::connect(this->brokenLineAction, &QAction::triggered, this, &ImageEditWindow::brokenLineToolSlot);
+
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
@@ -283,6 +351,11 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->undoAction->setShortcut(QKeySequence::Undo);
     QObject::connect(this->undoAction,&QAction::triggered, this, &ImageEditWindow::undoSlot);
 
+    //免弹窗的分类action
+    this->classificationWithoutPopupAction = new QAction(QIcon(":image/open.png"),"&Classification Without Pop Up",this);
+    QObject::connect(this->classificationWithoutPopupAction, &QAction::triggered, this, &ImageEditWindow::classificationWithoutPopupSlot);
+    this->classificationWithoutPopupAction->setShortcut(Qt::Key_C);
+
 
 
     this->toolActionVector = std::vector<QAction*>();
@@ -297,6 +370,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
         this->toolActionVector.push_back(this->eraserAction);
         this->toolActionVector.push_back(this->magicEraserAction);
         this->toolActionVector.push_back(this->polygonAction);
+        this->toolActionVector.push_back(this->brokenLineAction);
         this->toolActionVector.push_back(this->bucketAction);
     }
 
@@ -348,6 +422,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->bucketToolOptionFrame = new ToolOptionFrame("Bucket",this);
 
     this->polygonToolOptionFrame = new ToolOptionFrame("Polygon",this);
+
+    this->brokenLineToolOptionFrame = new ToolOptionFrame("Broken Line",this);
 
     this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);       //缩放工具的选项卡配置（放大缩小共享同一张选项卡）
     QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);
@@ -417,6 +493,11 @@ void ImageEditWindow::polygonToolSlot(){
     emit this->sendFrameToToolOptionDock(this->polygonToolOptionFrame);
 }
 
+void ImageEditWindow::brokenLineToolSlot(){
+    this->setCursor(Qt::CrossCursor);
+    this->canvas->setOperationType(config::BrokenLine);
+    emit this->sendFrameToToolOptionDock(this->brokenLineToolOptionFrame);
+}
 
 /**
  * @brief ImageEditWindow::bucketToolSlot

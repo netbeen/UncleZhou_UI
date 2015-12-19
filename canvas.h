@@ -62,6 +62,14 @@ private:
     bool polygonStarted = false;
     QImage beforePolygonBackup;
     std::vector<QPoint> polygonPointVector;
+
+    void brokenLine(const QPoint center);  //折线工具
+    void brokenLineEnd(const int radius, const QColor color);  //折线结束工具
+    bool brokenLineStarted = false;
+    int brokenLineRadius = 10;
+    QImage beforeBrokenLineBackup;
+    std::vector<QPoint> brokenLinePointVector;
+
     QPoint mapToPixmap(QPoint screenPoint);
     void setImageToTheCenter();
 

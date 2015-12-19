@@ -112,7 +112,6 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Pencil:
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
-                    //static_cast<ImageEditWindow*>(this->parentWidget())->getMultiLabelPreivewDock()->addColor(cv::Vec3b(this->color.blue(),this->color.green(),this->color.red()));
                     break;
                 case config::Eraser:
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
@@ -124,6 +123,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                     break;
                 case config::Polygon:
                     this->polygon(this->mapToPixmap(e->pos()),this->color);
+                    break;
+                case config::BrokenLine:
+                    this->brokenLine(this->mapToPixmap(e->pos()));
                     break;
                 case config::MagicEraser:
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
@@ -140,6 +142,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Eraser:    //右键状态下，橡皮擦变为魔术橡皮擦
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->magicErase(this->mapToPixmap(e->pos()));
+                    break;
+                case config::BrokenLine:    //右键状态下，折线工具调用折线结束的功能
+                    this->brokenLineEnd(this->brokenLineRadius,this->color);
                     break;
                 default:
                     break;
@@ -253,6 +258,60 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
     this->update();
 }
 
+void Canvas::brokenLine(const QPoint center){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    if(this->brokenLineStarted == false){
+        //初始化
+        this->brokenLinePointVector.clear();
+        this->undoStack->push(currentDisplayLayerItem->image);
+        this->beforeBrokenLineBackup = currentDisplayLayerItem->image;
+        this->brokenLineStarted = true;
+    }
+
+    this->brokenLinePointVector.push_back(center);
+
+    for(QPoint elem : this->brokenLinePointVector){
+        for(int r = 10; r > 0; r--){
+            if(r%2==0){
+                this->paint(elem,r,QColor(0,0,0));
+            }else{
+                this->paint(elem,r,QColor(255,255,255));
+            }
+        }
+    }
+    this->update();
+}
+
+void Canvas::brokenLineEnd(const int radius, const QColor color){  //折线结束工具
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    currentDisplayLayerItem->image = this->beforeBrokenLineBackup;;
+
+    if(this->brokenLinePointVector.size() >= 2){
+        for(int i = 1; i < this->brokenLinePointVector.size(); i++){
+            QPoint startPoint = this->brokenLinePointVector.at(i-1);
+            QPoint endPoint = this->brokenLinePointVector.at(i);
+
+            float distance = Util::calcL2Distance(startPoint, endPoint);
+            float unitDensity = 0.5;
+
+            float deltaX = (endPoint.x() - startPoint.x())/unitDensity/distance;
+            float deltaY = (endPoint.y() - startPoint.y())/unitDensity/distance;
+
+
+            for(int pointCount = 0; pointCount < unitDensity*distance; pointCount++){
+                this->paint(QPoint(startPoint.x()+deltaX*pointCount, startPoint.y()+deltaY*pointCount),brokenLineRadius,color);
+            }
+
+        }
+    }
+
+
+    this->update();
+
+    this->brokenLineStarted = false;
+    return;
+
+}
 
 /**
  * @brief Canvas::polygon

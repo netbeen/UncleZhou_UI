@@ -29,6 +29,7 @@ void MultiLabelPreivewDock::buttonClickedSlot(){
         if(buttonElem->hasFocus()){
             focusedButton = buttonElem;
             this->activeButtonIndex = i;
+            emit this->sendClassificationColor(this->colorVector.at(i));
         }
         buttonElem->setChecked(false);
     }
@@ -47,6 +48,8 @@ void MultiLabelPreivewDock::updateColorButtonLayout(){
         buttonElem->deleteLater();
     }
     this->colorButtonVector.clear();
+
+    //添加按钮
     for(cv::Vec3b colorElem : this->colorVector){
         QPushButton* button = new QPushButton(this);
         button->setCheckable(true);
@@ -63,10 +66,10 @@ void MultiLabelPreivewDock::updateColorButtonLayout(){
         this->colorButtonLayout->addWidget(button);
     }
 
+    //检测激活按钮的ID，若满足要求，则把对应按钮置为被激活状态
     if(this->activeButtonIndex < static_cast<int>(this->colorButtonVector.size()) && this->activeButtonIndex >= 0){
         this->colorButtonVector.at(this->activeButtonIndex)->setChecked(true);
     }
-    std::cout << activeButtonIndex << std::endl;
 }
 
 
@@ -109,6 +112,7 @@ void MultiLabelPreivewDock::receiveUpdateColorLayoutSlot(){
 void MultiLabelPreivewDock::multiLabelCheckedSlot(bool flag){
     this->isMultiLabelChecked = flag;
     this->updateColorButtonLayout();
+    emit this->multiLabelCheckedSinal(flag);
 }
 
 void MultiLabelPreivewDock::initDockLayout(){

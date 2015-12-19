@@ -61,7 +61,7 @@ void ReadSuperPixelDat::authorSegment(int superPixelCount)
 void ReadSuperPixelDat::main(){
     this->image = cv::imread("/home/netbeen/桌面/周叔项目/stone.png");
     this->size = this->image.cols * this->image.rows;
-    std::cout << this->size << std::endl;
+    //std::cout << this->size << std::endl;
 
     this->authorSegment();
     this->authorRead();
@@ -75,13 +75,13 @@ void ReadSuperPixelDat::main(){
     //输出分析文件
     this->analyseLabelFile("twoLabelMask.png");
 
-    std::cout << "Done!" << std::endl;
+    //std::cout << "Done!" << std::endl;
 }
 
 void ReadSuperPixelDat::segmentSourceImage(){
     this->image = cv::imread("sourceImage.png");
     this->size = this->image.cols * this->image.rows;
-    std::cout << this->size << std::endl;
+    //std::cout << this->size << std::endl;
 
     this->authorSegment();
     this->authorRead();
@@ -95,7 +95,7 @@ void ReadSuperPixelDat::segmentSourceImage(){
 void ReadSuperPixelDat::main(QString filename, int superPixelCount, float threshold){
     this->image = cv::imread(filename.toUtf8().data());
     this->size = this->image.cols * this->image.rows;
-    std::cout << this->size << std::endl;
+    //std::cout << this->size << std::endl;
 
     this->authorSegment(superPixelCount);
     this->authorRead();
@@ -108,14 +108,14 @@ void ReadSuperPixelDat::main(QString filename, int superPixelCount, float thresh
 
     this->analyseLabelFile("twoLabelMask.png",threshold);
 
-    std::cout << "Done!" << std::endl;
+    //std::cout << "Done!" << std::endl;
 }
 
 void ReadSuperPixelDat::ReadImage(unsigned int* pbuff, int width,int height){//YOUR own function to read an image into the ARGB format
-    std::cout << "ReadImage start" << std::endl;
+    //std::cout << "ReadImage start" << std::endl;
     const int sz = this->size;
     this->pbuff = new unsigned int[sz];
-    std::cout << "pbuff's address = " <<(pbuff) << std::endl;
+    //std::cout << "pbuff's address = " <<(pbuff) << std::endl;
 
     unsigned int* ptr = this->pbuff;
     for(int y_offset = 0; y_offset < this->image.rows; y_offset++){
@@ -130,7 +130,7 @@ void ReadSuperPixelDat::ReadImage(unsigned int* pbuff, int width,int height){//Y
         }
     }
 
-    std::cout << "ReadImage end" << std::endl;
+    //std::cout << "ReadImage end" << std::endl;
 }
 
 
@@ -160,10 +160,8 @@ void ReadSuperPixelDat::authorRead(){
     int sz = this->size;
     int* vals = new int[sz];
     int elread = fread((char*)vals, sizeof(int), sz, pf);
-    for( int j = 0; j < this->image.rows; j++ )
-    {
-        for( int k = 0; k < this->image.cols; k++ )
-        {
+    for( int j = 0; j < this->image.rows; j++ ){
+        for( int k = 0; k < this->image.cols; k++ ){
             int i = j*this->image.cols+k;
             labels[i] = vals[i];
         }
@@ -207,11 +205,7 @@ void ReadSuperPixelDat::analyseLabelFile(const QString maskFilename, float THRES
     this->maskDFS = mask.clone();
 
     this->colorCodeVector = std::vector<int>();
-    std::cout << "this->searchUnwhiteArea(); start" << std::endl;
     this->searchUnwhiteArea();
-    std::cout << "this->searchUnwhiteArea(); end" << std::endl;
-
-    //std::cout << this->maskID2Coodinates.size() << std::endl;
 
     std::ofstream analyseResult("analyseResult.txt");
     analyseResult << "#labels" << std::endl;

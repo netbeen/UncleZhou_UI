@@ -10,6 +10,7 @@
 
 class MultiLabelPreivewDock : public QDockWidget
 {
+    Q_OBJECT
 public:
     MultiLabelPreivewDock(QWidget* parent);
     ReadonlyCanvas* multiLabelCanvas;
@@ -28,6 +29,11 @@ private:
 
     bool isMultiLabelChecked;
     int activeButtonIndex;
+
+signals:
+    void sendClassificationColor(cv::Vec3b newColor);
+    void multiLabelCheckedSinal(bool flag);
+
 };
 
 #endif // MULTILABELPREIVEWDOCK_H

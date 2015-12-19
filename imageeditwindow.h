@@ -53,6 +53,7 @@ private:
     void eraserToolSlot();
     void magicEraserToolSlot();
     void polygonToolSlot();
+    void brokenLineToolSlot();
     void bucketToolSlot();
     void zoomInToolSlot();
     void zoomOutToolSlot();
@@ -67,6 +68,7 @@ private:
     QAction* eraserAction;  //橡皮工具
     QAction* magicEraserAction;  //魔法橡皮工具
     QAction* polygonAction;   //多边形工具
+    QAction* brokenLineAction;    //折线工具
     QAction* bucketAction;  //颜料桶工具
     QAction* zoomInAction;  //放大工具
     QAction* zoomOutAction;     //缩小工具
@@ -76,6 +78,7 @@ private:
     ToolOptionFrame* pencilToolOptionFrame;
     ToolOptionFrame* eraserToolOptionFrame;
     ToolOptionFrame* magicEraserToolOptionFrame;
+    ToolOptionFrame* brokenLineToolOptionFrame;
     ToolOptionFrame* polygonToolOptionFrame;
     ToolOptionFrame* bucketToolOptionFrame;
     ToolOptionFrame* zoomToolOptionFrame;
@@ -107,10 +110,16 @@ private:
 
     QAction* binaryClassificationAction;     //二分分类算法的action和slot
     void binaryClassificationSlot();
-    void getClassificationColor(cv::Vec3b newColor);
-    cv::Vec3b classificationColor;
+    void setClassificationColor(cv::Vec3b newColor);
+    cv::Vec3b classificationColor;      //当前的分类色
+    bool isClassificationColorValid;
+    bool isMultiLabelChecked;
+    void setIsMultiLabelChecked(bool flag);
 
-    QAction* multiLabelClassificationAction;     //二分分类算法的action和slot
+    QAction* classificationWithoutPopupAction;     //二分（或者多类）分类算法的action和slot
+    void classificationWithoutPopupSlot();
+
+    QAction* multiLabelClassificationAction;     //多类分类算法的action和slot
     void multiLabelClassificationSlot();
 
 

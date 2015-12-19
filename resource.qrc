@@ -10,5 +10,6 @@
         <file>none.png</file>
         <file>polygon.png</file>
         <file>magicEraser.png</file>
+        <file>brokenLine.png</file>
     </qresource>
 </RCC>
