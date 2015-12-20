@@ -144,7 +144,7 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                     this->magicErase(this->mapToPixmap(e->pos()));
                     break;
                 case config::BrokenLine:    //右键状态下，折线工具调用折线结束的功能
-                    this->brokenLineEnd(this->brokenLineRadius,this->color);
+                    this->brokenLineEnd();
                     break;
                 default:
                     break;
@@ -207,10 +207,21 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
+
                 default:
                     break;
             }
         }    //以上操作只有在画布内部才有效
+
+    }else{
+        switch (this->operationType) {
+            case config::BrokenLine:
+                this->brokenLineMove(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
+                break;
+            default:
+                break;
+        }
+
 
     }
 }
@@ -261,59 +272,58 @@ void Canvas::paint(const QPoint center, const int radius,const QColor color){
     this->update();
 }
 
+void Canvas::paint(const QPoint center, const int radius,const QColor color,QImage& efffectiveImage){
+    for(int x = center.x()-radius; x < center.x()+radius; x++){
+        for(int y = center.y()-radius; y < center.y()+radius; y++){
+            if(Util::calcL2Distance(center, QPoint(x,y)) < radius){
+                efffectiveImage.setPixel(x, y,color.rgb());
+            }
+        }
+    }
+}
+
 void Canvas::brokenLine(const QPoint center){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
     if(this->brokenLineStarted == false){
         //初始化
         this->brokenLinePointVector.clear();
-        this->undoStack->push(currentDisplayLayerItem->image);
-        this->beforeBrokenLineBackup = currentDisplayLayerItem->image;
+        this->undoStack->push(currentDisplayLayerItem->image);  //压入撤销栈
         this->brokenLineStarted = true;
+        this->setMouseTracking(true);   //保持鼠标追踪
     }
 
-    this->brokenLinePointVector.push_back(center);
+    this->beforeBrokenLineBackup = currentDisplayLayerItem->image;  //保存在本次鼠标点击前的状态
+    this->brokenLineStartPoint = center;
+}
 
-    for(QPoint elem : this->brokenLinePointVector){
-        for(int r = 10; r > 0; r--){
-            if(r%2==0){
-                this->paint(elem,r,QColor(0,0,0));
-            }else{
-                this->paint(elem,r,QColor(255,255,255));
-            }
-        }
+void Canvas::brokenLineMove(const QPoint center, const int radius, const QColor color){  //折线ing，鼠标移动工具
+    QImage beforeBrokenLineBackupCopy = this->beforeBrokenLineBackup;
+
+    QPoint startPoint = this->brokenLineStartPoint;
+    QPoint endPoint = center;
+
+    float distance = Util::calcL2Distance(startPoint, endPoint);
+    float unitDensity = 1;
+
+    float deltaX = (endPoint.x() - startPoint.x())/unitDensity/distance;
+    float deltaY = (endPoint.y() - startPoint.y())/unitDensity/distance;
+
+    for(int pointCount = 0; pointCount < unitDensity*distance; pointCount++){
+        this->paint(QPoint(startPoint.x()+deltaX*pointCount, startPoint.y()+deltaY*pointCount),brokenLineRadius,color,beforeBrokenLineBackupCopy);
     }
+
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    currentDisplayLayerItem->image = beforeBrokenLineBackupCopy;
     this->update();
 }
 
-void Canvas::brokenLineEnd(const int radius, const QColor color){  //折线结束工具
-    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
-    currentDisplayLayerItem->image = this->beforeBrokenLineBackup;;
-
-    if(this->brokenLinePointVector.size() >= 2){
-        for(int i = 1; i < this->brokenLinePointVector.size(); i++){
-            QPoint startPoint = this->brokenLinePointVector.at(i-1);
-            QPoint endPoint = this->brokenLinePointVector.at(i);
-
-            float distance = Util::calcL2Distance(startPoint, endPoint);
-            float unitDensity = 1;
-
-            float deltaX = (endPoint.x() - startPoint.x())/unitDensity/distance;
-            float deltaY = (endPoint.y() - startPoint.y())/unitDensity/distance;
-
-
-            for(int pointCount = 0; pointCount < unitDensity*distance; pointCount++){
-                this->paint(QPoint(startPoint.x()+deltaX*pointCount, startPoint.y()+deltaY*pointCount),brokenLineRadius,color);
-            }
-
-        }
-    }
-
-
-    this->update();
-
+void Canvas::brokenLineEnd(){  //折线结束工具
     this->brokenLineStarted = false;
+    this->setMouseTracking(false);   //保持鼠标追踪
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    currentDisplayLayerItem->image = this->beforeBrokenLineBackup;
+    this->update();
     return;
-
 }
 
 /**

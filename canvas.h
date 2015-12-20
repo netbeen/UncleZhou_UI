@@ -54,6 +54,7 @@ private:
     void setScale(float inputScaleFactor);
     bool isContained(const QPoint testPoint) const;
     void paint(const QPoint center, const int radius,const QColor color);   //绘图函数，对图像进行实际修改
+    void paint(const QPoint center, const int radius,const QColor color,QImage& efffectiveImage);
     void erase(const QPoint center, const int radius);  //擦除函数
     void magicErase(const QPoint center);  //魔术擦除函数
     void bucket(const QColor color);
@@ -63,11 +64,13 @@ private:
     std::vector<QPoint> polygonPointVector;
 
     void brokenLine(const QPoint center);  //折线工具
-    void brokenLineEnd(const int radius, const QColor color);  //折线结束工具
+    void brokenLineMove(const QPoint center, const int radius, const QColor color);  //折线ing，鼠标移动工具
+    void brokenLineEnd();  //折线结束工具
     bool brokenLineStarted = false;
     int brokenLineRadius = 10;
     QImage beforeBrokenLineBackup;
     std::vector<QPoint> brokenLinePointVector;
+    QPoint brokenLineStartPoint;
 
     QPoint mapToPixmap(QPoint screenPoint);
     void setImageToTheCenter();
