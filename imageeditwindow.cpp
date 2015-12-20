@@ -53,6 +53,10 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     cv::imwrite("src_texton.png", textonImg);
     cv::Mat sailImg = ttImgProc.GenSaliencyMap(srcImg);
     cv::imwrite("src_saliency.png", sailImg);
+
+    CMyImageProc tt;
+    cv::Mat colortexton_regular = tt.GenColorTexton_regular(srcImg, 4);
+    imwrite("colortexton_regular.png", colortexton_regular);
 }
 
 
@@ -154,12 +158,20 @@ void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage
     myTest.SetParametes(8, 8);
 
     cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
-
     std::vector<std::string> morefeatImgs;
-    std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
-    std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
-    std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
-    myTest.RandomForest_SuperPixel(img,morefeatImgs,mask,outputImg,"output.dat");
+    morefeatImgs.push_back("colortexton_regular.png");
+    morefeatImgs.push_back("src_texton.png");
+    morefeatImgs.push_back("src_pgb.png");
+    morefeatImgs.push_back("src_saliency.png");
+    std::vector<int> v_channels;
+    v_channels.push_back(1);
+    v_channels.push_back(1);
+    v_channels.push_back(1);
+    v_channels.push_back(1);
+    int numbinsvec[4] = {64, 16, 16, 16};
+    std::vector<int> v_numbins(numbinsvec, numbinsvec+4);
+    myTest.SetNumBinsPerChannel(v_numbins,false);
+    myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, "output.dat");
     myTest.RunGraphCut(outputImg);
 
     cv::imwrite("multiLabelClassificationResult.png",outputImg);
@@ -196,10 +208,8 @@ void ImageEditWindow::classificationWithoutPopupSlot(){
     this->undoStack->push(currentDisplayLayerItem->image);
     cv::Mat_<cv::Vec3b> currentMask;
     Util::convertQImageToMat(currentDisplayLayerItem->image,currentMask);
-    //Util::clearFragment(cvImage);
     cv::imwrite("sourceGuidanceLabelChannel.png",currentMask);
 
-    std::cout << "True, flag = " << true << ", " << this->isMultiLabelChecked << std::endl;
     if(this->isMultiLabelChecked == true){
         //do multi label classification.
         this->doMultiLabelClassificationAndSave(currentMask);   //进行MultiLabel的分类
@@ -210,27 +220,40 @@ void ImageEditWindow::classificationWithoutPopupSlot(){
     }else{
         //do binary classification.
         if(this->isClassificationColorValid == true){
-            cv::Vec3b Cur_Color = this->classificationColor;
             cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
             cv::Mat twoLabelMask;
-            Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
+            Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,this->classificationColor);
             cv::imwrite("twoLabelMask.png",twoLabelMask);
-            //利用mask图像，生成analyse文件
-            this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
-            // Read Source Image
-            cv::Mat img = cv::imread("sourceImage.png");
+            this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");//利用mask图像，生成analyse文件
+
+            cv::Mat img = cv::imread("sourceImage.png");// Read Source Image
             // Run RFBinaryClassification2
             cv::Mat_<cv::Vec3b> outputImg;
             CMyClassification myTest;
-            //myTest.SetParametes(8, 8);
+            myTest.SetParametes(8, 8);
+
+            cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
+
             std::vector<std::string> morefeatImgs;
-            std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
-            std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
-            std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
-            myTest.RandomForest_SuperPixel(img,morefeatImgs,twoLabelMask,outputImg,"output.dat");
+            morefeatImgs.push_back("colortexton_regular.png");
+            morefeatImgs.push_back("src_texton.png");
+            morefeatImgs.push_back("src_pgb.png");
+            morefeatImgs.push_back("src_saliency.png");
+
+            std::vector<int> v_channels;
+            v_channels.push_back(1);
+            v_channels.push_back(1);
+            v_channels.push_back(1);
+            v_channels.push_back(1);
+
+            int numbinsvec[4] = {64, 16, 16, 16};
+            std::vector<int> v_numbins(numbinsvec, numbinsvec+4);
+            myTest.SetNumBinsPerChannel(v_numbins,false);
+            myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, "output.dat");
             myTest.RunGraphCut(outputImg);
+
             cv::Mat oneLabelMask;
-            Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
+            Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,this->classificationColor);
             Util::meldTwoCVMat(currentMask,oneLabelMask);
             Util::convertMattoQImage(currentMask,currentDisplayLayerItem->image);
             this->canvas->update();
@@ -255,7 +278,7 @@ void ImageEditWindow::binaryClassificationSlot(){
     QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::setClassificationColor);
 
     if(binaryClassificationDialog->exec() == QDialog::Accepted){
-        cv::Vec3b Cur_Color = this->classificationColor;
+        /*cv::Vec3b Cur_Color = this->classificationColor;
 
         cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
         cv::Mat twoLabelMask;
@@ -291,7 +314,7 @@ void ImageEditWindow::binaryClassificationSlot(){
         //更新MultiLabel
         //this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
         this->doMultiLabelClassificationAndSave(cvImage);
-        this->multiLabelPreivewDock->multiLabelCanvas->update();
+        this->multiLabelPreivewDock->multiLabelCanvas->update();*/
     }
 }
 

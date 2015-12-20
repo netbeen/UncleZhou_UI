@@ -9,23 +9,25 @@ public:
 	CMyClassification(void);
 	~CMyClassification(void);
 
-	void RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<std::string> moreFeatImgs, 
+	void SetNumBinsPerChannel(std::vector<int> &v_numbins, bool bPCA);
+	void RandomForest_SuperPixel(std::vector<std::string> strFeatImgs, std::vector<int> &v_channels,
 		cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
+	void RandomForest_SuperPixel(std::vector<cv::Mat> FeatImgs, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
 
 
 	void RandomForestClassification(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg);
 	void RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
-	void RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<cv::Mat> moreFeatImgs, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat);
 	
 	void SetParametes(int patchSize, int numBins, int m_numTrees = 100);
 	void SetBackgroundColor(cv::Vec3b  BK_Color);
 
 	void RunRandomForest(std::vector<int> allabels, cv::Mat &TestFeat, cv::Mat &outpuImg);
 
-	void RunGraphCut(cv::Mat &resultImg, double smoothRatio = 0.325f);
+    void RunGraphCut(cv::Mat &resultImg, double smoothRatio = 0.1f);
 
 
 public:
+	cv::Mat m_imgFeatures;
 	cv::Mat m_superpixelID;
 	std::vector< std::vector<cv::Point> > m_superpixelCoords;
 	std::vector<int> m_predictLabel;
@@ -46,8 +48,10 @@ private:
 	void Label2Class(std::vector<int> &label, std::vector<int> &v_class);
 	void LabelConvert(std::vector<int> &label, std::vector<int> L1, std::vector<int> L2);
 
+	std::vector<int> m_numBinsPerFeat;
+	bool m_bPCA;
 
-	int m_patchSize, m_numBins, m_numTrees, m_numClasses;
+	int m_patchSize, m_numBins, m_numTrees;
 	bool m_bCropped;
 
 	int m_ImgRows, m_ImgCols;

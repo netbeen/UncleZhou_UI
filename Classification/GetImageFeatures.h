@@ -13,24 +13,20 @@ class CGetImageFeatures
 {
 public:
 	CGetImageFeatures(void);
-	CGetImageFeatures(int patchSize, int numBins);
 	~CGetImageFeatures(void);
 
 	void OutputFeatures(std::string filepath, cv::Mat &features);
 	void OutputLabel(std::string filepath, std::vector<int> &v_label);
-	void GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, bool flag_Normalize = false);
+	void GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, int patchSize, int numBinsPerChannel, bool flag_Normalize = false);
 	void GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &trainlabel, cv::Mat &allFeat, std::vector<int> &v_label);
 
 
 	//processing the super pixels
-	void GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat);
+	void GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat, int numBins);
 	
 	void GetImageFeatures_Histograms_SuperPixel(cv::Mat &features, std::vector<cv::Mat> v_featureImgs,
-		std::vector< std::vector<cv::Point> > &superPixelDat);
+		std::vector< std::vector<cv::Point> > &superPixelDat, std::vector<int> v_numBins);
 	
 	cv::Mat Cat(std::vector<cv::Mat> &feats);
-
-private:
-	int m_numBins;
-	int m_patchSize;
+	cv::Mat DimensionReduction_PCA(cv::Mat &features, float r_ratio);
 };

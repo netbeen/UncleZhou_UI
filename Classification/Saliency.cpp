@@ -63,7 +63,7 @@ void Saliency::RGB2LAB(
 		double r, g, b;
 
 		if(R <= 0.04045)	r = R/12.92;
-		else				r = std::pow((R+0.055)/1.055,2.4);
+        else				r = std::pow((R+0.055)/1.055,2.4);
 		if(G <= 0.04045)	g = G/12.92;
 		else				g = pow((G+0.055)/1.055,2.4);
 		if(B <= 0.04045)	b = B/12.92;

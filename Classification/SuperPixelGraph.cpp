@@ -12,10 +12,10 @@ SuperPixelGraph::SuperPixelGraph(void)
 	adjacentEdgeLength = vector<vector<int> >();
 	resultLabel = vector<int>();
 }
-SuperPixelGraph::SuperPixelGraph(vector<vector<Point> >m_superpixelCoords, Mat m_superpixelID, Mat m_predictConf, int m_numClasses)
+SuperPixelGraph::SuperPixelGraph(vector<vector<Point> >m_superpixelCoords, Mat m_superpixelID, Mat m_predictConf)
 {
 	numOfSuperPixels = 0;
-	numOfClasses = m_numClasses;
+	numOfClasses = m_predictConf.cols;
 	superPixelDat = m_superpixelCoords;
 	pixelLabel = m_superpixelID;
 	predictConf = m_predictConf;
@@ -26,12 +26,14 @@ SuperPixelGraph::SuperPixelGraph(vector<vector<Point> >m_superpixelCoords, Mat m
 }
 SuperPixelGraph::~SuperPixelGraph(void)
 {
-    vector<vector<cv::Point > > empty = vector<vector<cv::Point > >();
-    this->superPixelDat.swap(empty);
-    superPixelContour.swap(empty);
+    vector<vector<cv::Point > > emptyPoint = vector<vector<cv::Point > >();
+    superPixelDat.swap(emptyPoint);
+    vector<vector<cv::Point > > emptyPoint2 = vector<vector<cv::Point > >();
+    superPixelContour.swap(emptyPoint2);
     vector<vector<int> > emptyInt = vector<vector<int> >();
     neighborSuperPixelLabel.swap(emptyInt);
-    adjacentEdgeLength.swap(emptyInt);
+    vector<vector<int> > emptyInt2 = vector<vector<int> >();
+    adjacentEdgeLength.swap(emptyInt2);
 }
 
 /*void SuperPixelGraph::readSuperPixelData(Mat img, string dataDir)
@@ -194,7 +196,7 @@ void SuperPixelGraph::GeneralGraph_DArraySArraySpatVarying(double smoothRatio)
 {
 	int num_pixels = numOfSuperPixels;
 	int num_labels = numOfClasses;
-	double dataWeight = 1000;
+	double dataWeight = 100.0;
 	double smoothWeight = dataWeight*smoothRatio;
 	double labelWeight = 1;
 	// first set up the array for data costs
@@ -234,7 +236,7 @@ void SuperPixelGraph::GeneralGraph_DArraySArraySpatVarying(double smoothRatio)
 						adjacentLen = adjacentEdgeLength[p1][i];
 						len1 = superPixelContour[p1].size();
 						len2 = superPixelContour[p2].size();
-						weight = 2*adjacentLen / (len1+len2);
+						weight = 1.0 - 2*adjacentLen / (len1+len2);
 						gc->setNeighbors(p1, p2, smoothWeight*weight);
 						gc->setNeighbors(p2, p1, smoothWeight*weight);
 					//	flags.at<uchar>(p1,p2) = uchar(1);
@@ -244,7 +246,7 @@ void SuperPixelGraph::GeneralGraph_DArraySArraySpatVarying(double smoothRatio)
 
 		printf("\nBefore optimization energy is %d",gc->compute_energy());
 		gc->swap(5);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+		printf("\nAfter optimization energy is %d\n",gc->compute_energy());
 
 		for ( int  i = 0; i < num_pixels; i++ )
 			resultLabel.push_back(gc->whatLabel(i));

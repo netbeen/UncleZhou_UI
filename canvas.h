@@ -25,8 +25,6 @@ public:
     void setColor(QColor inputColor);   //slot， 用于接受参数设置当前颜色
     void resetScale();
 
-
-
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
     virtual void mousePressEvent(QMouseEvent *e) override;

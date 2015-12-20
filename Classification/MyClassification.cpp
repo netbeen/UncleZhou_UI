@@ -13,6 +13,8 @@ CMyClassification::CMyClassification(void)
 
 	m_BK_Label = 26;
 	m_bCropped = false;
+
+	m_bPCA = false;
 }
 
 
@@ -25,6 +27,12 @@ void CMyClassification::SetParametes(int patchSize, int numBins, int numTrees)
 	m_patchSize = patchSize;
 	m_numBins = numBins;
 	m_numTrees = numTrees;
+}
+
+void CMyClassification::SetNumBinsPerChannel(std::vector<int> &v_numbins, bool bPCA)
+{
+	m_bPCA = bPCA;
+	m_numBinsPerFeat = v_numbins;
 }
 
 void CMyClassification::SetBackgroundColor(cv::Vec3b BK_Color)
@@ -43,37 +51,46 @@ void CMyClassification::RandomForestClassification(cv::Mat &inputImg, cv::Mat &c
 	m_bCropped = true; //the output has been cropped;
 
 	// GetFeatures
-	cv::Mat TestFeat; //features
-	CGetImageFeatures myfeat(m_patchSize, m_numBins);
-	myfeat.GetFeatures_ColorHist_3Channels(TestFeat, inputImg);
+	CGetImageFeatures myfeat;
+	myfeat.GetFeatures_ColorHist_3Channels(m_imgFeatures, inputImg, m_patchSize, m_numBins);
 
 	// Run Classification
-	RunRandomForest(allabels, TestFeat, outputImg);
+	RunRandomForest(allabels, m_imgFeatures, outputImg);
 }
 
-void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<std::string> moreFeatImgs, 
+void CMyClassification::RandomForest_SuperPixel(std::vector<std::string> strFeatImgs, std::vector<int> &v_channels,
 												cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
 {
-	if(moreFeatImgs.size() < 1) {
-		RandomForest_SuperPixel(inputImg, colorMask, outputImg, dirSuperPixelDat);
+	if(strFeatImgs.size() < 1) {
+		cout<<"No feature images!"<<endl;
 		return;
 	}
-	else {
-		std::vector<cv::Mat> otherfeatImgs;
-		for(int i=0; i<moreFeatImgs.size(); i++) {
-			cv::Mat featimg = cv::imread(moreFeatImgs[i], CV_8UC1);
-			otherfeatImgs.push_back(featimg);
-		}
-		RandomForest_SuperPixel(inputImg, otherfeatImgs, colorMask, outputImg, dirSuperPixelDat);
+
+	std::vector<cv::Mat> featImgs;
+	for(int i=0; i<strFeatImgs.size(); i++) {
+		cv::Mat featimg;
+		if(v_channels[i] == 1)
+			featimg = cv::imread(strFeatImgs[i], CV_LOAD_IMAGE_GRAYSCALE);
+		else 
+			featimg = cv::imread(strFeatImgs[i], CV_LOAD_IMAGE_COLOR);
+
+		featImgs.push_back(featimg);
 	}
+	
+	RandomForest_SuperPixel(featImgs, colorMask, outputImg, dirSuperPixelDat);
 }
 
-void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<cv::Mat> moreFeatImgs, 
+void CMyClassification::RandomForest_SuperPixel(std::vector<cv::Mat> FeatImgs, 
 	cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
 {
+	if(FeatImgs.size() < 1) {
+		cout<<"No feature images!"<<endl;
+		return;
+	}
+
 	//Read superpixels file
-	m_ImgRows = inputImg.rows;
-	m_ImgCols = inputImg.cols;
+	m_ImgRows = FeatImgs[0].rows;
+	m_ImgCols = FeatImgs[0].cols;
 	if(!ReadInSuperPixelLabel(dirSuperPixelDat)) {
 		cout<<"ERROR in read Superpixel ID file";
 		return;
@@ -85,19 +102,17 @@ void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, std::vector<c
 
 
 	//GetFeatures - super pixels features
-	CGetImageFeatures myfeat(m_patchSize, m_numBins);
-	std::vector<cv::Mat> allFeatImgs;
-	allFeatImgs.push_back(inputImg);
-	if(moreFeatImgs.size()) {
-		for(int i=0; i<moreFeatImgs.size(); i++)
-			allFeatImgs.push_back(moreFeatImgs[i]);
+	CGetImageFeatures myfeat;
+	if(m_numBinsPerFeat.size() < 1) {
+		for(int i=0; i<FeatImgs.size(); i++)
+			m_numBinsPerFeat.push_back(m_numBins);
 	}
-	cv::Mat TestFeat; //features		
-	myfeat.GetImageFeatures_Histograms_SuperPixel(TestFeat, allFeatImgs, m_superpixelCoords);
+	
+	myfeat.GetImageFeatures_Histograms_SuperPixel(m_imgFeatures, FeatImgs, m_superpixelCoords, m_numBinsPerFeat);
 
 	
 	// Run Classification
-	RunRandomForest(allLabel, TestFeat, outputImg);
+	RunRandomForest(allLabel, m_imgFeatures, outputImg);
 }
 
 void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colorMask, cv::Mat &outputImg, std::string dirSuperPixelDat)
@@ -116,25 +131,29 @@ void CMyClassification::RandomForest_SuperPixel(cv::Mat &inputImg, cv::Mat &colo
 
 	
 	//GetFeatures - super pixels features
-	cv::Mat TestFeat; //features
-	CGetImageFeatures myfeat(m_patchSize, m_numBins);
-	myfeat.GetFeat_ColorHist_SuperPixel(TestFeat, inputImg, m_superpixelCoords);
+	CGetImageFeatures myfeat;
+	myfeat.GetFeat_ColorHist_SuperPixel(m_imgFeatures, inputImg, m_superpixelCoords, m_numBins);
 
 	
 	// Run Classification
-	RunRandomForest(allLabel, TestFeat, outputImg);
+	RunRandomForest(allLabel, m_imgFeatures, outputImg);
 }
 
 
 void CMyClassification::RunRandomForest(std::vector<int> allabels, cv::Mat &TestFeat, cv::Mat &outputImg)
 {
+	CGetImageFeatures myfeat;
+
+	if(m_bPCA)
+		TestFeat = myfeat.DimensionReduction_PCA(TestFeat, 0.333333);
+
+
 	//////////////////////////////////////////////////////////////////////////
 	LabelConvertforClassification(allabels);
 
 	//Select Training Set
 	cv::Mat trainingFeat;
 	std::vector<int> trainingLabel;
-	CGetImageFeatures myfeat;
 	myfeat.GetTrainingSet(trainingFeat, trainingLabel, TestFeat, allabels);
 
 	if(trainingFeat.rows < 1){
@@ -145,6 +164,17 @@ void CMyClassification::RunRandomForest(std::vector<int> allabels, cv::Mat &Test
 	//Run Random Forest
 	CMySharkML myshark(m_numTrees);
 	myshark.RFClassification(trainingFeat, trainingLabel, TestFeat, m_predictLabel, m_predictConf);
+
+	// Hard constraint for masked area
+	for(int i=0; i<allabels.size(); i++) {
+		int L = allabels[i];
+		if(L == 9999)
+			continue;
+		m_predictLabel[i] = L;
+		for(int j=0; j<m_predictConf.cols; j++) 
+			m_predictConf.at<float>(i, j) = 0.0f;
+		m_predictConf.at<float>(i, L) = 1.0f;
+	}
 
 	//Output Label
 	LabelConvertforOutput(m_predictLabel);
@@ -173,7 +203,7 @@ void CMyClassification::RunRandomForest(std::vector<int> allabels, cv::Mat &Test
 
 void CMyClassification::RunGraphCut(cv::Mat &resultImg, double smoothRatio)
 {
-	SuperPixelGraph spGraph(m_superpixelCoords, m_superpixelID, m_predictConf, m_numClasses);
+	SuperPixelGraph spGraph(m_superpixelCoords, m_superpixelID, m_predictConf);
 	spGraph.buildGraph();
 
 	//spGraph.outputGraph();
@@ -202,8 +232,6 @@ void CMyClassification::LabelConvertforClassification(std::vector<int> &label)
 		}
 	}
 	
-	m_numClasses = j;
-
 	LabelConvert(label, m_classes_input, m_classes_converted);
 }
 

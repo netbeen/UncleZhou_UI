@@ -2,6 +2,9 @@
 
 #include "Saliency.h"
 
+#include "Eigen/Dense"
+using namespace Eigen;
+
 int BGR2Label(const cv::Vec3b &pColor)
 {
 	// NOTE: OpenCV is bgr
@@ -25,14 +28,6 @@ void Label2BGR(int label, cv::Vec3b &pColor)
 
 CGetImageFeatures::CGetImageFeatures(void)
 {
-	m_patchSize = 16;
-	m_numBins = 16;
-}
-
-CGetImageFeatures::CGetImageFeatures(int patchSize, int numBins)
-{
-	m_patchSize = patchSize;
-	m_numBins = numBins;
 }
 
 
@@ -62,31 +57,31 @@ void CGetImageFeatures::OutputLabel(std::string filepath, std::vector<int> &v_la
 }
 
 
-void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, bool flag_Normalize)
+void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::Mat &img, int patchSize, int numBinsPerChannel, bool flag_Normalize)
 {
-	int imgW = img.cols - m_patchSize + 1;
-	int imgH = img.rows - m_patchSize + 1;
+	int imgW = img.cols - patchSize + 1;
+	int imgH = img.rows - patchSize + 1;
 	int numPts = imgW*imgH;
 	int nChannels = img.channels();
-	int DIMENSION = nChannels*m_numBins;
+	int DIMENSION = nChannels*numBinsPerChannel;
 
 	cv::Mat feat = cv::Mat(numPts, DIMENSION, CV_32F);
 	memset(feat.data, 0, sizeof(float)*numPts*DIMENSION);
 
-	int BinWidth = 256 / m_numBins;
+	int BinWidth = 256 / numBinsPerChannel;
 
 	int pf = 0;
 	for(int i=0; i<imgH; i++) {
 		for(int j=0; j<imgW; j++, pf++) {
 
-			for(int y = 0; y<m_patchSize; y++) {
-				for(int x = 0; x<m_patchSize; x++) {
+			for(int y = 0; y<patchSize; y++) {
+				for(int x = 0; x<patchSize; x++) {
 					cv::Vec3b &pp = img.at<cv::Vec3b>(i+y, j+x);
 					for(int k=0; k<nChannels; k++) {
 						int intensity = (int) pp[nChannels-1-k]; //data[((i+y)*img.cols+(j+x))*nChannels + k];
-						int BinID = intensity*(m_numBins-1) / 255.0 + 0.5;
+						int BinID = intensity*(numBinsPerChannel-1) / 255.0 + 0.5;
 						//						int BinID = int(intensity / BinWidth + 0.5);	
-						feat.at<float>(pf, k*m_numBins + BinID) += 1.0; 
+						feat.at<float>(pf, k*numBinsPerChannel + BinID) += 1.0; 
 					}
 				}
 			}
@@ -94,7 +89,7 @@ void CGetImageFeatures::GetFeatures_ColorHist_3Channels(cv::Mat &features, cv::M
 			//Normalize
 			if(!flag_Normalize)
 				continue;
-			int numPatchPixels =  m_patchSize*m_patchSize;
+			int numPatchPixels =  patchSize*patchSize;
 			for(int k=0; k<DIMENSION; k++) 
 				feat.at<float>(pf, k) /= (float) numPatchPixels;
 		}
@@ -135,7 +130,8 @@ void CGetImageFeatures::GetTrainingSet(cv::Mat &trainingFeat, std::vector<int> &
 	}
 }
 
-void CGetImageFeatures::GetImageFeatures_Histograms_SuperPixel(cv::Mat &features, std::vector<cv::Mat> v_featureImgs, std::vector< std::vector<cv::Point> > &superPixelDat)
+void CGetImageFeatures::GetImageFeatures_Histograms_SuperPixel(cv::Mat &features, std::vector<cv::Mat> v_featureImgs,
+															   std::vector< std::vector<cv::Point> > &superPixelDat, std::vector<int> v_numBins)
 {
 	int icount = v_featureImgs.size();
 	std::vector<cv::Mat> feat;
@@ -147,7 +143,7 @@ void CGetImageFeatures::GetImageFeatures_Histograms_SuperPixel(cv::Mat &features
 		int channel_i = v_featureImgs[i].channels();
 		totalChannel += channel_i;
 		cv::Mat feat_i;
-		GetFeat_ColorHist_SuperPixel(feat_i, v_featureImgs[i], superPixelDat);
+		GetFeat_ColorHist_SuperPixel(feat_i, v_featureImgs[i], superPixelDat, v_numBins[i]);
 		feat.push_back(feat_i);
 	}
 
@@ -183,10 +179,10 @@ cv::Mat CGetImageFeatures::Cat(std::vector<cv::Mat> &feats)
 	return features;
 }
 
-void CGetImageFeatures::GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat)
+void CGetImageFeatures::GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat &img, std::vector< std::vector<cv::Point> > &superPixelDat, int numBins)
 {
 	int nChannels = img.channels();
-	int DIMENSION = m_numBins*nChannels;
+	int DIMENSION = numBins*nChannels;
 	int numSuperPixels = superPixelDat.size();
 	features = cv::Mat(numSuperPixels, DIMENSION, CV_32F);
 	memset(features.data, 0, sizeof(float)*numSuperPixels*DIMENSION);
@@ -196,7 +192,7 @@ void CGetImageFeatures::GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat 
 	for(; iter != superPixelDat.end(); iter++, pf++){
 
 		std::vector<cv::Point >::iterator iiter=iter->begin();
-		for(; iiter!=iter->end(); iiter++){
+		for(; iiter!=iter->end(); iiter++) {
 			uchar *pp = nullptr;
 			if(nChannels == 3)
 				pp = &img.at<cv::Vec3b>( iiter->y, iiter->x)[0];
@@ -204,12 +200,45 @@ void CGetImageFeatures::GetFeat_ColorHist_SuperPixel(cv::Mat &features, cv::Mat 
 				pp = &img.at<uchar>( iiter->y, iiter->x);
 			for(int k=0; k<nChannels; k++) {
 				int intensity = (int) pp[nChannels-1-k];
-				int BinID = intensity*(m_numBins-1) / 255.0 + 0.5;
-				features.at<float>(pf, k*m_numBins + BinID) += 1.0;
+				int BinID = intensity*(numBins-1) / 255.0 + 0.5;
+				features.at<float>(pf, k*numBins + BinID) += 1.0;
 			}
 		}
 
 		for(int k=0; k<DIMENSION; k++) 
 			features.at<float>(pf, k) /= (float) iter->size();
 	}
+}
+
+cv::Mat CGetImageFeatures::DimensionReduction_PCA(cv::Mat &features, float r_ratio)
+{
+	assert(r_ratio>0 && r_ratio<=1);
+	int numSamples = features.rows;
+	int dim_org = features.cols;
+	int dim = int (dim_org * r_ratio + 0.5);
+
+	Eigen::MatrixXd newFeat = Eigen::MatrixXd::Zero(numSamples, dim_org);
+
+	for(int j=0; j<dim_org; j++) {
+		double ave = 0.0;
+		for(int i=0; i<numSamples; i++)
+			ave += features.at<float>(i, j);
+		
+		ave /= (double) numSamples;
+
+		for(int i=0; i<numSamples; i++)
+			newFeat(i, j) = features.at<float>(i, j) - ave;
+	}
+
+	Eigen::JacobiSVD<Eigen::MatrixXd> svd(newFeat, Eigen::ComputeThinV);
+	newFeat *= svd.matrixV();
+//	newFeat *= eigV;
+
+	cv::Mat reducedFeat(numSamples, dim, CV_32F);
+	for(int i=0; i<numSamples; i++) {
+		for(int j=0; j<dim; j++) {
+			reducedFeat.at<float>(i, j) = (float) newFeat(i, j); //EigenVec[index+j*numsamples];
+		}
+	}	
+	return reducedFeat;
 }

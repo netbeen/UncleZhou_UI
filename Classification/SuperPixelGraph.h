@@ -14,7 +14,7 @@ class SuperPixelGraph
 {
 public:
 	SuperPixelGraph(void);
-	SuperPixelGraph(vector<vector<Point> >m_superpixelCoords, Mat m_superpixelID, Mat m_predictConf, int m_numClasses);
+	SuperPixelGraph(vector<vector<Point> >m_superpixelCoords, Mat m_superpixelID, Mat m_predictConf);
 	~SuperPixelGraph(void);
 	//void readSuperPixelData(Mat img, string dataDir);
 	int  isContour(int curLabel, int row, int col);

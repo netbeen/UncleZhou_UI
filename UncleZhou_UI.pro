@@ -18,6 +18,8 @@ CONFIG += c++11
 QMAKE_CXXFLAGS+= -fopenmp
 QMAKE_LFLAGS +=  -fopenmp
 
+INCLUDEPATH += eigen-eigen-b30b87236a1b
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     newimagedialog.cpp \
