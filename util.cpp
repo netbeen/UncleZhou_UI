@@ -9,6 +9,8 @@ using namespace std;
 
 double Util::PI = 3.141592654;
 
+QString Util::dirName = QString();
+
 
 /**
  * @brief Util::meldTwoCVMat

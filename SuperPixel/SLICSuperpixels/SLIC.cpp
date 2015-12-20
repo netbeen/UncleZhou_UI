@@ -28,6 +28,7 @@
 #include <fstream>
 #include "SLIC.h"
 #include <assert.h>
+#include <util.h>
 
 // For superpixels
 const int dx4[4] = {-1,  0,  1,  0};
@@ -709,7 +710,7 @@ void SLIC::SaveSuperpixelLabels(
 
 	ofstream outfile;
     //string finalpath = path + temp + string(".dat");
-    string finalpath = "output.dat";
+    string finalpath = (Util::dirName+"/SLICOutput.dat").toStdString();
 	outfile.open(finalpath.c_str(), ios::binary);
 	for( int i = 0; i < sz; i++ )
 	{

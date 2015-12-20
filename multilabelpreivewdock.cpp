@@ -15,7 +15,6 @@ MultiLabelPreivewDock::MultiLabelPreivewDock(QWidget* parent):QDockWidget(parent
     this->colorButtonVector = std::vector<QPushButton*>();
     this->layerManager = LayerManager::getInstance();
 
-    std::cout << this->colorVector.size() << std::endl;
     this->initDockLayout();
 }
 
@@ -124,7 +123,7 @@ void MultiLabelPreivewDock::initDockLayout(){
     QWidget* mainWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(mainWidget);
 
-    this->multiLabelCanvas = new ReadonlyCanvas("multiLabelClassificationResult.png",this);
+    this->multiLabelCanvas = new ReadonlyCanvas(Util::dirName+"/multiLabelClassificationResult.png",this);
     layout->addWidget(this->multiLabelCanvas);
 
     mainWidget->setLayout(layout);

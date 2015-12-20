@@ -14,23 +14,23 @@ void LayerManager::init(config::editPosition editPosition){
     switch (editPosition) {
         LayerItem* singleLayer;
         case config::sourceImage:
-            singleLayer = new LayerItem("Source Image", QImage("./sourceImage.png"),this);
+            singleLayer = new LayerItem("Source Image", QImage(Util::dirName+"/sourceImage.png"),this);
             this->layerItemVector.push_back(singleLayer);
             break;
         case config::sourceGuidance:
             for(QString elem : Util::guidanceChannel){
-                LayerItem* layerItem = new LayerItem(elem, QImage("./sourceGuidance" + elem +".png"),this);
+                LayerItem* layerItem = new LayerItem(elem, QImage(Util::dirName+"/sourceGuidance" + elem +".png"),this);
                 this->layerItemVector.push_back(layerItem);
             }
             break;
         case config::targetGuidance:
             for(QString elem : Util::guidanceChannel){
-                LayerItem* layerItem = new LayerItem(elem, QImage("./targetGuidance" + elem +".png"),this);
+                LayerItem* layerItem = new LayerItem(elem, QImage(Util::dirName+"/targetGuidance" + elem +".png"),this);
                 this->layerItemVector.push_back(layerItem);
             }
             break;
         case config::targetImage:
-            singleLayer = new LayerItem("Target Image", QImage("./targetImage.png"),this);
+            singleLayer = new LayerItem("Target Image", QImage(Util::dirName+"/targetImage.png"),this);
             this->layerItemVector.push_back(singleLayer);
             break;
     }

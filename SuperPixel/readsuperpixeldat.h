@@ -11,10 +11,6 @@ public:
     ReadSuperPixelDat();
 
     void segmentSourceImage();
-    void analyseLabelFile(const QString maskFilename,float THRESHOLD = 0.5);
-
-    void main();
-    void main(QString filename, int superPixelCount, float threshold);
     void authorSegment(int superPixelCount = 4000);
     void authorRead();
     int cvtRGB2ColorCode(int red, int green, int blue);
@@ -30,7 +26,6 @@ private:
     void SaveSegmentedImageFile(unsigned int* pbuff, int width,int height);
     int labels[99999999];
 
-    void searchUnblackArea();
     void searchUnwhiteArea();
     cv::Mat maskDFS;
     cv::Mat mask;

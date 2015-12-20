@@ -108,8 +108,6 @@ private:
     QAction* viewPatchDistributeAction;     //查看patch分布的窗口的action以及slot
     void viewPatchDistributeSlot();
 
-    QAction* binaryClassificationAction;     //二分分类算法的action和slot
-    void binaryClassificationSlot();
     void setClassificationColor(cv::Vec3b newColor);
     cv::Vec3b classificationColor;      //当前的分类色
     bool isClassificationColorValid;

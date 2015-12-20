@@ -13,6 +13,7 @@
 #include "newimagedialog.h"
 #include "util.h"
 #include "imageeditwindow.h"
+#include "QFileInfo"
 
 
 /**
@@ -106,17 +107,39 @@ void MainWindow::loadSourceImage(){
 
     if (fileDialog->exec() == QDialog::Accepted)    //成功选择一个png图片
     {
-        this->sourceImage =new QImage(fileDialog->selectedFiles().first());     //此处会有内存泄漏，以后处理
-        this->sourceImage->save("./sourceImage.png");
-        this->sourceImageFrame->setStyleSheet("background-image: url(./sourceImage.png);background-position:center center;background-repeat: no-repeat");
+        this->sourceImage =new QImage(fileDialog->selectedFiles().first()); //读入图片
+
+        QString filename;   //取出完整文件名
+        for(int i = 1; ;i++){
+            QString section = fileDialog->selectedFiles().first().section('/',i,i);
+            if(section.size() == 0){
+                break;
+            }else{
+                filename = section;
+            }
+        }
+        QString filenameWithoutSuffix = filename.section('.',0,0);
+
+        QDir qdir;
+        QFileInfo dirNameInfo = QFileInfo(filenameWithoutSuffix);
+        //判断当前目录下，以该文件命名的文件夹是否存在
+        if(dirNameInfo.isDir() == false){
+            qdir.mkdir(filenameWithoutSuffix);  //新建文件夹
+        }else{
+
+        }
+        Util::dirName = filenameWithoutSuffix;  //给静态类赋值，保存目录名称
+
+        this->sourceImage->save((Util::dirName+"/sourceImage.png").toUtf8().data());
+        this->sourceImageFrame->setStyleSheet("background-image: url("+Util::dirName+"/sourceImage.png);background-position:center center;background-repeat: no-repeat");
 
         this->sourceGuidance = new QImage(this->sourceImage->width(), this->sourceImage->height(), QImage::Format_RGB888);  //新建一个同等大小的空图像
         this->sourceGuidance->fill(QColor(255,255,255));        //填充白色
         for(QString elem : Util::guidanceChannel){
-            this->sourceGuidance->save("./sourceGuidance"+elem+".png");
+            this->sourceGuidance->save(Util::dirName+"/sourceGuidance"+elem+".png");
         }
-        this->sourceGuidance->save("./multiLabelClassificationResult.png");
-        this->sourceGuidanceFrame->setStyleSheet("background-image: url(./sourceGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+        this->sourceGuidance->save((Util::dirName+"/multiLabelClassificationResult.png").toUtf8().data());
+        this->sourceGuidanceFrame->setStyleSheet("background-image: url("+Util::dirName+"/sourceGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
 
         this->sourceImageWidgetStackedLayout->setCurrentIndex(1);
         this->sourceGuidanceWidgetStackedLayout->setCurrentIndex(1);
@@ -219,7 +242,7 @@ void MainWindow::initWindowLayout(){
 void MainWindow::newImage(){
     NewImageDialog* newImageDialog = new NewImageDialog();
     if(newImageDialog->exec() == QDialog::Accepted){
-        this->targetGuidanceFrame->setStyleSheet("background-image: url(./targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
+        this->targetGuidanceFrame->setStyleSheet("background-image: url("+Util::dirName+"/targetGuidanceLabelChannel.png);background-position:center center;background-repeat: no-repeat"); //显示在右上角
     }
     this->targetGuidanceWidgetStackedLayout->setCurrentIndex(1);
     this->viewTargetGuidanceAction->setEnabled(true);

@@ -9,6 +9,7 @@ ReadSuperPixelDat::ReadSuperPixelDat()
 
 #include <string>
 #include "SuperPixel/SLICSuperpixels/SLIC.h"
+#include "util.h"
 
 void ReadSuperPixelDat::authorSegment(int superPixelCount)
 {
@@ -57,58 +58,12 @@ void ReadSuperPixelDat::authorSegment(int superPixelCount)
     if(klabels) delete [] klabels;
 }
 
-
-void ReadSuperPixelDat::main(){
-    this->image = cv::imread("/home/netbeen/桌面/周叔项目/stone.png");
-    this->size = this->image.cols * this->image.rows;
-    //std::cout << this->size << std::endl;
-
-    this->authorSegment();
-    this->authorRead();
-    std::ofstream labelsFile("labels.txt");
-    for(int i = 0; i < this->size; i++){
-        //std::cout << i << std::endl;
-        labelsFile << labels[i] << std::endl;
-    }
-    labelsFile.close();
-
-    //输出分析文件
-    this->analyseLabelFile("twoLabelMask.png");
-
-    //std::cout << "Done!" << std::endl;
-}
-
 void ReadSuperPixelDat::segmentSourceImage(){
-    this->image = cv::imread("sourceImage.png");
+    this->image = cv::imread((Util::dirName+"/sourceImage.png").toUtf8().data());
     this->size = this->image.cols * this->image.rows;
-    //std::cout << this->size << std::endl;
 
     this->authorSegment();
     this->authorRead();
-    std::ofstream labelsFile("labels.txt");
-    for(int i = 0; i < this->size; i++){
-        labelsFile << labels[i] << std::endl;
-    }
-    labelsFile.close();
-}
-
-void ReadSuperPixelDat::main(QString filename, int superPixelCount, float threshold){
-    this->image = cv::imread(filename.toUtf8().data());
-    this->size = this->image.cols * this->image.rows;
-    //std::cout << this->size << std::endl;
-
-    this->authorSegment(superPixelCount);
-    this->authorRead();
-    std::ofstream labelsFile("labels.txt");
-    for(int i = 0; i < this->size; i++){
-        //std::cout << i << std::endl;
-        labelsFile << labels[i] << std::endl;
-    }
-    labelsFile.close();
-
-    this->analyseLabelFile("twoLabelMask.png",threshold);
-
-    //std::cout << "Done!" << std::endl;
 }
 
 void ReadSuperPixelDat::ReadImage(unsigned int* pbuff, int width,int height){//YOUR own function to read an image into the ARGB format
@@ -150,13 +105,12 @@ void ReadSuperPixelDat::SaveSegmentedImageFile(unsigned int* pbuff, int width,in
             ptr++;
         }
     }
-    cv::imwrite("result.png",this->result);
 
     std::cout << "SaveSegmentedImageFile end" << std::endl;
 }
 
 void ReadSuperPixelDat::authorRead(){
-    FILE* pf = fopen("output.dat", "r");
+    FILE* pf = fopen((Util::dirName+"/SLICOutput.dat").toUtf8().data(), "r");
     int sz = this->size;
     int* vals = new int[sz];
     int elread = fread((char*)vals, sizeof(int), sz, pf);
@@ -171,123 +125,6 @@ void ReadSuperPixelDat::authorRead(){
 }
 
 
-void ReadSuperPixelDat::analyseLabelFile(const QString maskFilename, float THRESHOLD){
-    std::ifstream labelFile("labels.txt");
-    std::vector<int> labels;
-    int minLabel = INT32_MAX;
-    int maxLabel= INT32_MIN;
-    for(int i = 0; i < this->size; i++){
-        int tempLabel;
-        labelFile >> tempLabel;
-        labels.push_back(tempLabel);
-        minLabel = std::min(minLabel, tempLabel);
-        maxLabel = std::max(maxLabel, tempLabel);
-    }
-    labelFile.close();
-    std::cout << "minLabel,maxLabel = " << minLabel << " " << maxLabel << std::endl;
-
-    std::vector<std::vector< std::pair<int,int> > > label2Coodinates(maxLabel+1);
-    std::vector<int> label2Count(maxLabel+1,0);
-    cv::Mat coodinate2Label = cv::Mat(this->image.rows, this->image.cols, CV_32S);
-
-    for(int i = 0; i < this->size; i++){
-        int y_offset = i/this->image.cols;
-        int x_offset = i%this->image.cols;
-
-        coodinate2Label.at<int>(y_offset,x_offset) = labels.at(i);      //CHECKED
-        label2Count.at(labels.at(i))++;     //CHECKED
-        label2Coodinates.at(labels.at(i)).push_back(std::pair<int,int>(y_offset,x_offset));     //CHECKED
-    }
-
-    this->mask = cv::imread(maskFilename.toUtf8().data());
-
-    this->maskID2Coodinates = std::vector<std::vector< std::pair<int,int> > >(0);
-    this->maskDFS = mask.clone();
-
-    this->colorCodeVector = std::vector<int>();
-    this->searchUnwhiteArea();
-
-    std::ofstream analyseResult("analyseResult.txt");
-    analyseResult << "#labels" << std::endl;
-    analyseResult << label2Coodinates.size() << std::endl;
-    for(size_t i = 0 ; i < label2Coodinates.size(); i++){
-        analyseResult << i << "\t"<< label2Coodinates.at(i).size() <<"\t";
-        for(std::pair<int,int> elem : label2Coodinates.at(i)){
-            analyseResult << elem.first << " " << elem.second << "\t";
-        }
-        analyseResult << std::endl;
-    }
-    //#masks(maskID,color,coverSuperPixelCount,superIDs...)
-    analyseResult << "#masks" << std::endl;
-    analyseResult << maskID2Coodinates.size() << std::endl;
-
-    //const float THRESHOLD = 0.5;
-
-    std::vector<std::vector<int> > resultVector;  //用于测试
-    std::cout << "maskID2Coodinates.size():" <<maskID2Coodinates.size() << "  this->colorCodeVector.size():" << this->colorCodeVector.size() << std::endl;
-    assert(maskID2Coodinates.size() == this->colorCodeVector.size());
-    for(size_t i = 0 ; i < maskID2Coodinates.size(); i++){
-        analyseResult << i << "\t"  << this->colorCodeVector.at(i) << "\t";
-        std::vector<int> coverLabelCount(maxLabel+1,0);
-        for(std::pair<int,int> elem : maskID2Coodinates.at(i)){
-            int currentLabel = coodinate2Label.at<int>(elem.first, elem.second);
-            if(currentLabel > maxLabel || currentLabel < 0){
-                std::cout << "错误1:" << std::endl;
-                std::cout << "currentLabel:" << currentLabel << std::endl;
-                std::cout << "elem.first, elem.second: " << elem.first << " " << elem.second << std::endl;
-            }
-            coverLabelCount.at(currentLabel)++;
-        }
-        assert(coverLabelCount.size() == label2Count.size());
-        std::vector<int> result;
-        //遍历所有label，检测阈值比例是否符合
-        for(size_t j = 0; j < coverLabelCount.size(); j++){
-            if((float)coverLabelCount.at(j) / (float)label2Count.at(j) > THRESHOLD){
-                result.push_back(j);
-            }
-        }
-        analyseResult << result.size() << "\t" ;
-        for(int elem : result){
-            analyseResult << elem << "\t" ;
-        }
-        resultVector.push_back(result);
-        analyseResult << std::endl;
-    }
-
-
-    /////////////////////////////////////////////////
-
-    std::cout << "初始化maskImage" << std::endl;
-    cv::Mat maskImage = cv::Mat(this->image.size(), this->image.type());
-    for(int y_offset = 0; y_offset < maskImage.rows; y_offset++){
-        for(int x_offset = 0; x_offset < maskImage.cols; x_offset++){
-            maskImage.at<cv::Vec3b>(y_offset,x_offset)[0] = 0;
-        }
-    }
-    for(size_t i = 0 ; i < maskID2Coodinates.size(); i++){
-        std::vector<std::pair<int,int> > tempCoordinates = maskID2Coodinates.at(i);
-        for(std::pair<int,int> elem : tempCoordinates){
-            maskImage.at<cv::Vec3b>(elem.first,elem.second) = this->image.at<cv::Vec3b>(elem.first,elem.second);
-        }
-    }
-
-    cv::Mat SPImage = cv::Mat(this->image.size(), this->image.type());
-    for(int y_offset = 0; y_offset < SPImage.rows; y_offset++){
-        for(int x_offset = 0; x_offset < SPImage.cols; x_offset++){
-            SPImage.at<cv::Vec3b>(y_offset,x_offset)[0] = 0;
-        }
-    }
-    for(std::vector<int> result : resultVector){
-        for(int elem : result){
-            std::vector< std::pair<int,int> > tempCoords = label2Coodinates.at(elem);
-            for(std::pair<int,int> tempCoord : tempCoords){
-                SPImage.at<cv::Vec3b>(tempCoord.first,tempCoord.second) = this->image.at<cv::Vec3b>(tempCoord.first,tempCoord.second);
-            }
-        }
-    }
-
-    analyseResult.close();
-}
 
 int ReadSuperPixelDat::cvtRGB2ColorCode(int red, int green, int blue){
     int result = 0;
@@ -295,26 +132,6 @@ int ReadSuperPixelDat::cvtRGB2ColorCode(int red, int green, int blue){
     result += (green/127)*3;
     result += blue/127;
     return result;
-}
-
-void ReadSuperPixelDat::searchUnblackArea(){
-    for(int y_offset = 0; y_offset < this->maskDFS.rows; y_offset++){
-        for(int x_offset = 0; x_offset < this->maskDFS.cols; x_offset++){
-            cv::Vec3b currentColor = this->maskDFS.at<cv::Vec3b>(y_offset,x_offset);
-
-
-            if(currentColor[0] != 0 || currentColor[1] != 0 || currentColor[2] != 0){
-                int colorCode = this->cvtRGB2ColorCode(currentColor[2],currentColor[1],currentColor[0]);
-                this->colorCodeVector.push_back(colorCode);
-
-                std::cout << "Find unblack area: " << y_offset << " " << x_offset  << " ColorCode = " << colorCode<< std::endl;
-                this->coordinates = std::vector< std::pair<int,int> >();
-                this->dfs(std::pair<int,int>(y_offset,x_offset));
-                this->maskID2Coodinates.push_back(this->coordinates);
-                std::cout << "This area of mask has point count: " << this->coordinates.size() << std::endl;
-            }
-        }
-    }
 }
 
 void ReadSuperPixelDat::searchUnwhiteArea(){

@@ -19,7 +19,7 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent), scaleFactor(1.0),operationTyp
     this->layerManager = LayerManager::getInstance();
     QObject::connect(this->layerManager, &LayerManager::displayLayerChanged, this, &Canvas::receiveDisplayLayerChanged);
 
-    this->backgroundImage = QImage("sourceImage.png");
+    this->backgroundImage = QImage(Util::dirName+"/sourceImage.png");
     this->backgroundPixmap = QPixmap::fromImage(this->backgroundImage);
 
     this->alpha = QImage(this->backgroundImage.width(), this->backgroundImage.height(), QImage::Format_RGBA8888);

@@ -2,6 +2,7 @@
 #define UTIL_H
 #include <QObject>
 #include <QString>
+#include <string>
 #include <vector>
 #include <QPoint>
 #include <opencv2/opencv.hpp>
@@ -66,6 +67,8 @@ public:
     static void convertMultiLabelMaskToTwoLabelMask(const cv::Mat& multiLabelInput, cv::Mat& twoLabelOutput, const cv::Vec3b currentColor);
     static void convertTwoLabelMaskToOneLabelMask(const cv::Mat& twoLabelInput, cv::Mat& oneLabelOutput, const cv::Vec3b currentColor);
 
+
+    static QString dirName;
 };
 
 #endif // UTIL_H

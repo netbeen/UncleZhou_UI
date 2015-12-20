@@ -10,6 +10,7 @@
 #include "graphcut/graphcut.h"
 
 #include "Classification/MyImageProc.h"
+#include <QFileInfo>
 
 
 /**
@@ -34,7 +35,6 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu = this->menuBar()->addMenu("&Test functions");
     this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
     this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
-    this->testFunctionMenu->addAction(this->binaryClassificationAction);
     this->testFunctionMenu->addAction(this->multiLabelClassificationAction);
     this->testFunctionMenu->addAction(this->undoAction);
     this->testFunctionMenu->addAction(this->undoAction);
@@ -43,20 +43,27 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
 
-    //处理SuperPixel的类
-    this->readSuperPixelDat = new ReadSuperPixelDat();
-    readSuperPixelDat->segmentSourceImage();
+    if(QFileInfo(Util::dirName+"/SLICOutput.dat").isFile() == false){
+        //处理SuperPixel的类
+        this->readSuperPixelDat = new ReadSuperPixelDat();
+        readSuperPixelDat->segmentSourceImage();
+    }
 
+    cv::Mat srcImg = cv::imread((Util::dirName+"/sourceImage.png").toUtf8().data());
     CMyImageProc ttImgProc;
-    cv::Mat srcImg = cv::imread("sourceImage.png");
-    cv::Mat textonImg = ttImgProc.GenTextonMap(srcImg);
-    cv::imwrite("src_texton.png", textonImg);
-    cv::Mat sailImg = ttImgProc.GenSaliencyMap(srcImg);
-    cv::imwrite("src_saliency.png", sailImg);
-
+    if(QFileInfo(Util::dirName+"/src_texton.png").isFile() == false){
+        cv::Mat textonImg = ttImgProc.GenTextonMap(srcImg);
+        cv::imwrite((Util::dirName+"/src_texton.png").toUtf8().data(), textonImg);
+    }
+    if(QFileInfo(Util::dirName+"/src_saliency.png").isFile() == false){
+        cv::Mat sailImg = ttImgProc.GenSaliencyMap(srcImg);
+        cv::imwrite((Util::dirName+"/src_saliency.png").toUtf8().data(), sailImg);
+    }
     CMyImageProc tt;
-    cv::Mat colortexton_regular = tt.GenColorTexton_regular(srcImg, 4);
-    imwrite("colortexton_regular.png", colortexton_regular);
+    if(QFileInfo(Util::dirName+"/src_colortexton_regular.png").isFile() == false){
+        cv::Mat colortexton_regular = tt.GenColorTexton_regular(srcImg, 4);
+        imwrite((Util::dirName+"/src_colortexton_regular.png").toUtf8().data(), colortexton_regular);
+    }
 }
 
 
@@ -151,18 +158,16 @@ void ImageEditWindow::viewPatchDistributeSlot(){
 }
 
 void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage){
-    cv::Mat img = inputImage;
-
     cv::Mat_<cv::Vec3b> outputImg;
     CMyClassification myTest;
     myTest.SetParametes(8, 8);
 
-    cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
+    cv::Mat mask = cv::imread((Util::dirName+"/sourceGuidanceLabelChannel.png").toUtf8().data());
     std::vector<std::string> morefeatImgs;
-    morefeatImgs.push_back("colortexton_regular.png");
-    morefeatImgs.push_back("src_texton.png");
-    morefeatImgs.push_back("src_pgb.png");
-    morefeatImgs.push_back("src_saliency.png");
+    morefeatImgs.push_back((Util::dirName+"/src_colortexton_regular.png").toStdString());
+    morefeatImgs.push_back((Util::dirName+"/src_texton.png").toStdString());
+    morefeatImgs.push_back((Util::dirName+"/src_pgb.png").toStdString());
+    morefeatImgs.push_back((Util::dirName+"/src_saliency.png").toStdString());
     std::vector<int> v_channels;
     v_channels.push_back(1);
     v_channels.push_back(1);
@@ -171,10 +176,10 @@ void ImageEditWindow::doMultiLabelClassificationAndSave(const cv::Mat inputImage
     int numbinsvec[4] = {64, 16, 16, 16};
     std::vector<int> v_numbins(numbinsvec, numbinsvec+4);
     myTest.SetNumBinsPerChannel(v_numbins,false);
-    myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, "output.dat");
+    myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, (Util::dirName+"/SLICOutput.dat").toStdString());
     myTest.RunGraphCut(outputImg);
 
-    cv::imwrite("multiLabelClassificationResult.png",outputImg);
+    cv::imwrite((Util::dirName+"/multiLabelClassificationResult.png").toUtf8().data(),outputImg);
 }
 
 // multi label
@@ -208,37 +213,35 @@ void ImageEditWindow::classificationWithoutPopupSlot(){
     this->undoStack->push(currentDisplayLayerItem->image);
     cv::Mat_<cv::Vec3b> currentMask;
     Util::convertQImageToMat(currentDisplayLayerItem->image,currentMask);
-    cv::imwrite("sourceGuidanceLabelChannel.png",currentMask);
+    cv::imwrite((Util::dirName+"/sourceGuidanceLabelChannel.png").toUtf8().data(),currentMask);
 
     if(this->isMultiLabelChecked == true){
         //do multi label classification.
         this->doMultiLabelClassificationAndSave(currentMask);   //进行MultiLabel的分类
-        cv::Mat multiLabelClassificationResult = cv::imread("multiLabelClassificationResult.png");  //读取MultiLabel的结果
+        cv::Mat multiLabelClassificationResult = cv::imread((Util::dirName+"/multiLabelClassificationResult.png").toUtf8().data());  //读取MultiLabel的结果
         Util::meldTwoCVMat(currentMask,multiLabelClassificationResult);
         Util::convertMattoQImage(currentMask,currentDisplayLayerItem->image);
         this->canvas->update();
     }else{
         //do binary classification.
         if(this->isClassificationColorValid == true){
-            cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
+            cv::Mat multiLabelMask = cv::imread((Util::dirName+"/sourceGuidanceLabelChannel.png").toUtf8().data());
             cv::Mat twoLabelMask;
             Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,this->classificationColor);
-            cv::imwrite("twoLabelMask.png",twoLabelMask);
-            this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");//利用mask图像，生成analyse文件
+            cv::imwrite((Util::dirName+"/twoLabelMask.png").toUtf8().data(),twoLabelMask);
 
-            cv::Mat img = cv::imread("sourceImage.png");// Read Source Image
             // Run RFBinaryClassification2
             cv::Mat_<cv::Vec3b> outputImg;
             CMyClassification myTest;
             myTest.SetParametes(8, 8);
 
-            cv::Mat mask = cv::imread("sourceGuidanceLabelChannel.png");
+            cv::Mat mask = cv::imread((Util::dirName+"/sourceGuidanceLabelChannel.png").toUtf8().data());
 
             std::vector<std::string> morefeatImgs;
-            morefeatImgs.push_back("colortexton_regular.png");
-            morefeatImgs.push_back("src_texton.png");
-            morefeatImgs.push_back("src_pgb.png");
-            morefeatImgs.push_back("src_saliency.png");
+            morefeatImgs.push_back((Util::dirName+"/src_colortexton_regular.png").toStdString());
+            morefeatImgs.push_back((Util::dirName+"/src_texton.png").toStdString());
+            morefeatImgs.push_back((Util::dirName+"/src_pgb.png").toStdString());
+            morefeatImgs.push_back((Util::dirName+"/src_saliency.png").toStdString());
 
             std::vector<int> v_channels;
             v_channels.push_back(1);
@@ -249,7 +252,7 @@ void ImageEditWindow::classificationWithoutPopupSlot(){
             int numbinsvec[4] = {64, 16, 16, 16};
             std::vector<int> v_numbins(numbinsvec, numbinsvec+4);
             myTest.SetNumBinsPerChannel(v_numbins,false);
-            myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, "output.dat");
+            myTest.RandomForest_SuperPixel(morefeatImgs, v_channels, mask, outputImg, (Util::dirName+"/SLICOutput.dat").toStdString());
             myTest.RunGraphCut(outputImg);
 
             cv::Mat oneLabelMask;
@@ -262,59 +265,6 @@ void ImageEditWindow::classificationWithoutPopupSlot(){
             this->doMultiLabelClassificationAndSave(currentMask);
             this->multiLabelPreivewDock->multiLabelCanvas->update();
         }
-    }
-}
-
-void ImageEditWindow::binaryClassificationSlot(){
-    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
-    this->undoStack->push(currentDisplayLayerItem->image);
-    cv::Mat_<cv::Vec3b> cvImage;
-    Util::convertQImageToMat(currentDisplayLayerItem->image,cvImage);
-    //Util::clearFragment(cvImage);
-    cv::imwrite("sourceGuidanceLabelChannel.png",cvImage);
-
-    //开启选颜色对话框
-    BinaryClassificationDialog* binaryClassificationDialog = new BinaryClassificationDialog(this);
-    QObject::connect(binaryClassificationDialog,&BinaryClassificationDialog::sendColor, this, &ImageEditWindow::setClassificationColor);
-
-    if(binaryClassificationDialog->exec() == QDialog::Accepted){
-        /*cv::Vec3b Cur_Color = this->classificationColor;
-
-        cv::Mat multiLabelMask = cv::imread("sourceGuidanceLabelChannel.png");
-        cv::Mat twoLabelMask;
-        Util::convertMultiLabelMaskToTwoLabelMask(multiLabelMask,twoLabelMask,Cur_Color);
-        cv::imwrite("twoLabelMask.png",twoLabelMask);
-
-        //利用mask图像，生成analyse文件
-        this->readSuperPixelDat->analyseLabelFile("twoLabelMask.png");
-
-        // Read Source Image
-        cv::Mat img = cv::imread("sourceImage.png");
-
-        // Run RFBinaryClassification2
-        cv::Mat_<cv::Vec3b> outputImg;
-        CMyClassification myTest;
-        //myTest.SetParametes(8, 8);
-        std::vector<std::string> morefeatImgs;
-        std::string str_textonImg = "src_texton.png"; morefeatImgs.push_back(str_textonImg);
-        std::string str_edgemap = "src_pgb.png"; morefeatImgs.push_back(str_edgemap);
-        std::string str_saliency = "src_saliency.png"; morefeatImgs.push_back(str_saliency);
-        myTest.RandomForest_SuperPixel(img,morefeatImgs,twoLabelMask,outputImg,"output.dat");
-        myTest.RunGraphCut(outputImg);
-
-        cv::Mat oneLabelMask;
-        Util::convertTwoLabelMaskToOneLabelMask(outputImg,oneLabelMask,Cur_Color);
-
-        Util::meldTwoCVMat(cvImage,oneLabelMask);
-
-        Util::convertMattoQImage(cvImage,currentDisplayLayerItem->image);
-
-        this->canvas->update();
-
-        //更新MultiLabel
-        //this->readSuperPixelDat->analyseLabelFile("sourceGuidanceLabelChannel.png");
-        this->doMultiLabelClassificationAndSave(cvImage);
-        this->multiLabelPreivewDock->multiLabelCanvas->update();*/
     }
 }
 
@@ -365,9 +315,6 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->densityPeakInteractiveAction,&QAction::triggered, this, &ImageEditWindow::densityPeakInteractiveSlot);
     this->viewPatchDistributeAction = new QAction(QIcon(":image/open.png"),"&View Patch Distribute",this);
     QObject::connect(this->viewPatchDistributeAction,&QAction::triggered, this, &ImageEditWindow::viewPatchDistributeSlot);
-    this->binaryClassificationAction = new QAction(QIcon(":image/open.png"),"&Binary Classification",this);
-    this->binaryClassificationAction->setShortcut(Qt::Key_B);
-    QObject::connect(this->binaryClassificationAction,&QAction::triggered, this, &ImageEditWindow::binaryClassificationSlot);
     this->multiLabelClassificationAction = new QAction(QIcon(":image/open.png"),"&Multi Label Classification",this);
     QObject::connect(this->multiLabelClassificationAction,&QAction::triggered, this, &ImageEditWindow::multiLabelClassificationSlot);
     this->undoAction = new QAction(QIcon(":image/open.png"),"&Undo",this);
