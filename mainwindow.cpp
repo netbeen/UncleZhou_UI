@@ -120,13 +120,23 @@ void MainWindow::loadSourceImage(){
         }
         QString filenameWithoutSuffix = filename.section('.',0,0);
 
-        QDir qdir;
+
         QFileInfo dirNameInfo = QFileInfo(filenameWithoutSuffix);
         //判断当前目录下，以该文件命名的文件夹是否存在
         if(dirNameInfo.isDir() == false){
-            qdir.mkdir(filenameWithoutSuffix);  //新建文件夹
+            QDir().mkdir(filenameWithoutSuffix);    //新建文件夹
         }else{
-
+            QImage preSavedImage = QImage(filenameWithoutSuffix+"/sourceImage.png");
+            if(*this->sourceImage != preSavedImage){
+                //同名但图像不同，删除目录下所有文件
+                QDir dir(filenameWithoutSuffix);
+                QFileInfoList fileList = dir.entryInfoList();
+                foreach (QFileInfo fi, fileList) {
+                    if(fi.isFile() == true){
+                        dir.remove(fi.fileName());
+                    }
+                }
+            }
         }
         Util::dirName = filenameWithoutSuffix;  //给静态类赋值，保存目录名称
 

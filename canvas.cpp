@@ -319,7 +319,7 @@ void Canvas::brokenLineMove(const QPoint center, const int radius, const QColor 
 
 void Canvas::brokenLineEnd(){  //折线结束工具
     this->brokenLineStarted = false;
-    this->setMouseTracking(false);   //保持鼠标追踪
+    this->setMouseTracking(false);   //结束鼠标追踪
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
     currentDisplayLayerItem->image = this->beforeBrokenLineBackup;
     this->update();
