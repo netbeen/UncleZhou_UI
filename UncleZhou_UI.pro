@@ -59,7 +59,9 @@ SOURCES += main.cpp\
     Classification/MyImageProc.cpp \
     Classification/MyMR8FilterBank.cpp \
     Classification/Saliency.cpp \
-    Classification/SuperPixelGraph.cpp
+    Classification/SuperPixelGraph.cpp \
+    gaussianfunctionpainter.cpp \
+    gausssiandialog.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -100,7 +102,9 @@ HEADERS  += mainwindow.h \
     Classification/MyImageProc.h \
     Classification/MyMR8FilterBank.h \
     Classification/Saliency.h \
-    Classification/SuperPixelGraph.h
+    Classification/SuperPixelGraph.h \
+    gaussianfunctionpainter.h \
+    gausssiandialog.h
 
 
 FORMS    +=

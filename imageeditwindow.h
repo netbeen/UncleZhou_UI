@@ -23,6 +23,7 @@
 #include "densitypeakdialog.h"
 #include "viewpatchdistributedialog.h"
 #include "multilabelpreivewdock.h"
+#include "gaussianfunctionpainter.h"
 
 #include "SuperPixel/readsuperpixeldat.h"
 #include <QKeyEvent>
@@ -128,6 +129,11 @@ private:
 
     QAction* undoAction;
     void undoSlot();
+
+    QAction* drawGaussianAction;
+    void drawGaussianSlot();    //画出高斯模糊图像
+    void drawGaussianSlotPart2(int xCoordinate, int yCoordinate);
+    void updateCanvasSlot();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;

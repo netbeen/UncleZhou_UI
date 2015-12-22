@@ -11,6 +11,7 @@
 
 #include "Classification/MyImageProc.h"
 #include <QFileInfo>
+#include "gausssiandialog.h"
 
 
 /**
@@ -35,10 +36,9 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
     this->testFunctionMenu = this->menuBar()->addMenu("&Test functions");
     this->testFunctionMenu->addAction(this->densityPeakInteractiveAction);
     this->testFunctionMenu->addAction(this->viewPatchDistributeAction);
-    this->testFunctionMenu->addAction(this->multiLabelClassificationAction);
-    this->testFunctionMenu->addAction(this->undoAction);
     this->testFunctionMenu->addAction(this->undoAction);
     this->testFunctionMenu->addAction(this->classificationWithoutPopupAction);
+    this->testFunctionMenu->addAction(this->drawGaussianAction);
 
 
     this->menuBar()->setStyleSheet(" QMenuBar{background-color: #333337; padding-left: 5px;}QMenuBar::item {background-color: #333337; padding:2px; margin:6px 10px 0px 0px;} QMenuBar::item:selected {background: #3e3e40;} QMenuBar::item:pressed {background: #1b1b1c;}");
@@ -206,7 +206,28 @@ void ImageEditWindow::setIsMultiLabelChecked(bool flag){
     this->isMultiLabelChecked = flag;
 }
 
+//画出高斯模糊的slot，设置模式，等待参数
+void ImageEditWindow::drawGaussianSlot(){
+    this->canvas->setOperationType(config::Gaussian);
+    this->canvas->setCursor(Qt::CrossCursor);
+    QObject::connect(this->canvas, &Canvas::sendCoordinateSignal, this, &ImageEditWindow::drawGaussianSlotPart2);
+}
 
+//实际绘画
+void ImageEditWindow::drawGaussianSlotPart2(int xCoordinate, int yCoordinate){
+    LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
+    this->undoStack->push(currentDisplayLayerItem->image);
+
+    GausssianDialog* gausssianDialog = new GausssianDialog(xCoordinate,yCoordinate,this->canvas->getColor(),currentDisplayLayerItem->image,this);
+    QObject::connect(gausssianDialog,&GausssianDialog::updateCanvas,this,&ImageEditWindow::updateCanvasSlot);
+    gausssianDialog->exec();
+
+    QObject::disconnect(this->canvas, &Canvas::sendCoordinateSignal, this, &ImageEditWindow::drawGaussianSlotPart2);
+}
+
+void ImageEditWindow::updateCanvasSlot(){
+    this->canvas->update();
+}
 
 void ImageEditWindow::classificationWithoutPopupSlot(){
     LayerItem* currentDisplayLayerItem = this->layerManager->getDisplayLayerItem();
@@ -326,6 +347,9 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(this->classificationWithoutPopupAction, &QAction::triggered, this, &ImageEditWindow::classificationWithoutPopupSlot);
     this->classificationWithoutPopupAction->setShortcut(Qt::Key_C);
 
+    //画出高斯模糊的action
+    this->drawGaussianAction = new QAction(QIcon(":image/open.png"),"&Draw Gaussian",this);
+    QObject::connect(this->drawGaussianAction, &QAction::triggered, this, &ImageEditWindow::drawGaussianSlot);
 
 
     this->toolActionVector = std::vector<QAction*>();

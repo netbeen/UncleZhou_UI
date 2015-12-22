@@ -131,6 +131,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                     this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
                     this->magicErase(this->mapToPixmap(e->pos()));
                     break;
+                case config::Gaussian:
+                    emit this->sendCoordinateSignal(this->mapToPixmap(e->pos()).x(), this->mapToPixmap(e->pos()).y());
+                    break;
                 default:
                     break;
             }
@@ -224,6 +227,11 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
 
 
     }
+}
+
+
+QColor Canvas::getColor() const{
+    return this->color;
 }
 
 /**

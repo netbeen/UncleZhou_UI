@@ -24,6 +24,7 @@ public:
     void setBrokenLineRadius(int inputRadius);  //slot ， 用于接受参数设置折线半径
     void setColor(QColor inputColor);   //slot， 用于接受参数设置当前颜色
     void resetScale();
+    QColor getColor() const;
 
 protected:
     virtual void paintEvent(QPaintEvent* e) override;
@@ -81,7 +82,7 @@ signals:
     void canvasUpdatedSignal();
     void scaleFactorChanged(float currentScaleFactor);
     void updateColorButtonLayoutSignal();
-
+    void sendCoordinateSignal(int xCoordinate, int yCoordinate);
 
 };
 

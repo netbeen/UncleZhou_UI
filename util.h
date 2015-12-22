@@ -10,7 +10,7 @@
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
     enum editLevel{readOnly, editable};
-    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon, MagicEraser, BrokenLine};
+    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon, MagicEraser, BrokenLine, Gaussian};
 }
 
 
