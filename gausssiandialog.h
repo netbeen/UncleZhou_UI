@@ -29,6 +29,7 @@ private:
 
     void sigmaXChangedSlot(int newSiamaX);
     void sigmaYChangedSlot(int newSiamaY);
+    void isInverseSelectedSlot(bool newBool);
 
     QDial* xDial;
     QDial* yDial;

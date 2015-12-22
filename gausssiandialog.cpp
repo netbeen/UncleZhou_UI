@@ -4,6 +4,7 @@
 #include <QDial>
 #include <iostream>
 #include <QLabel>
+#include <QCheckBox>
 
 GausssianDialog::GausssianDialog(int xCenterCoordinate, int yCenterCoordinate, QColor color, QImage& image, QWidget* parent):QDialog(parent),imageWidth(image.width()),imageHeight(image.height()),xCenterCoordinate(xCenterCoordinate),yCenterCoordinate(yCenterCoordinate),color(color){
     this->initDialogLayout();
@@ -48,6 +49,10 @@ void GausssianDialog::initDialogLayout(){
 
     QObject::connect(xDial,&QDial::valueChanged,this,&GausssianDialog::sigmaXChangedSlot);
     QObject::connect(yDial,&QDial::valueChanged,this,&GausssianDialog::sigmaYChangedSlot);
+
+    QCheckBox* inverseCheckbox = new QCheckBox("Inverse",this);
+    QObject::connect(inverseCheckbox,&QCheckBox::toggled, this,&GausssianDialog::isInverseSelectedSlot);
+    mainLayout->addWidget(inverseCheckbox);
 }
 
 void GausssianDialog::sigmaXChangedSlot(int newSigmaX){
@@ -58,6 +63,12 @@ void GausssianDialog::sigmaXChangedSlot(int newSigmaX){
 
 void GausssianDialog::sigmaYChangedSlot(int newSigmaY){
     this->gaussianFunctionPainter->setSigma(this->xDial->value(), newSigmaY);
+    this->gaussianFunctionPainter->draw(*(this->ptr2image), this->color);
+    emit this->updateCanvas();
+}
+
+void GausssianDialog::isInverseSelectedSlot(bool newBool){
+    this->gaussianFunctionPainter->setInverse(newBool);
     this->gaussianFunctionPainter->draw(*(this->ptr2image), this->color);
     emit this->updateCanvas();
 }
