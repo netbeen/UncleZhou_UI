@@ -3,6 +3,7 @@
 #include <QVBoxLayout>
 #include <QDial>
 #include <iostream>
+#include <QLabel>
 
 GausssianDialog::GausssianDialog(int xCenterCoordinate, int yCenterCoordinate, QColor color, QImage& image, QWidget* parent):QDialog(parent),imageWidth(image.width()),imageHeight(image.height()),xCenterCoordinate(xCenterCoordinate),yCenterCoordinate(yCenterCoordinate),color(color){
     this->initDialogLayout();
@@ -12,17 +13,30 @@ GausssianDialog::GausssianDialog(int xCenterCoordinate, int yCenterCoordinate, Q
 }
 
 void GausssianDialog::initDialogLayout(){
+    this->setWindowTitle("Please set the sigma parameter");
+
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     this->setLayout(mainLayout);
 
     QHBoxLayout* dialLayout = new QHBoxLayout(this);
     mainLayout->addLayout(dialLayout);
 
-    this->xDial = new QDial(this);
-    this->yDial = new QDial(this);
+    QVBoxLayout* xDialLayout = new QVBoxLayout(this);
+    dialLayout->addLayout(xDialLayout);
 
-    dialLayout->addWidget(xDial);
-    dialLayout->addWidget(yDial);
+    QVBoxLayout* yDialLayout = new QVBoxLayout(this);
+    dialLayout->addLayout(yDialLayout);
+
+    xDialLayout->addWidget(new QLabel("Sigma X:",this));
+    yDialLayout->addWidget(new QLabel("Sigma Y:",this));
+
+    this->xDial = new QDial(this);
+    this->xDial->setMinimumSize(200,200);
+    this->yDial = new QDial(this);
+    this->yDial->setMinimumSize(200,200);
+
+    xDialLayout->addWidget(xDial);
+    yDialLayout->addWidget(yDial);
 
     xDial->setMinimum(0);
     xDial->setMaximum(this->imageWidth);
