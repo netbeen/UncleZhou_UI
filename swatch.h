@@ -1,4 +1,4 @@
-#ifndef SWATCH_H
+ #ifndef SWATCH_H
 #define SWATCH_H
 
 #include <QWidget>

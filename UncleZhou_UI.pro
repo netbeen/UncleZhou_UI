@@ -106,9 +106,6 @@ HEADERS  += mainwindow.h \
     gaussianfunctionpainter.h \
     gausssiandialog.h
 
-
-FORMS    +=
-
 RESOURCES += \
     resource.qrc
 

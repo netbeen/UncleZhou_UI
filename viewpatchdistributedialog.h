@@ -21,6 +21,8 @@ private:
     void initDialogLayout();
     void initData();
 
+    void mapReturn2OriginSize();    //2015年12月23日添加，把坐标的灰度映射回原图大小
+
     ViewPatchDistributeCavvas* viewPatchDistributeCavvas;
 };
 

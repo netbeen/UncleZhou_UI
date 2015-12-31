@@ -26,7 +26,6 @@ void ViewPatchDistributeCavvas::paintEvent(QPaintEvent* event){
 
 
     for(size_t elem =0; elem < this->patchInfo.size(); elem ++){
-    //for(int elem : this->drawList){
         QImage image(patchInfo.at(elem).image.data, patchInfo.at(elem).image.cols, patchInfo.at(elem).image.rows, patchInfo.at(elem).image.step, QImage::Format_RGB888);
         painter.drawImage(this->patchInfo.at(elem).x*this->width(),this->patchInfo.at(elem).y*this->height(),image);
     }
