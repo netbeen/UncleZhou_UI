@@ -134,6 +134,9 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Gaussian:
                     emit this->sendCoordinateSignal(this->mapToPixmap(e->pos()).x(), this->mapToPixmap(e->pos()).y());
                     break;
+                case config::VectorField:
+                    this->vectorFieldCurve.clear();
+                    break;
                 default:
                     break;
             }
@@ -173,6 +176,10 @@ void Canvas::mouseReleaseEvent(QMouseEvent *e){
         case config::BrokenLine:
             emit this->updateColorButtonLayoutSignal();
             break;
+        case config::VectorField:
+            Util::vectorFieldCurves.push_back(this->vectorFieldCurve);
+            emit this->calcVectorFieldSignal();
+            break;
         default:
             break;
     }
@@ -210,7 +217,9 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
-
+                case config::VectorField:
+                    this->vectorFieldCurve.push_back(this->mapToPixmap(e->pos()));
+                    break;
                 default:
                     break;
             }

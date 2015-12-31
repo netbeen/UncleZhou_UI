@@ -78,11 +78,14 @@ private:
 
     UndoStack* undoStack;
 
+    std::vector<QPoint> vectorFieldCurve;
+
 signals:
     void canvasUpdatedSignal();
     void scaleFactorChanged(float currentScaleFactor);
     void updateColorButtonLayoutSignal();
     void sendCoordinateSignal(int xCoordinate, int yCoordinate);
+    void calcVectorFieldSignal();
 
 };
 

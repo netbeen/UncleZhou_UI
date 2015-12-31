@@ -13,7 +13,8 @@
 #include <QFileInfo>
 #include "gausssiandialog.h"
 
-
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 /**
  * @brief ImageEditWindow::ImageEditWindow
  * @brief 图像编辑窗口的构造函数
@@ -64,6 +65,8 @@ ImageEditWindow::ImageEditWindow(config::editPosition editPosition, config::edit
         cv::Mat colortexton_regular = tt.GenColorTexton_regular(srcImg, 4);
         imwrite((Util::dirName+"/src_colortexton_regular.png").toUtf8().data(), colortexton_regular);
     }
+
+    QObject::connect(this->canvas, &Canvas::calcVectorFieldSignal, this, &ImageEditWindow::calcVectorFieldSlot);
 }
 
 
@@ -325,6 +328,10 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     this->brokenLineAction= new QAction(QIcon(":/image/brokenLine.png"),"&Broken Line",this);
     QObject::connect(this->brokenLineAction, &QAction::triggered, this, &ImageEditWindow::brokenLineToolSlot);
 
+    //定义画向量场的工具ACTION
+    this->drawVectorFieldAction = new QAction(QIcon(":/image/open.png"),"&Vector Field",this);
+    QObject::connect(this->drawVectorFieldAction, &QAction::triggered, this, &ImageEditWindow::drawVectorFieldSlot);
+
     this->bucketAction= new QAction(QIcon(":/image/bucket.png"),"&Bucket",this);
     QObject::connect(this->bucketAction, &QAction::triggered, this, &ImageEditWindow::bucketToolSlot);
     this->zoomInAction= new QAction(QIcon(":/image/zoomIn.png"),"&ZoomIn",this);
@@ -365,6 +372,7 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
         this->toolActionVector.push_back(this->magicEraserAction);
         this->toolActionVector.push_back(this->polygonAction);
         this->toolActionVector.push_back(this->brokenLineAction);
+        this->toolActionVector.push_back(this->drawVectorFieldAction);
         this->toolActionVector.push_back(this->bucketAction);
     }
 
@@ -426,6 +434,9 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QObject::connect(brokenLineRadiusSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->canvas, &Canvas::setBrokenLineRadius);
     this->brokenLineToolOptionFrame->mainLayout->addWidget(brokenLineRadiusSpinBox,1,1,1,1,Qt::AlignCenter);
 
+    this->drawVectorFieldFrame = new ToolOptionFrame("Vector Field",this);  //画向量场工具选项卡配置
+
+
     this->zoomToolOptionFrame = new ToolOptionFrame("Zoom",this);       //缩放工具的选项卡配置（放大缩小共享同一张选项卡）
     QLabel* magnificationLabel = new QLabel("Current magnification: ",this->eraserToolOptionFrame);
     this->zoomToolOptionFrame->mainLayout->addWidget(magnificationLabel,1,0,1,1,Qt::AlignCenter);
@@ -435,6 +446,8 @@ void ImageEditWindow::initActions(config::editLevel editLevel){
     QPushButton* resetTheScaleFactorButton = new QPushButton("Reset Scale Factor",this->zoomToolOptionFrame);
     this->zoomToolOptionFrame->mainLayout->addWidget(resetTheScaleFactorButton,2,0,1,1,Qt::AlignCenter);
     QObject::connect(resetTheScaleFactorButton, &QPushButton::clicked, this->canvas, &Canvas::resetScale);
+
+
 }
 
 /**
@@ -498,6 +511,37 @@ void ImageEditWindow::brokenLineToolSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::BrokenLine);
     emit this->sendFrameToToolOptionDock(this->brokenLineToolOptionFrame);
+}
+
+void ImageEditWindow::drawVectorFieldSlot(){
+    this->setCursor(Qt::CrossCursor);
+    this->canvas->setOperationType(config::VectorField);
+    emit this->sendFrameToToolOptionDock(this->drawVectorFieldFrame);
+}
+
+void ImageEditWindow::calcVectorFieldSlot(){
+    extern void kangxueCalcVectorField(IplImage* sourceImage,IplImage* screen, std::vector<std::vector<CvPoint> > curves);
+
+    cv::Mat_<cv::Vec3b> currentImage;
+    Util::convertQImageToMat(this->layerManager->getDisplayLayerItem()->image, currentImage);
+    IplImage* IplFormatImage = new IplImage(currentImage);
+    IplImage* IplFormatImageResult;
+
+    std::vector<std::vector<CvPoint > > curvesAPI;
+    for(std::vector<QPoint> singleCurves : Util::vectorFieldCurves){
+        std::vector<CvPoint > singleCurvesAPI;
+        for(QPoint elem : singleCurves){
+            CvPoint elemAPI = CvPoint(elem.x(),elem.y());
+            singleCurvesAPI.push_back(elemAPI);
+        }
+        curvesAPI.push_back(singleCurvesAPI);
+    }
+    IplFormatImageResult = cvCloneImage( IplFormatImage ) ;
+    kangxueCalcVectorField(IplFormatImage,IplFormatImageResult,curvesAPI); //调用vector field里的getCurves里的函数
+
+    cv::Mat result = cv::cvarrToMat(IplFormatImageResult);
+    cv::imshow("result",result);
+    cv::waitKey();
 }
 
 /**

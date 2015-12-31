@@ -11,6 +11,8 @@ double Util::PI = 3.141592654;
 
 QString Util::dirName = QString();
 
+std::vector<std::vector<QPoint > > Util::vectorFieldCurves = std::vector<std::vector<QPoint > >();
+
 
 /**
  * @brief Util::meldTwoCVMat
