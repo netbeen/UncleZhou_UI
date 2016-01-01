@@ -68,6 +68,7 @@ public:
     static void convertTwoLabelMaskToOneLabelMask(const cv::Mat& twoLabelInput, cv::Mat& oneLabelOutput, const cv::Vec3b currentColor);
 
     static std::vector<std::vector<QPoint > > vectorFieldCurves;
+    static QImage drawVectorFieldBackgroundBackup;
 
     static QString dirName;
 };

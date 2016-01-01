@@ -516,6 +516,7 @@ void ImageEditWindow::brokenLineToolSlot(){
 void ImageEditWindow::drawVectorFieldSlot(){
     this->setCursor(Qt::CrossCursor);
     this->canvas->setOperationType(config::VectorField);
+    Util::drawVectorFieldBackgroundBackup = this->layerManager->getDisplayLayerItem()->image;
     emit this->sendFrameToToolOptionDock(this->drawVectorFieldFrame);
 }
 
@@ -539,9 +540,9 @@ void ImageEditWindow::calcVectorFieldSlot(){
     IplFormatImageResult = cvCloneImage( IplFormatImage ) ;
     kangxueCalcVectorField(IplFormatImage,IplFormatImageResult,curvesAPI); //调用vector field里的getCurves里的函数
 
-    cv::Mat result = cv::cvarrToMat(IplFormatImageResult);
-    cv::imshow("result",result);
-    cv::waitKey();
+    cv::Mat_<cv::Vec3b> result = cv::cvarrToMat(IplFormatImageResult);
+    Util::convertMattoQImage(result,this->layerManager->getDisplayLayerItem()->image);
+    this->canvas->update();
 }
 
 /**
