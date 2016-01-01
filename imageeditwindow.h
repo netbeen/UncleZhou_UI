@@ -83,6 +83,7 @@ private:
     ToolOptionFrame* polygonToolOptionFrame;
     ToolOptionFrame* bucketToolOptionFrame;
     ToolOptionFrame* zoomToolOptionFrame;
+    ToolOptionFrame* drawVectorFieldFrame;
 
     Swatch* foreSwatch;
     Swatch* backSwatch;
@@ -134,6 +135,10 @@ private:
     void drawGaussianSlot();    //画出高斯模糊图像
     void drawGaussianSlotPart2(int xCoordinate, int yCoordinate);
     void updateCanvasSlot();
+
+    QAction* drawVectorFieldAction;
+    void drawVectorFieldSlot();
+    void calcVectorFieldSlot();     //接收到了计算vector field的信号后，进行计算。
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;

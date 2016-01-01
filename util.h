@@ -10,7 +10,7 @@
 namespace config{
     enum editPosition{sourceImage, sourceGuidance,targetImage, targetGuidance};
     enum editLevel{readOnly, editable};
-    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon, MagicEraser, BrokenLine, Gaussian};
+    enum operationType{None,Move, Pencil,  Eraser, Bucket, ZoomIn, ZoomOut, Polygon, MagicEraser, BrokenLine, Gaussian, VectorField};
 }
 
 
@@ -67,6 +67,8 @@ public:
     static void convertMultiLabelMaskToTwoLabelMask(const cv::Mat& multiLabelInput, cv::Mat& twoLabelOutput, const cv::Vec3b currentColor);
     static void convertTwoLabelMaskToOneLabelMask(const cv::Mat& twoLabelInput, cv::Mat& oneLabelOutput, const cv::Vec3b currentColor);
 
+    static std::vector<std::vector<QPoint > > vectorFieldCurves;
+    static QImage drawVectorFieldBackgroundBackup;
 
     static QString dirName;
 };

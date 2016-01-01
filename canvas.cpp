@@ -90,17 +90,14 @@ void Canvas::mousePressEvent(QMouseEvent *e){
             case config::Move:
                 this->moveStartPoint = e->pos();
                 this->topLeftPointBackup = topLeftPoint;
-                //qDebug() << "moveStartPoint=" << e->pos().x() << " " << e->pos().y();
                 break;
             case config::ZoomIn:
                 this->setScale(this->scaleFactor*1.1);
                 this->update();
-                //qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
             case config::ZoomOut:
                 this->setScale(this->scaleFactor*0.9);
                 this->update();
-                //qDebug() << "Current scale factor = " << this->scaleFactor;
                 break;
             default:
                 break;
@@ -134,6 +131,15 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::Gaussian:
                     emit this->sendCoordinateSignal(this->mapToPixmap(e->pos()).x(), this->mapToPixmap(e->pos()).y());
                     break;
+                case config::VectorField:
+                    if(this->brokenLineStarted == false){
+                        this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
+                        this->layerManager->getDisplayLayerItem()->image = Util::drawVectorFieldBackgroundBackup;
+                        this->vectorFieldCurve.clear();
+                    }
+                    this->vectorFieldCurve.push_back(this->mapToPixmap(e->pos()));
+                    this->brokenLine(this->mapToPixmap(e->pos()));
+                    break;
                 default:
                     break;
             }
@@ -149,6 +155,25 @@ void Canvas::mousePressEvent(QMouseEvent *e){
                 case config::BrokenLine:    //右键状态下，折线工具调用折线结束的功能
                     this->brokenLineEnd();
                     break;
+                case config::VectorField:
+                    Util::vectorFieldCurves.push_back(this->vectorFieldCurve);
+                    this->brokenLineEnd();
+                    this->repaint();        //强制刷新画布
+                    Util::drawVectorFieldBackgroundBackup = this->layerManager->getDisplayLayerItem()->image;
+                    emit this->calcVectorFieldSignal();
+                    break;
+                default:
+                    break;
+            }
+        }//以上操作只有在画布内部才有效
+    }else if(e->buttons() & Qt::MiddleButton){
+        if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+            switch (this->operationType) {
+                case config::VectorField:
+                    this->undoStack->push(this->layerManager->getDisplayLayerItem()->image);
+                    this->layerManager->getDisplayLayerItem()->image = Util::drawVectorFieldBackgroundBackup;
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
+                    this->vectorFieldCurve.clear();
                 default:
                     break;
             }
@@ -157,24 +182,40 @@ void Canvas::mousePressEvent(QMouseEvent *e){
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *e){
-    switch (this->operationType) {
-        case config::Pencil:
-            emit this->updateColorButtonLayoutSignal();
-            break;
-        case config::Eraser:
-            emit this->updateColorButtonLayoutSignal();
-            break;
-        case config::MagicEraser:
-            emit this->updateColorButtonLayoutSignal();
-            break;
-        case config::Polygon:
-            emit this->updateColorButtonLayoutSignal();
-            break;
-        case config::BrokenLine:
-            emit this->updateColorButtonLayoutSignal();
-            break;
-        default:
-            break;
+    if(e->button() == Qt::LeftButton ){
+        if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+        }    //以上操作只有在画布内部才有效
+        switch (this->operationType) {
+            case config::Pencil:
+                emit this->updateColorButtonLayoutSignal();
+                break;
+            case config::Eraser:
+                emit this->updateColorButtonLayoutSignal();
+                break;
+            case config::MagicEraser:
+                emit this->updateColorButtonLayoutSignal();
+                break;
+            case config::Polygon:
+                emit this->updateColorButtonLayoutSignal();
+                break;
+            case config::BrokenLine:
+                emit this->updateColorButtonLayoutSignal();
+                break;
+            default:
+                break;
+        }
+    }else if(e->button() == Qt::MiddleButton ){
+        if( this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+        }    //以上操作只有在画布内部才有效
+        switch (this->operationType) {
+            case config::VectorField:
+                Util::vectorFieldCurves.push_back(this->vectorFieldCurve);
+                Util::drawVectorFieldBackgroundBackup = this->layerManager->getDisplayLayerItem()->image;
+                emit this->calcVectorFieldSignal();
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -210,22 +251,33 @@ void Canvas::mouseMoveEvent(QMouseEvent *e){
                 case config::Eraser:
                     this->erase(this->mapToPixmap(e->pos()),this->eraserRadius);
                     break;
-
                 default:
                     break;
             }
         }    //以上操作只有在画布内部才有效
-
+    }else if( e->buttons() & Qt::MiddleButton ){
+        if(this->isContained(e->pos())){    //以下操作只有在画布内部才有效
+            switch (this->operationType) {
+                case config::VectorField:
+                    this->vectorFieldCurve.push_back(this->mapToPixmap(e->pos()));
+                    this->paint(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
+                    break;
+                default:
+                    break;
+            }
+        }    //以上操作只有在画布内部才有效
     }else{
         switch (this->operationType) {
             case config::BrokenLine:
                 this->brokenLineMove(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
                 break;
+            case config::VectorField:
+                this->vectorFieldCurve.push_back(this->mapToPixmap(e->pos()));
+                this->brokenLineMove(this->mapToPixmap(e->pos()),this->pencilRadius,this->color);
+                break;
             default:
                 break;
         }
-
-
     }
 }
 

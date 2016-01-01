@@ -11,6 +11,10 @@ double Util::PI = 3.141592654;
 
 QString Util::dirName = QString();
 
+std::vector<std::vector<QPoint > > Util::vectorFieldCurves = std::vector<std::vector<QPoint > >();
+
+QImage Util::drawVectorFieldBackgroundBackup = QImage();
+
 
 /**
  * @brief Util::meldTwoCVMat
